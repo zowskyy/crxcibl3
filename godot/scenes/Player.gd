@@ -1,14 +1,25 @@
 extends Node2D
-## Placeholder player for Slice 2.5 -- a drawn square standing in for real
-## art, just enough to confirm movement works. Touch controls replace this
-## input scheme in a later slice; arrow keys are a stopgap for testing on
-## desktop in the meantime.
+## Placeholder player -- a drawn square standing in for real art, just
+## enough to confirm movement works. Reads from the virtual joystick
+## (touch or mouse drag) when present, falling back to arrow keys so
+## desktop testing in the editor still works without dragging it.
 
 const SPEED := 120.0
 const SIZE := 16.0
 
+var _joystick: Control = null
+
+
+func _ready() -> void:
+	_joystick = get_tree().get_first_node_in_group("virtual_joystick")
+
+
 func _process(delta: float) -> void:
-	var input_vector := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var input_vector := Vector2.ZERO
+	if _joystick and _joystick.output.length() > 0.0:
+		input_vector = _joystick.output
+	else:
+		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	position += input_vector * SPEED * delta
 	queue_redraw()
 
