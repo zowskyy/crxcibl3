@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.9 — boardwalk room with real art)
+Last updated: 2026-07-19 (Slice 2.10 — real Heat meter HUD)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -259,11 +259,35 @@ Godot-related Actions later).
   `Camera2D` limits and collision box sizes (130×130 buildings, 100×90 fence — the fence art
   is a squarish isometric crop, not a thin horizontal strip) to match.
 
-## Next slice (2.10)
-Heat HUD wired to real `GameState.heat` — the debug label/button in `TestRoom.tscn` already
-proves the read/write path works (Slice 2.5); this is about a real HUD design instead of a
-plain `Label`. After that, a real playable hero (2.11) and first enemy (2.12) are next per
-the blueprint.
+## Slice 2.10 — DONE: real Heat meter HUD
+`godot/scenes/HeatMeter.gd` — replaces the plain "Heat: X / 100" debug `Label` from Slice 2.5
+with a custom-drawn meter, same idiom as `VirtualJoystick.gd`'s own `_draw()` approach:
+- Background track + a fill rectangle sized to `GameState.heat / GameState.HEAT_MAX`, colored
+  with the same orange (`Color(1.0, 0.4, 0.0)`) already established as the heat/signOrange
+  color across the Phaser reference palette and lore docs.
+- Numeric readout drawn over the bar (`HEAT  N / 100`).
+- Polls and redraws every `_process()` frame rather than needing an explicit refresh call —
+  `TestRoom.gd` previously called `_refresh_label()` manually after every heat change; that's
+  gone now, and the meter reflects heat changes from *any* source, not just the debug button.
+- The debug "Add Heat" button / H key from Slice 2.5 stayed as-is — still useful for testing,
+  the label it used to update was always the placeholder, not the button itself.
+- `GameState.heat` was already real data since Slice 2.5 (confirmed working end-to-end back
+  then) — this slice was purely about the HUD's visual presentation, not the data wiring.
+
+## Follow-up, same day: building sizes matched and confirmed
+Architect sent screenshots showing the arcade and apartment tower reading noticeably smaller
+than the liquor store despite the earlier "7-9x player size" math targeting comparable
+footprints. Rather than re-derive the math, matched world footprint directly to the
+Architect-confirmed reference (liquor_store, 1024px canvas × 0.2 scale ≈ 205 world units):
+arcade bumped to 0.4 scale, apartment tower to 0.41 — both now ≈205 units too. Room widened
+960×540 → 1100×600, all positions/collision boxes (130→190) and `Camera2D` limits updated to
+fit without overlap. **Architect confirmed this looks right ("great") — closed, no further
+action needed here.**
+
+## Next slice (2.11)
+A real playable hero (start with Enforcer — simplest kit: melee, tank stats) using the
+balance numbers already in `configs/game_config.json`, replacing the placeholder crimson
+square. After that, 2.12 is a first enemy.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
