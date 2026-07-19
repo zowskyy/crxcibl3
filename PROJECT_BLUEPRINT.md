@@ -74,7 +74,12 @@ kept as-is for now, not actively developed — open question whether it's retire
   `hero_damage.enforcer` values, hardcoded in `Player.gd` for now (no JSON-loading
   infrastructure yet). Added `take_damage()`/`is_dead()` as forward-looking scaffolding for
   2.12's enemy, not full combat — no enemy exists yet to actually use them.
-- [ ] **2.12** — Enemy base + one enemy type (rival crew grunt) with basic chase/attack AI.
+- [x] **2.12** — First enemy: rival crew grunt (`Enemy.gd`), placeholder dark square (no
+  enemy art exists yet). Idle until the player enters `DETECTION_RADIUS` (150 units), then
+  chases via `move_and_slide()`; attacks on contact (`ATTACK_RANGE` 20) on a 1s cooldown,
+  dealing 8 damage through the player's `take_damage()` from 2.11. 40 HP, `queue_free()`s at
+  0. One instance placed in `TestRoom.tscn` just outside the player's starting detection
+  range, so approaching it demonstrates the idle→chase transition.
 - [ ] **2.13** — Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`,
   `on_crew_member_downed`) into actual combat once it exists.
 - [ ] **2.14** — Crack House / Chop Shop spawn generator (replaces "monster generator" from

@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.10 — real Heat meter HUD)
+Last updated: 2026-07-19 (Slice 2.12 — first enemy, chase/attack AI)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -284,10 +284,45 @@ arcade bumped to 0.4 scale, apartment tower to 0.41 — both now ≈205 units to
 fit without overlap. **Architect confirmed this looks right ("great") — closed, no further
 action needed here.**
 
-## Next slice (2.11)
-A real playable hero (start with Enforcer — simplest kit: melee, tank stats) using the
-balance numbers already in `configs/game_config.json`, replacing the placeholder crimson
-square. After that, 2.12 is a first enemy.
+## Slice 2.11 — DONE: first real playable hero
+Replaced the placeholder crimson square with `assets/heroes/hero_enforcer_ghost.png` in
+`godot/assets/heroes/` — the same asset the Phaser prototype used as its own first real art
+integration, kept for continuity. This also resolved the mystery from the earlier art
+restoration: the unmatched trenchcoat character sitting in `crxcibl3art/needs_review/`
+(`alpha_crop_12`/`object_16`) is this exact character — Ghost (Victor Reyes).
+`Player.gd` now has real stats: `MAX_HEALTH=120`, `MELEE_DAMAGE=15`, matching
+`configs/game_config.json`'s `hero_health`/`hero_damage.enforcer` (hardcoded — no
+JSON-loading infrastructure exists yet). Added `take_damage()`/`is_dead()` as forward-looking
+scaffolding for 2.12's enemy, not full combat. Sprite scaled to ~40 world units tall (source
+238×628, scale 0.064), offset so the character's feet align with the existing 16×16 collision
+box instead of floating above it.
+
+## Slice 2.12 — DONE: first enemy
+`godot/scenes/Enemy.gd` — rival crew grunt, placeholder dark square (no enemy art exists yet,
+same "behavior before art" pattern as the player and buildings had before their real art
+landed):
+- Idle until the player is within `DETECTION_RADIUS` (150 units), then chases via
+  `move_and_slide()`.
+- Attacks on contact (`ATTACK_RANGE` 20) with a 1s cooldown, dealing 8 damage through the
+  player's `take_damage()` from Slice 2.11.
+- 40 HP, `queue_free()`s at 0 — no death animation/effects yet, just despawns.
+- `Player.gd` now calls `add_to_group("player")` in `_ready()` so the enemy can find it via
+  `get_tree().get_first_node_in_group()` — same deferred-lookup pattern as the joystick
+  (Slice 2.6), since sibling `_ready()` order depends on scene declaration order.
+- One `Enemy1` instance placed in `TestRoom.tscn`, positioned just outside the player's
+  starting detection range so approaching it demonstrates the idle→chase transition rather
+  than starting mid-chase.
+
+**Not yet built:** any player-side combat (no attack input exists — the player can be hit but
+can't hit back yet), damage feedback/UI (health has no on-screen indicator), or death handling
+for either side beyond the enemy's `queue_free()`. These are natural next steps but weren't
+in this slice's stated scope ("chase/attack AI" describes the enemy, not player combat).
+
+## Next slice (2.13)
+Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`, `on_crew_member_downed`) into
+the combat that now exists — `Stress.gd` has had these methods sitting unused since the
+project's Godot-era code was first discovered, this is the first slice where there's actual
+combat to wire them into.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
