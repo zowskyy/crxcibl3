@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.13 — Stress combat hooks wired)
+Last updated: 2026-07-19 (Slice 2.15 — shared group Rune pool)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -337,11 +337,56 @@ in this slice's stated scope ("chase/attack AI" describes the enemy, not player 
   orange), added below the Heat bar, so this wiring is actually visible/verifiable at runtime
   instead of wired blind.
 
-## Next slice (2.14)
-Crack House / Chop Shop spawn generator (replaces "monster generator" from the classic
-formula) — clearing conditions still TBD, see Open Design Threads in `PROJECT_BLUEPRINT.md`.
+## Slice 2.14 — DONE: Metal Slug-style gun combat + Rune drops
+Architect direction pivot: gun combat (Metal Slug) + Warriors (PS2)-style brawl economy,
+superseding the originally-planned Crack House/Chop Shop generator for this slot.
+- `Bullet.gd` — projectile built entirely in code (no saved scene), `Area2D` + programmatically
+  constructed `CircleShape2D`, 400-unit speed, 15 damage, 1.2s lifetime. `Player.fire()` spawns
+  one per 0.25s (Fire button / Space key) aimed in `_facing` direction.
+- `Enemy.gd` drops 1 Rune per kill via `GameState.add_resource("Rune", 1)` (first use of Rune
+  key — `add_resource()` creates it on demand since the initial resources dict only had
+  Cash/Ammo/Intel).
+- `Stress.on_hit_dealt()` wired in `Bullet._on_body_entered()` — now fires honestly since the
+  player has a real attack path.
+- `RuneLabel` added to `TestRoom.tscn` debug HUD, polling `GameState.resources.Rune` each frame.
+
+## Slice 2.15 — DONE: shared group Rune pool + per-hero contribution tracking
+Design goal (Architect): every player's kills add to one shared group Rune count — nobody feels
+the need to get greedy. Backend fully enforces this at the data layer, not just the UI.
+
+- `GameState.resources` now initializes `"Rune": 0` explicitly (no more first-use workaround).
+- `group_upgrades: Dictionary` — keyed by upgrade id string, `true` once the group has
+  purchased it. Nobody owns upgrades individually.
+- `rune_contributions: Dictionary` — keyed by hero name, counts kill-generated Runes per hero.
+  This is a **solidarity metric** shown in end-of-run recap, not a per-player wallet.
+- `add_rune(amount, hero)` — adds to shared pool and credits the hero's contribution tally.
+  Replaces the `add_resource("Rune", N)` call in `Enemy.gd`.
+- `purchase_upgrade(id, cost)` — atomic: checks already-owned, checks affordability, spends,
+  marks owned. Returns false on either failure, true on success. Bodega shop UI calls this.
+- `has_upgrade(id)` — simple boolean gate for any gameplay system that conditionally applies an
+  upgrade's effect (e.g. higher bullet damage if "power_up" is owned).
+- `top_contributor()` — returns the hero with the most kill-Runes this run. Intended for
+  Recap.gd's end-of-run summary ("Enforcer led the crew with 14 Runes").
+- `reset_for_new_game()` clears `group_upgrades` and `rune_contributions` alongside everything
+  else.
+- **Kill attribution chain:** `Player.hero_name = "enforcer"` (set by whoever spawns the
+  player) → stamped onto `Bullet.shooter` at fire time → passed as `killer` arg to
+  `Enemy.take_damage(amount, killer)` → forwarded to `add_rune(1, killer)`. In multiplayer
+  each player's node sets its own `hero_name`, so contributions track correctly without any
+  extra coordination.
+- `TestRoom.gd` HUD now shows `"Rune (group): N  enforcer:N"` per-hero breakdown live so the
+  attribution chain is visibly verifiable during playtesting.
+
+## Next slice (2.16)
+Bodega upgrade shop UI: trigger zone at `Building1` (the liquor store, already in the scene
+from Slice 2.9) opens a simple upgrade menu that calls `GameState.purchase_upgrade()`. Backend
+is fully built (Slice 2.15) — this slice is purely the scene-level UX: proximity detection,
+menu display, upgrade list, spend confirmation.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
+- Bodega upgrade list: which specific upgrades appear at launch? Confirmed candidates so far:
+  bullet damage, fire rate, reload speed. Heal-for-Rune is an explicit Architect reference
+  (Warriors PS2 "Flash" dealers) — confirm whether it's in scope for Slice 2.16.

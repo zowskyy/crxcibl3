@@ -94,15 +94,23 @@ kept as-is for now, not actively developed — open question whether it's retire
   fire()` (Fire button/Space, 0.25s cooldown) give the player their first real attack — melee
   was scaffolded in 2.11/2.12 but never actually wired to an input. `Enemy.gd` drops 1 Rune
   per kill via `GameState.add_resource()`. Rune counter added to the debug HUD.
-- [ ] **2.15** — Bodega upgrade shop: a trigger zone at the boardwalk room's liquor store
-  (`Building1`, already built in 2.9) spends Rune on weapon upgrades (power, fire rate, reload
-  speed, unlimited ammo) — Architect's direction, styled after The Warriors (PS2)'s brawl-flow
-  economy (buying "Flash" heals from dealers mid-mission is the explicit reference for a
-  possible heal-for-Rune option too).
-- [ ] **2.16** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
+- [x] **2.15** — Shared group Rune pool + per-hero contribution tracking. All kill Runes from
+  any player land in one shared `GameState` pool — no individual wallets, nobody can hoard.
+  `purchase_upgrade(id, cost)` spends from the shared pool atomically. `rune_contributions`
+  tallies each hero's kill-generated Runes as a solidarity metric (shown in end-of-run recap),
+  not a competitive currency. `Bullet.shooter` / `Enemy.take_damage(killer)` thread the
+  killing hero's name end-to-end so the tally is accurate in multiplayer. `top_contributor()`
+  and `has_upgrade()` helpers added to `GameState`. Debug HUD now shows per-hero breakdown
+  live (`"Rune (group): N  enforcer:N"`). This is the backend the bodega shop UI builds on.
+- [ ] **2.16** — Bodega upgrade shop UI: a trigger zone at the boardwalk room's liquor store
+  (`Building1`, already built in 2.9) opens a simple menu that calls `purchase_upgrade()` —
+  weapon upgrades (power, fire rate, reload speed) drawn from the shared Rune pool. Styled
+  after The Warriors (PS2)'s brawl-flow economy (buying "Flash" heals from dealers mid-mission
+  is the explicit reference; a heal-for-Rune option is worth wiring here too).
+- [ ] **2.17** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
   the classic formula) — still open whether/how this fits now that combat is gun-based;
   clearing conditions TBD either way, see Open Design Threads.
-- [ ] **2.17** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
+- [ ] **2.18** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
 
 ### Deferred architecture: unified combat pipeline (noted, not built)
 Architect proposed a `CombatDirector` (autoload) + `WeaponBehavior` strategy pattern
