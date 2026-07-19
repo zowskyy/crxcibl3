@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.20 — The Emperor confrontation, Act 3 finale)
+Last updated: 2026-07-19 (Slice 3.1 — player health HUD + downed/respawn state)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -464,11 +464,21 @@ tag-team design note:
 main scene) — RooftopScene/CarChaseScene/EmperorScene are only reachable via gameplay
 transitions, so the main-scene boot check alone never compiled their scripts.
 
-## Next steps
-Phase 2's locked act arc (rooftop → car chase → Emperor) is complete. Natural candidates:
-full-loop playtest of the arc on-device, the boat run variant (Broker's compound), the
-epilogue/Recap surfacing of `emperor_forgiven`, or starting Phase 3 (roster/mechanics
-modules). Needs an Architect call.
+## Slice 3.1 — DONE: player health HUD + downed/respawn state
+`HealthBar.gd` — same self-drawing `_draw()` idiom as `HeatMeter.gd` / `StressMeter.gd`.
+Green fill bar proportional to `player.health / MAX_HEALTH`; turns red and shows
+"DOWNED — respawning..." text when `player.is_dead()`. Finds the player via
+`get_first_node_in_group("player")` (deferred, same race-condition fix as VirtualJoystick
+and Enemy.gd). Added to `CanvasLayer` in `TestRoom.tscn`, `RooftopScene.tscn`, and
+`EmperorScene.tscn` — not CarChaseScene, which uses `PlayerCar.gd` and already has its
+own `hp_label`.
+
+**Player.gd changes:** `downed` and `respawned` signals added. `take_damage()` now
+freezes `_physics_process` when health first hits 0 (no more sliding into enemies while
+dead) and kicks off a `_start_respawn()` coroutine (`await create_timer(RESPAWN_TIME)`).
+After `RESPAWN_TIME = 3.0s`, health restores to `MAX_HEALTH`, physics re-enables, and
+`respawned` emits. Permanent death is a separate Phase 3 mechanics module (PermanentDeath
+from `Stress.gd`'s template list) — this is the soft-death / checkpoint respawn layer.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired

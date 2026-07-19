@@ -14,9 +14,13 @@ extends CharacterBody2D
 const SPEED := 120.0
 const MAX_HEALTH := 120
 const MELEE_DAMAGE := 15  # kept for reference/lore continuity; no longer the attack path
+const RESPAWN_TIME := 3.0  # seconds downed before returning to full HP
 
 const BULLET_SCRIPT := preload("res://scenes/Bullet.gd")
 const FIRE_COOLDOWN := 0.25  # ~4 shots/sec, Metal Slug-ish rapid but not instant
+
+signal downed    # fires once when health first reaches 0
+signal respawned # fires when the respawn timer completes
 
 var health := MAX_HEALTH
 var hero_name: String = "enforcer"  # set by whoever spawns the player
@@ -85,12 +89,18 @@ func fire() -> void:
 func take_damage(amount: int) -> void:
 	var was_dead := is_dead()
 	health = clampi(health - amount, 0, MAX_HEALTH)
-	# Guarded so this only fires once per knockout, not on every hit that
-	# happens to land while already at 0 -- Stress.on_crew_member_downed()
-	# is a one-shot stress spike (Slice 2.13), not a per-hit thing like
-	# on_hit_taken() is.
 	if is_dead() and not was_dead:
 		Stress.on_crew_member_downed()
+		set_physics_process(false)   # freeze movement and firing input
+		downed.emit()
+		_start_respawn()
+
+
+func _start_respawn() -> void:
+	await get_tree().create_timer(RESPAWN_TIME).timeout
+	health = MAX_HEALTH
+	set_physics_process(true)
+	respawned.emit()
 
 
 func is_dead() -> bool:

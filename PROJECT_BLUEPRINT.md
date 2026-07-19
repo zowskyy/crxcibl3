@@ -158,7 +158,11 @@ twelve before testing one" principle already guiding `Stress.gd`'s design. Revis
 the moment a second weapon type or second enemy archetype actually gets built (rule-of-three:
 abstract after 2-3 concrete cases exist, not before).
 
-## Phase 3 — Full Roster & Story Content (NOT STARTED)
+## Phase 3 — Full Roster & Story Content (IN PROGRESS)
+- [x] **3.1** — Player health HUD (`HealthBar.gd`, same `_draw()` idiom as Heat/Stress meters).
+  Green fill, turns red + "DOWNED" text at 0 HP. `Player.gd` freezes input on death and
+  auto-respawns at full HP after 3s (`downed`/`respawned` signals). Added to TestRoom,
+  RooftopScene, EmperorScene CanvasLayers. Permanent death is a separate later module.
 - 12 playable hero variants (3 per class × 4 classes) — see `KNOWLEDGE_BASE.md` for full roster.
 - Relationship system — `GameState.gd` already has the full pairwise (-10..+10) model built;
   this phase is about wiring it into actual gameplay triggers, not building it from scratch.

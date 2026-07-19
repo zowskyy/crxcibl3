@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scenes/EmperorScene.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="5"]
 [ext_resource type="Texture2D" path="res://assets/heroes/hero_enforcer_ghost.png" id="6"]
 [ext_resource type="Script" path="res://scenes/EmperorFigure.gd" id="7"]
+[ext_resource type="Script" path="res://scenes/HealthBar.gd" id="8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(16, 16)
@@ -103,6 +104,13 @@ offset_top = 56.0
 offset_right = 220.0
 offset_bottom = 76.0
 text = "Stress: 0"
+
+[node name="HealthBar" type="Control" parent="CanvasLayer"]
+offset_left = 20.0
+offset_top = 84.0
+offset_right = 220.0
+offset_bottom = 112.0
+script = ExtResource("8")
 
 [node name="VirtualJoystick" type="Control" parent="CanvasLayer"]
 anchor_left = 0.0
