@@ -24,6 +24,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 	_age += delta
+	queue_redraw()
 	if _age >= LIFETIME:
 		queue_free()
 
@@ -35,4 +36,24 @@ func _on_body_entered(body: Node) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, RADIUS, Color(1.0, 0.95, 0.6))  # warm gold/white flash
+	# Black bolt core with red electric surge.
+	# The bolt is oriented along the direction of travel; _draw() runs in
+	# local space so we rotate the canvas to match.
+	var bolt_len := 18.0
+	var angle := direction.angle()
+	draw_set_transform(Vector2.ZERO, angle, Vector2.ONE)
+
+	# Black core body
+	draw_rect(Rect2(-bolt_len * 0.5, -3, bolt_len, 6), Color(0.04, 0.0, 0.06))
+
+	# Red electric surges — two jagged lines running through the core
+	var surge_color := Color(0.9, 0.05, 0.05)
+	var half := bolt_len * 0.5
+	# Top surge
+	draw_line(Vector2(-half, -1.5), Vector2(-half * 0.4, 1.5),  surge_color, 1.2)
+	draw_line(Vector2(-half * 0.4, 1.5), Vector2(0.0, -1.5),   surge_color, 1.2)
+	draw_line(Vector2(0.0, -1.5), Vector2(half * 0.4, 1.5),    surge_color, 1.2)
+	draw_line(Vector2(half * 0.4, 1.5), Vector2(half, -1.5),   surge_color, 1.2)
+	# Outer red glow tips
+	draw_circle(Vector2(-half, 0), 3.0, Color(0.8, 0.0, 0.0, 0.7))
+	draw_circle(Vector2(half,  0), 3.0, Color(0.8, 0.0, 0.0, 0.7))

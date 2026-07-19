@@ -16,7 +16,7 @@ extends CharacterBody2D
 signal fled
 
 const MAX_HP := 200
-const FLEE_THRESHOLD := 80   # 40% — triggers Phase 3
+const FLEE_THRESHOLD := 33   # low threshold — players feel they almost had him
 const SPEED_FIGHT := 50.0
 const SPEED_FLEE  := 130.0
 
@@ -109,17 +109,8 @@ func _tick_fight(delta: float) -> void:
 		_fire_projectile(to_player.normalized())
 
 
-func _tick_flee(delta: float) -> void:
-	if _flee_target == Vector2.ZERO:
-		return
-	var to_exit := _flee_target - global_position
-	if to_exit.length() < 10.0:
-		_phase = Phase.DONE
-		emit_signal("fled")
-		queue_free()
-		return
-	velocity = to_exit.normalized() * SPEED_FLEE
-	move_and_slide()
+func _tick_flee(_delta: float) -> void:
+	pass  # leap is driven entirely by Tween, not _physics_process
 
 
 func take_damage(amount: int, _killer: String = "") -> void:
@@ -143,12 +134,63 @@ func _trigger_flee() -> void:
 func _fire_flashbang() -> void:
 	if _flashbang_node == null:
 		return
+	_flashbang_node.modulate.a = 1.0
 	_flashbang_node.visible = true
-	# Fade out over FLASHBANG_DURATION using a Tween
-	var tween := get_tree().create_tween()
-	tween.tween_property(_flashbang_node, "modulate:a", 0.0, FLASHBANG_DURATION)
-	tween.tween_callback(func(): _flashbang_node.visible = false)
-	tween.tween_callback(func(): _flashbang_node.modulate.a = 1.0)
+
+	# Timeline (all delays relative to flashbang fire):
+	#   0.0s  screen goes white — players blind
+	#   0.9s  flash starts fading AND leap begins — players see Blackwood mid-air as vision clears
+	#   1.35s Blackwood at arc apex, starts fading out
+	#   1.8s  flash fully gone, Blackwood invisible — fled signal fires
+
+	var leap_start := global_position
+	var leap_peak  := leap_start + Vector2(60, -80)
+	var leap_end   := _flee_target if _flee_target != Vector2.ZERO \
+					  else leap_start + Vector2(120, -20)
+
+	# Tween 1: flash fade (starts after 0.9s blind hold)
+	var flash_tween := get_tree().create_tween()
+	flash_tween.tween_interval(0.9)
+	flash_tween.tween_property(_flashbang_node, "modulate:a", 0.0, 0.9)
+	flash_tween.tween_callback(func():
+		_flashbang_node.visible = false
+		_flashbang_node.modulate.a = 1.0
+	)
+
+	# Tween 2: leap arc (starts same moment flash begins to fade — 0.9s delay)
+	# Rise to peak then fall toward exit using two sequential method tweens.
+	var leap_tween := get_tree().create_tween()
+	leap_tween.tween_interval(0.9)
+	leap_tween.tween_method(
+		func(t: float):
+			global_position = leap_start.lerp(leap_peak, _ease_out_cubic(t))
+			queue_redraw(),
+		0.0, 1.0, 0.45
+	)
+	leap_tween.tween_method(
+		func(t: float):
+			global_position = leap_peak.lerp(leap_end, _ease_in_cubic(t))
+			queue_redraw(),
+		0.0, 1.0, 0.45
+	)
+
+	# Tween 3: Blackwood fade-out (starts at peak, 0.9 + 0.45 = 1.35s in)
+	var vanish_tween := get_tree().create_tween()
+	vanish_tween.tween_interval(1.35)
+	vanish_tween.tween_property(self, "modulate:a", 0.0, 0.45)
+	vanish_tween.tween_callback(func():
+		_phase = Phase.DONE
+		emit_signal("fled")
+		queue_free()
+	)
+
+
+func _ease_out_cubic(t: float) -> float:
+	return 1.0 - pow(1.0 - t, 3.0)
+
+
+func _ease_in_cubic(t: float) -> float:
+	return t * t * t
 
 
 func _spawn_deacon() -> void:
