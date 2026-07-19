@@ -21,6 +21,7 @@ var _joystick: Control = null
 
 
 func _ready() -> void:
+	add_to_group("player")
 	# Deferred: Player is declared before CanvasLayer/VirtualJoystick in the
 	# scene tree, so at _ready() time the joystick hasn't added itself to
 	# the group yet (sibling _ready() order follows scene declaration
