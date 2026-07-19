@@ -61,10 +61,19 @@ kept as-is for now, not actively developed — open question whether it's retire
     first-time imports. Fixed by adding an explicit `godot --headless --path godot --import`
     step to CI, so this doesn't depend on remembering to open the editor after every new
     asset going forward.
-- [ ] **2.10** — Heat HUD wired to real `GameState.heat` (still a static demo value even in the
-  Phaser build — first slice where Heat becomes real anywhere in any engine).
-- [ ] **2.11** — One playable hero class (start with Enforcer — simplest kit: melee, tank
-  stats) using the balance numbers already in `configs/game_config.json`.
+- [x] **2.10** — Real Heat meter HUD (`HeatMeter.gd`), replacing the plain debug `Label` from
+  2.5. Custom-drawn bar (background track + orange fill proportional to
+  `GameState.heat`/`HEAT_MAX` + numeric readout), self-updating every frame rather than
+  needing a manual refresh call — reflects heat changes from anywhere, not just the debug
+  button. `GameState.heat` itself was already real since Slice 2.5; this was about the visual
+  HUD, not the data wiring.
+- [x] **2.11** — First real playable hero: the Enforcer (Ghost / Victor Reyes). Replaced the
+  placeholder crimson square with `assets/heroes/hero_enforcer_ghost.png` — the same asset
+  the Phaser prototype used as its own first real art integration, for continuity. Stats
+  (`MAX_HEALTH=120`, `MELEE_DAMAGE=15`) match `configs/game_config.json`'s `hero_health`/
+  `hero_damage.enforcer` values, hardcoded in `Player.gd` for now (no JSON-loading
+  infrastructure yet). Added `take_damage()`/`is_dead()` as forward-looking scaffolding for
+  2.12's enemy, not full combat — no enemy exists yet to actually use them.
 - [ ] **2.12** — Enemy base + one enemy type (rival crew grunt) with basic chase/attack AI.
 - [ ] **2.13** — Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`,
   `on_crew_member_downed`) into actual combat once it exists.

@@ -1,16 +1,21 @@
 extends CharacterBody2D
-## Placeholder player -- a drawn square standing in for real art, just
-## enough to confirm movement and collision work. Reads from the virtual
-## joystick (touch or mouse drag) when present, falling back to arrow keys
-## so desktop testing in the editor still works without dragging it.
+## The Enforcer (Ghost / Victor Reyes) -- Slice 2.11: first real playable
+## hero, replacing the placeholder crimson square. Stats match
+## configs/game_config.json's balance.hero_health/hero_damage for
+## "enforcer" (120 HP, 15 dmg) -- hardcoded here rather than loaded from
+## JSON at runtime, since there's no JSON-loading infrastructure yet and
+## this is the only consumer so far.
 ##
-## CharacterBody2D (not plain Node2D) so it actually collides with the
-## boardwalk room's building/fence StaticBody2D obstacles instead of
-## walking through them -- this only started mattering once Slice 2.9
-## added real collision geometry to the scene.
+## Reads from the virtual joystick (touch or mouse drag) when present,
+## falling back to arrow keys so desktop testing in the editor still
+## works without dragging it. CharacterBody2D so it actually collides
+## with the boardwalk room's building/fence StaticBody2D obstacles.
 
 const SPEED := 120.0
-const SIZE := 16.0
+const MAX_HEALTH := 120
+const MELEE_DAMAGE := 15
+
+var health := MAX_HEALTH
 
 var _joystick: Control = null
 
@@ -36,8 +41,11 @@ func _physics_process(_delta: float) -> void:
 		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	velocity = input_vector * SPEED
 	move_and_slide()
-	queue_redraw()
 
 
-func _draw() -> void:
-	draw_rect(Rect2(-SIZE / 2, -SIZE / 2, SIZE, SIZE), Color.CRIMSON)
+func take_damage(amount: int) -> void:
+	health = maxi(0, health - amount)
+
+
+func is_dead() -> bool:
+	return health <= 0

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" path="res://assets/buildings/apartment_tower.png" id="6"]
 [ext_resource type="Texture2D" path="res://assets/buildings/chainlink_fence.png" id="7"]
 [ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="8"]
+[ext_resource type="Texture2D" path="res://assets/heroes/hero_enforcer_ghost.png" id="9"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(16, 16)
@@ -78,6 +79,11 @@ shape = SubResource("RectangleShape2D_fence")
 [node name="Player" type="CharacterBody2D" parent="."]
 position = Vector2(550, 300)
 script = ExtResource("2")
+
+[node name="PlayerSprite" type="Sprite2D" parent="Player"]
+position = Vector2(0, -12)
+scale = Vector2(0.064, 0.064)
+texture = ExtResource("9")
 
 [node name="PlayerCollision" type="CollisionShape2D" parent="Player"]
 shape = SubResource("RectangleShape2D_player")
