@@ -51,6 +51,6 @@ func _on_boss_fled() -> void:
 	# and return to the boardwalk (TestRoom).
 	GameState.bosses_fought.append("Blackwood_rooftop")
 	GameState.modify_heat(15.0)   # heat spikes from the confrontation
-	# Brief pause then swap back to TestRoom (or eventually: car chase)
+	# Blackwood hit the street running — crew gives chase
 	await get_tree().create_timer(1.5).timeout
-	get_tree().change_scene_to_file("res://scenes/TestRoom.tscn")
+	get_tree().change_scene_to_file("res://scenes/CarChaseScene.tscn")
