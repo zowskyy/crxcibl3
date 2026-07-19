@@ -167,6 +167,10 @@ abstract after 2-3 concrete cases exist, not before).
   from TestRoom; StressLabel from Rooftop/Emperor scenes). Compacted permanent meters to
   corners — HealthBar top-left (4,4→134,22), HeatMeter top-right (right-anchored,
   -134,4→-4,22) — both 130×18 px. Font size 13→11, text label shortened to "HP N" / "HEAT N".
+- [x] **3.3** — Stress gameplay consequences wired into `Player.gd`. At elevated stress (≥40):
+  movement speed ×0.85. At critical stress (≥75): speed ×0.70 and fire cooldown ×2 (shaky hands).
+  Uses the existing `Stress.THRESHOLD_*` constants — no new infrastructure, purely wired the
+  already-tracked meter into the player's actual behaviour.
 - 12 playable hero variants (3 per class × 4 classes) — see `KNOWLEDGE_BASE.md` for full roster.
 - Relationship system — `GameState.gd` already has the full pairwise (-10..+10) model built;
   this phase is about wiring it into actual gameplay triggers, not building it from scratch.

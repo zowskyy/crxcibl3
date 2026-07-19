@@ -55,7 +55,7 @@ func _physics_process(delta: float) -> void:
 		input_vector = _joystick.output
 	else:
 		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	velocity = input_vector * SPEED
+	velocity = input_vector * SPEED * _stress_speed_mult()
 	move_and_slide()
 
 	if input_vector.length() > 0.0:
@@ -68,14 +68,23 @@ func _physics_process(delta: float) -> void:
 ## the existing Add Heat button) -- Metal Slug-style gun combat per the
 ## Architect's direction, replacing the melee-contact assumption from
 ## Slice 2.11/2.12 (MELEE_DAMAGE was never actually used by any attack).
+func _stress_speed_mult() -> float:
+	if Stress.stress >= Stress.THRESHOLD_CRITICAL:
+		return 0.70
+	if Stress.stress >= Stress.THRESHOLD_ELEVATED:
+		return 0.85
+	return 1.0
+
+
 func fire() -> void:
 	if _fire_timer > 0.0:
 		return
-	var cooldown := fire_cooldown_override if fire_cooldown_override > 0.0 else FIRE_COOLDOWN
+	var base := fire_cooldown_override if fire_cooldown_override > 0.0 else FIRE_COOLDOWN
+	var stress_mult := 2.0 if Stress.stress >= Stress.THRESHOLD_CRITICAL else 1.0
+	var cooldown := base * stress_mult
 	_fire_timer = cooldown
 	# infinite_clip is a forward-looking flag: when an ammo system exists,
 	# this skips the "out of ammo" block. No effect yet.
-	_fire_timer = cooldown
 
 	var bullet := Area2D.new()
 	bullet.set_script(BULLET_SCRIPT)

@@ -498,6 +498,22 @@ Debug elements removed from all scenes:
   and its `_process` update removed.
 - **EmperorScene:** same `StressLabel` removal in `.tscn` and `.gd`.
 
+## Slice 3.3 — DONE: Stress gameplay consequences
+`Player.gd` now reads `Stress.stress` every physics frame and applies two graduated penalties:
+
+- **Elevated (stress ≥ 40):** movement speed ×0.85 (120 → 102 units/s).
+- **Critical (stress ≥ 75):** speed ×0.70 (120 → 84 units/s) AND fire cooldown ×2.0
+  (0.25s → 0.50s — roughly half the normal rate of fire).
+
+Implementation: `_stress_speed_mult()` helper (3 lines) read in `_physics_process`;
+`fire()` computes a `stress_mult` before setting `_fire_timer`. Uses the threshold
+constants already defined in `Stress.gd` (`THRESHOLD_ELEVATED = 40`, `THRESHOLD_CRITICAL = 75`)
+— no new data, no new signals, no new files.
+
+Effect on gameplay loop: taking repeated hits in a long fight escalates into the player
+moving sluggishly and shooting slowly, naturally rewarding spacing and retreating to let
+Stress decay before re-engaging. Matches the intended "fraying nerves" narrative of the meter.
+
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
