@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CRXCIBL3</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #0a0a0a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Courier New', monospace;
+  }
+  #game-container canvas {
+    image-rendering: pixelated;
+    box-shadow: 0 0 0 4px #1A1A1A, 0 0 0 6px #5A5A5A;
+  }
+</style>
+</head>
+<body>
+<div id="game-container"></div>
+
+<!-- Phaser loaded from CDN -- no install, no build step -->
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+
+<!-- Game code -- order matters, GameState and Scene classes must load before main.js uses them -->
+<script src="js/GameState.js"></script>
+<script src="js/BoardwalkScene.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

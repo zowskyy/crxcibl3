@@ -1,0 +1,30 @@
+﻿{
+  "game": {
+    "name": "CRXCIBL3",
+    "version": "0.1.0",
+    "fps": 60,
+    "view_width": 320,
+    "view_height": 180
+  },
+  "gameplay": {
+    "heat_max": 100,
+    "heat_generation_rate": 0.5,
+    "heat_reduction_rate": 2.0,
+    "resources_starting": 100,
+    "enemy_wave_interval": 30
+  },
+  "balance": {
+    "hero_health": {
+      "enforcer": 120,
+      "wheelman": 100,
+      "hacker": 60,
+      "street_rat": 70
+    },
+    "hero_damage": {
+      "enforcer": 15,
+      "wheelman": 10,
+      "hacker": 20,
+      "street_rat": 12
+    }
+  }
+}
