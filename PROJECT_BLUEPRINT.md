@@ -28,8 +28,9 @@ kept as-is for now, not actively developed — open question whether it's retire
   APK for friends, not a Play Store release — no Play Console/store-listing scope needed.
 - [x] **2.5** — `TestRoom.tscn`: placeholder drawn-square player (arrow keys) + a Heat label
   and button wired to `GameState.modify_heat()`, set as the main scene. CI confirms it
-  compiles/boots cleanly; **visual/interactive behavior and an actual export still need
-  Architect verification** — CI doesn't prove the UI looks or responds correctly.
+  compiles/boots cleanly, and the Architect confirmed in the running editor that heat
+  actually updates on click/H-press — reads/writes work end-to-end. An actual APK export
+  still hasn't been attempted.
 - [ ] **2.6** — Touch controls (virtual joystick or tap-to-move) — nothing built yet, the
   Phaser prototype's WASD assumption doesn't carry over to mobile.
 - [ ] **2.7** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more
