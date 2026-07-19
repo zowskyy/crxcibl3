@@ -177,19 +177,48 @@ working build, not just that it's installed:
   APK containing `AndroidManifest.xml`, `classes*.dex`, and `lib/arm64-v8a/libgodot_android.so`.
   Sent to the Architect for sideload testing on an actual phone.
 
-**Not yet done:** actual on-device install/run confirmation (the APK is built and structurally
-valid, but hasn't been confirmed to install and run correctly on a real Android device yet).
-Also note: `godot-engine` was used as the `path` override for `chickensoft-games/setup-godot`
-in both CI jobs (default is `godot`, which would collide with this repo's own `godot/`
-project folder — worth remembering if adding more Godot-related Actions later).
+**On-device confirmed:** Architect tested on a Pixel 8a emulator (via Android Studio's Device
+Manager) and a real Samsung Galaxy A37 — installs and runs correctly on both, joystick moves
+the player, matches editor behavior. Note for later: `godot-engine` was used as the `path`
+override for `chickensoft-games/setup-godot` in both CI jobs (default is `godot`, which would
+collide with this repo's own `godot/` project folder — worth remembering if adding more
+Godot-related Actions later).
 
-## Next slice (2.8)
-Once on-device install is confirmed, a screen-size/aspect-ratio scaling strategy — phones and
-tablets vary a lot more than the Phaser build's fixed 320×180 @ 3x zoom assumed. After that,
-2.9 recreates the boardwalk room from the Phaser prototype — the first real level content.
+## Slice 2.8 — DONE: cross-device scaling
+- Set a 384×216 base viewport with `canvas_items` stretch + `expand` aspect (`project.godot`),
+  so the game scales to fill any screen instead of rendering at a fixed tiny size.
+- Architect reported the UI still looked "way too big" on the real Galaxy A37 after that.
+  **First diagnosis was wrong:** guessed it was a portrait/landscape orientation mismatch and
+  added `window/handheld/orientation="landscape"` — but the "too big" screenshot before and
+  after that fix were pixel-identical, meaning orientation was never the actual problem. Note
+  for future slices: don't ship a plausible-sounding fix without confirming it actually
+  changes the observed symptom.
+- **Actual root cause, found by working the math instead of guessing again:** the virtual
+  joystick's `150×150` pixel footprint was set against the `384×216` design canvas with no
+  regard for what fraction of the screen that is — **69% of the design canvas height**.
+  `canvas_items` stretch preserves that ratio when scaling to any real device resolution, so
+  it was always going to look identically oversized everywhere, which is exactly why the
+  emulator and the real phone looked the same both times.
+- Fixed by shrinking the joystick control to `56×56` (radius 20, knob 9) — roughly 26% of
+  design-canvas height, a normal proportion for a mobile joystick HUD element. Documented the
+  design-space-vs-device-pixel math directly in `VirtualJoystick.gd` as a comment, so future
+  HUD/UI sizing in this project doesn't repeat the same mistake.
+- **Not re-confirmed on-device** — Architect explicitly asked to stop the test-and-report loop
+  and move forward, trusting the corrected math instead. Verified by calculation only:
+  player (16px / 216 ≈ 7%), joystick (56px / 216 ≈ 26%), debug label/button (40px / 216 ≈
+  18.5% height each) are all in normal ranges for their role, unlike the joystick's original
+  69%. If a real proportion issue somehow remains, treat it as a new bug report, not a
+  reason to revisit this reasoning — the math checks out.
+
+## Next slice (2.9)
+Recreate the boardwalk room: ground/building/fence/palm-tile tiles, collision, camera follow
+with room bounds — parity with the Phaser prototype (`js/BoardwalkScene.js` is the reference
+for layout/behavior). Real art assets already exist and are already Godot-imported in
+`assets/` (tiles, buildings, props, vfx, vehicles, ui, heroes, bosses) — worth checking
+whether to use those directly instead of placeholder shapes, unlike the Phaser prototype which
+only had generated placeholders.
 
 ## Blocking / needs Architect input
-- On-device confirmation: does the APK actually install and run on a real phone?
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)

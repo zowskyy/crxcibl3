@@ -33,17 +33,21 @@ kept as-is for now, not actively developed — open question whether it's retire
   still hasn't been attempted.
 - [x] **2.6** — Touch controls: draggable virtual joystick (`VirtualJoystick.gd`), bottom-left
   of `TestRoom`, also mouse-draggable for desktop testing. `Player.gd` reads it with an
-  arrow-key fallback. CI confirms the scene still boots; visual/feel confirmation pending.
+  arrow-key fallback. Confirmed working on-device (Pixel 8a emulator + real Galaxy A37).
 - [x] **2.7** — First real APK export. Fixed a missing `icon.svg` reference and added
   `export_presets.cfg` (portable debug keystore config, works identically locally and in CI).
   New CI job builds and uploads the APK on every push. First attempt failed on a missing
   project setting (ETC2/ASTC texture compression); fixed, second attempt succeeded — 28.2 MB,
-  verified well-formed, sent to the Architect for on-device sideload testing.
-- [ ] **2.8** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more
-  than the Phaser build's fixed 320×180 @ 3x zoom assumed).
+  confirmed installing and running correctly on-device.
+- [x] **2.8** — Cross-device scaling. `canvas_items`/`expand` stretch on a 384×216 base
+  viewport. Real bug found: the joystick's 150×150 footprint was 69% of the design canvas
+  height, so it looked oversized on every device identically — not an orientation issue (a
+  wrong first guess). Fixed by properly sizing it to ~26% of canvas height instead. See
+  `PROJECT_STATE.md` for the full diagnostic writeup.
 - [ ] **2.9** — Recreate the boardwalk room: ground/building/fence/palm-tree tiles, collision,
   camera follow with room bounds — parity with the Phaser prototype (`js/BoardwalkScene.js`
-  is the reference for layout/behavior, not code to port directly).
+  is the reference for layout/behavior, not code to port directly). Real art assets already
+  exist and are already Godot-imported in `assets/` — use those instead of placeholders.
 - [ ] **2.10** — Heat HUD wired to real `GameState.heat` (still a static demo value even in the
   Phaser build — first slice where Heat becomes real anywhere in any engine).
 - [ ] **2.11** — One playable hero class (start with Enforcer — simplest kit: melee, tank
