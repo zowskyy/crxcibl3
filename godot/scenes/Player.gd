@@ -21,6 +21,11 @@ const FIRE_COOLDOWN := 0.25  # ~4 shots/sec, Metal Slug-ish rapid but not instan
 var health := MAX_HEALTH
 var hero_name: String = "enforcer"  # set by whoever spawns the player
 
+# --- Bodega upgrade fields (written by BodegaShop._apply_upgrade) ---
+var bullet_damage_bonus: int = 0
+var fire_cooldown_override: float = 0.0   # 0 = use FIRE_COOLDOWN default
+var infinite_clip: bool = false           # no_reload upgrade
+
 var _joystick: Control = null
 var _facing := Vector2.RIGHT
 var _fire_timer := 0.0
@@ -62,19 +67,24 @@ func _physics_process(delta: float) -> void:
 func fire() -> void:
 	if _fire_timer > 0.0:
 		return
-	_fire_timer = FIRE_COOLDOWN
+	var cooldown := fire_cooldown_override if fire_cooldown_override > 0.0 else FIRE_COOLDOWN
+	_fire_timer = cooldown
+	# infinite_clip is a forward-looking flag: when an ammo system exists,
+	# this skips the "out of ammo" block. No effect yet.
+	_fire_timer = cooldown
 
 	var bullet := Area2D.new()
 	bullet.set_script(BULLET_SCRIPT)
 	bullet.direction = _facing
 	bullet.shooter = hero_name
+	bullet.damage_bonus = bullet_damage_bonus
 	get_parent().add_child(bullet)
 	bullet.global_position = global_position + _facing * 12.0
 
 
 func take_damage(amount: int) -> void:
 	var was_dead := is_dead()
-	health = maxi(0, health - amount)
+	health = clampi(health - amount, 0, MAX_HEALTH)
 	# Guarded so this only fires once per knockout, not on every hit that
 	# happens to land while already at 0 -- Stress.on_crew_member_downed()
 	# is a one-shot stress spike (Slice 2.13), not a per-hit thing like

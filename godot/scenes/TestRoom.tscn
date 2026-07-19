@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/heroes/hero_enforcer_ghost.png" id="9"]
 [ext_resource type="Script" path="res://scenes/Enemy.gd" id="10"]
 [ext_resource type="Script" path="res://scenes/StressMeter.gd" id="11"]
+[ext_resource type="Script" path="res://scenes/BodegaShop.gd" id="12"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_16sq"]
 size = Vector2(16, 16)
@@ -103,6 +104,10 @@ script = ExtResource("10")
 [node name="Enemy1Collision" type="CollisionShape2D" parent="Enemy1"]
 shape = SubResource("RectangleShape2D_16sq")
 
+[node name="BodegaShop" type="Node2D" parent="."]
+position = Vector2(200, 240)
+script = ExtResource("12")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HeatMeter" type="Control" parent="CanvasLayer"]
@@ -132,6 +137,42 @@ offset_top = 144.0
 offset_right = 220.0
 offset_bottom = 172.0
 text = "Rune: 0"
+
+[node name="BodegaMenu" type="Control" parent="CanvasLayer"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -105.0
+offset_right = 120.0
+offset_bottom = 105.0
+
+[node name="Background" type="ColorRect" parent="CanvasLayer/BodegaMenu"]
+color = Color(0.05, 0.05, 0.05, 0.88)
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PromptLabel" type="Label" parent="CanvasLayer/BodegaMenu"]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 232.0
+offset_bottom = 24.0
+text = "BODEGA — spend Runes"
+
+[node name="Buttons" type="VBoxContainer" parent="CanvasLayer/BodegaMenu"]
+offset_left = 8.0
+offset_top = 28.0
+offset_right = 232.0
+offset_bottom = 175.0
+
+[node name="CloseButton" type="Button" parent="CanvasLayer/BodegaMenu"]
+offset_left = 8.0
+offset_top = 179.0
+offset_right = 232.0
+offset_bottom = 202.0
+text = "Leave"
 
 [node name="VirtualJoystick" type="Control" parent="CanvasLayer"]
 anchor_left = 0.0
