@@ -18,22 +18,18 @@ jobs:
           version: 4.7.1
           use-dotnet: false
 
-      - name: Syntax-check every GDScript file (with project context, so autoload globals resolve)
+      - name: Boot autoloads and verify they resolve (also catches compile/parse errors in any autoload script)
         run: |
-          status=0
-          while IFS= read -r -d '' file; do
-            rel="${file#godot/}"
-            echo "Checking $rel"
-            godot --headless --path godot --check-only --script "res://$rel" || status=1
-          done < <(find godot -name '*.gd' -print0)
-          exit $status
-
-      - name: Boot the project headless (catches autoload/init errors)
-        run: |
-          godot --headless --path godot --quit --verbose 2> boot_errors.log || true
-          if grep -Ei "error|failed to load|parse error" boot_errors.log; then
-            echo "Errors found during headless project boot:"
-            cat boot_errors.log
-            exit 1
+          # Note: `--check-only --script` compiles a script in total isolation and
+          # never boots the autoload registry, so it always misreports cross-autoload
+          # references (e.g. Stress.gd using GameState) as undefined, regardless of
+          # whether autoloads are registered. Running the real engine main loop via
+          # `-s` boots autoloads first, so this is the correct way to check both
+          # compile errors and autoload resolution in one pass.
+          set -o pipefail
+          godot --headless --path godot -s res://tools/ci_autoload_check.gd 2>&1 | tee boot.log
+          status=$?
+          if grep -qE "SCRIPT ERROR|Autoload missing|Autoload check FAILED" boot.log; then
+            status=1
           fi
-          echo "Headless boot completed with no errors."
+          exit $status
