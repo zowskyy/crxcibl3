@@ -17,9 +17,10 @@ kept as-is for now, not actively developed — open question whether it's retire
   `crxcibl3/godot/`: `project.godot` (already configured for Godot 4.3 + "Mobile" feature)
   plus four autoload scripts (`GameState.gd`, `Stress.gd`, `SaveSystem.gd`, `Recap.gd`) moved
   into `godot/autoload/`. Godot 4.7.1 editor downloaded to Desktop (portable exe, no install).
-- [ ] **2.3** — Open the project in the Godot editor; register the 4 scripts as Autoloads in
-  Project Settings in dependency order (GameState → Stress → SaveSystem → Recap — each
-  declares its GameState dependency in its own header comment).
+- [x] **2.3** — Opened the project in the Godot editor; registered the 4 scripts as Autoloads
+  in `project.godot` in dependency order (GameState → Stress → SaveSystem → Recap). Also set
+  up GitHub Actions CI (`.github/workflows/godot-check.yml`) that boots the engine headless
+  and verifies all four autoloads resolve on every push — confirmed green.
 - [ ] **2.4** — Android SDK/NDK/JDK install + point Godot's Export → Android settings at them;
   download Godot's Android export templates; generate a signing keystore (`keytool`, free,
   scriptable). Target: sideload-only APK for friends, not a Play Store release — no Play
