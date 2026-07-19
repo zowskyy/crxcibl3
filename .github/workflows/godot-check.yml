@@ -1,0 +1,38 @@
+name: Godot build check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.1
+          use-dotnet: false
+
+      - name: Syntax-check every GDScript file
+        run: |
+          status=0
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            godot --headless --check-only --script "$file" || status=1
+          done < <(find godot -name '*.gd' -print0)
+          exit $status
+
+      - name: Boot the project headless (catches autoload/init errors)
+        run: |
+          godot --headless --path godot --quit --verbose 2> boot_errors.log || true
+          if grep -Ei "error|failed to load|parse error" boot_errors.log; then
+            echo "Errors found during headless project boot:"
+            cat boot_errors.log
+            exit 1
+          fi
+          echo "Headless boot completed with no errors."
