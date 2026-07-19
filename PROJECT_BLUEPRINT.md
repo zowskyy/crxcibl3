@@ -128,7 +128,7 @@ kept as-is for now, not actively developed — open question whether it's retire
   fade via Tween, sprints to FleeMarker, emits `fled` signal). On flee: records
   `"Blackwood_rooftop"` in `GameState.bosses_fought`, spikes heat +15, returns to TestRoom.
   `BossProjectile.gd`: boss-side ranged attack, same Area2D pattern as `Bullet.gd`.
-- [ ] **2.19** — Car chase getaway sequence. Blackwood's flee triggers a vehicle pursuit level
+- [x] **2.19** — Car chase getaway sequence. Blackwood's flee triggers a vehicle pursuit level
   (top-down scrolling road, player vehicle vs. cop/crew cars). Designed as the bridge between
   the rooftop encounter and the Emperor confrontation. Boss reference: Blackwood riding ahead
   in his town car; players must survive the chase to reach the finale. Boat run variant noted
