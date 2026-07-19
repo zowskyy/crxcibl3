@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.15 — shared group Rune pool)
+Last updated: 2026-07-19 (Slice 2.17 — Crack House spawn generator)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -377,16 +377,60 @@ the need to get greedy. Backend fully enforces this at the data layer, not just 
 - `TestRoom.gd` HUD now shows `"Rune (group): N  enforcer:N"` per-hero breakdown live so the
   attribution chain is visibly verifiable during playtesting.
 
-## Next slice (2.16)
-Bodega upgrade shop UI: trigger zone at `Building1` (the liquor store, already in the scene
-from Slice 2.9) opens a simple upgrade menu that calls `GameState.purchase_upgrade()`. Backend
-is fully built (Slice 2.15) — this slice is purely the scene-level UX: proximity detection,
-menu display, upgrade list, spend confirmation.
+## Slice 2.16 — DONE: Bodega upgrade shop UI
+`BodegaShop.gd` (`Node2D` at pos 200,240, just in front of `Building1`). Proximity trigger
+at `TRIGGER_RADIUS = 70` units opens a centered `CanvasLayer` menu (`BodegaMenu` under the
+existing `CanvasLayer`). Four upgrades purchased from the shared Rune pool:
+- **Hot rounds** (3 Rune) — `bullet_damage_bonus += 10` on Player, applied to every bullet
+- **Trigger work** (4 Rune) — `fire_cooldown_override = 0.12` (2× fire rate)
+- **Bottomless clip** (2 Rune) — `infinite_clip = true` flag (gates future ammo system)
+- **Flash** (5 Rune) — `take_damage(-40)` heals 40 HP; one per run (Warriors PS2 ref)
+
+Buttons refresh on menu open: greyed if already owned or can't afford. All spending goes
+through `GameState.purchase_upgrade()` so the shared-pool invariant holds. `take_damage()`
+updated to `clampi(..., 0, MAX_HEALTH)` so negative amount (heal) correctly caps at max HP.
+
+## Slice 2.16-shader — DONE: dissolve + wave shaders (ported from alfredbaudisch/godot-shaders)
+Two Godot 3 shaders ported to Godot 4 (`.gdshader` extension, `hint_color → source_color`):
+
+**`enemy_dissolve.gdshader`** — noise-based 2D dissolve for enemy death:
+- `ShaderMaterial` built in code in `Enemy._ready()`, applied to the enemy node's `material`.
+- `dissolve_progress` uniform ramps 0→1 over `DISSOLVE_TIME = 0.5s` in `_physics_process`.
+- `queue_free()` fires when progress reaches 1.0. Enemy stops chasing/attacking immediately
+  on `take_damage()` hitting 0 HP (`set_physics_process(false)` then re-enabled for dissolve).
+- Rune drop and combat exit happen at kill time (not after dissolve) so the HUD ticks on the
+  killing shot and Stress clears immediately.
+- `border_color` defaults to `(1.0, 0.4, 0.0)` — the existing Heat orange.
+- No noise texture wired yet (shader gracefully handles null sampler); add a noise `.png` to
+  `assets/shaders/` and set the `noise_texture` param when real art lands.
+
+**`heat_wave.gdshader`** — full-screen wave distortion:
+- `ColorRect` on `WaveOverlayLayer` (`CanvasLayer` layer 2, above HUD at layer 1).
+- `mouse_filter = 2` so clicks pass through.
+- `intensity` uniform: 0.0 below heat 51, ramps to 1.0 at heat 100.
+  Uses the same 51 breakpoint as the visual direction doc's vignette/tint threshold —
+  consistent sensory escalation. `TestRoom._process()` calls `set_shader_parameter` each frame.
+
+## Slice 2.17 — DONE: Crack House spawn generator
+`SpawnGenerator.gd` (`StaticBody2D` so bullets can collide with it):
+- Spawns up to `SPAWN_CAP = 3` enemy grunts every `SPAWN_INTERVAL = 6s`.
+- Each spawned enemy is built fully in code (same pattern as bullets): `CharacterBody2D` +
+  `Enemy.gd` script + `CollisionShape2D`, added to the scene's parent.
+- **Two-phase clearing:** shoot stash to `GENERATOR_HP = 0` *and* have zero live spawns.
+  If the stash hits 0 with spawns still alive, HP clamps to 1 so it stays hittable until
+  the last grunt is down — forces the player to mop up before getting the reward.
+- On clear: `GameState.group_upgrades["cleared_<id>"] = true` (persists across reloads),
+  `GameState.modify_heat(-20.0)` (heat reward), `queue_free()`.
+- `Bullet.gd` now hits both `enemy` and `spawn_generator` group nodes.
+- Placed in `TestRoom` at (850, 460) near the right fence, `generator_id = "crack_house_1"`.
+- Placeholder visual: dark red square with an X (`_draw()`), same "behavior before art" pattern.
+
+## Next slice (2.18)
+Getaway/exit sequence for one level. Design thread still open: car chase, rooftop sprint,
+or boat run — needs an Architect call on which direction before building starts.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
-- Bodega upgrade list: which specific upgrades appear at launch? Confirmed candidates so far:
-  bullet damage, fire rate, reload speed. Heal-for-Rune is an explicit Architect reference
-  (Warriors PS2 "Flash" dealers) — confirm whether it's in scope for Slice 2.16.
+- Getaway sequence design — shared mechanic across levels, or unique per level?

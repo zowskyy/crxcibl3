@@ -102,14 +102,23 @@ kept as-is for now, not actively developed — open question whether it's retire
   killing hero's name end-to-end so the tally is accurate in multiplayer. `top_contributor()`
   and `has_upgrade()` helpers added to `GameState`. Debug HUD now shows per-hero breakdown
   live (`"Rune (group): N  enforcer:N"`). This is the backend the bodega shop UI builds on.
-- [ ] **2.16** — Bodega upgrade shop UI: a trigger zone at the boardwalk room's liquor store
+- [x] **2.16** — Bodega upgrade shop UI: a trigger zone at the boardwalk room's liquor store
   (`Building1`, already built in 2.9) opens a simple menu that calls `purchase_upgrade()` —
   weapon upgrades (power, fire rate, reload speed) drawn from the shared Rune pool. Styled
   after The Warriors (PS2)'s brawl-flow economy (buying "Flash" heals from dealers mid-mission
   is the explicit reference; a heal-for-Rune option is worth wiring here too).
-- [ ] **2.17** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
-  the classic formula) — still open whether/how this fits now that combat is gun-based;
-  clearing conditions TBD either way, see Open Design Threads.
+- [x] **2.16-shader** — Shader integration (ported from alfredbaudisch/godot-shaders, Godot 3→4):
+  `enemy_dissolve.gdshader` — noise-based 2D dissolve runs on enemy death over 0.5s before
+  `queue_free()`; `ShaderMaterial` applied at runtime in code, border orange matches Heat color.
+  `heat_wave.gdshader` — full-screen wave warp `ColorRect` on `CanvasLayer` layer 2; intensity
+  driven by `GameState.heat`, ramps 0→1 between the 51 and 100 thresholds already in the
+  visual direction doc.
+- [x] **2.17** — Crack House / Chop Shop spawn generator (`SpawnGenerator.gd`, `StaticBody2D`).
+  Spawns up to 3 enemy grunts every 6s. Clearing requires shooting the stash to 0 HP *and*
+  having no live spawns — two-phase clearing so the player must mop up before the location
+  goes quiet. On clear: persists `"cleared_<id>"` in `GameState.group_upgrades`, drops heat
+  by 20 (reward), `queue_free()`s. Placed in TestRoom at (850, 460) near the fence line.
+  Bullets detect `spawn_generator` group so the stash is directly shootable.
 - [ ] **2.18** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
 
 ### Deferred architecture: unified combat pipeline (noted, not built)
