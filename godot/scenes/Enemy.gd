@@ -4,6 +4,11 @@ extends CharacterBody2D
 ## art in later" pattern already used for the player and the boardwalk
 ## buildings). Chases the player once within DETECTION_RADIUS and attacks
 ## on contact with a cooldown.
+##
+## Slice 2.16 shader integration: on death, runs a dissolve animation via
+## enemy_dissolve.gdshader before freeing. The dark square gets a
+## ShaderMaterial applied at runtime (no separate .tscn needed) and
+## dissolve_progress ramps from 0 -> 1 over DISSOLVE_TIME seconds.
 
 const SPEED := 70.0
 const SIZE := 16.0
@@ -12,27 +17,46 @@ const ATTACK_RANGE := 20.0
 const ATTACK_DAMAGE := 8
 const ATTACK_COOLDOWN := 1.0
 const MAX_HEALTH := 40
+const DISSOLVE_TIME := 0.5  # seconds for death dissolve
 
 var health := MAX_HEALTH
 
 var _attack_timer := 0.0
 var _player: CharacterBody2D = null
 var _in_combat := false
+var _dying := false
+var _dissolve_progress := 0.0
+var _dissolve_mat: ShaderMaterial = null
 
 
 func _ready() -> void:
 	add_to_group("enemy")
-	# Deferred for the same reason Player's joystick lookup is: whichever
-	# node calls add_to_group("player") might not have run its _ready()
-	# yet at this point, depending on scene tree declaration order.
 	call_deferred("_find_player")
+	_setup_dissolve_shader()
 
 
 func _find_player() -> void:
 	_player = get_tree().get_first_node_in_group("player")
 
 
+func _setup_dissolve_shader() -> void:
+	var shader := load("res://assets/shaders/enemy_dissolve.gdshader") as Shader
+	if shader == null:
+		return
+	_dissolve_mat = ShaderMaterial.new()
+	_dissolve_mat.shader = shader
+	material = _dissolve_mat
+
+
 func _physics_process(delta: float) -> void:
+	if _dying:
+		_dissolve_progress = minf(_dissolve_progress + delta / DISSOLVE_TIME, 1.0)
+		if _dissolve_mat:
+			_dissolve_mat.set_shader_parameter("dissolve_progress", _dissolve_progress)
+		if _dissolve_progress >= 1.0:
+			queue_free()
+		return
+
 	_attack_timer = maxf(0.0, _attack_timer - delta)
 
 	if _player == null:
@@ -75,18 +99,19 @@ func _try_attack() -> void:
 
 func take_damage(amount: int, killer: String = "") -> void:
 	health = maxi(0, health - amount)
-	if health <= 0:
-		# Dying stops _physics_process from ever running again, so it would
-		# never reach the exit_combat() transition above -- Stress would be
-		# stuck thinking combat is ongoing forever once this enemy is the
-		# only thing that was in range. Clear it explicitly here instead.
+	if health <= 0 and not _dying:
+		_dying = true
+		set_physics_process(false)   # stop chasing/attacking immediately
+		# Clear combat state -- _physics_process won't reach the exit transition
+		# anymore now that it's blocked, so clear explicitly (same reasoning as before).
 		if _in_combat:
 			_in_combat = false
 			Stress.exit_combat()
-		# Rune goes into the shared group pool. killer credits that hero's
-		# contribution tally (solidarity metric shown at end-of-run recap).
+		# Credit the group Rune pool immediately at kill, not after dissolve,
+		# so the player sees the counter tick on the killing shot.
 		GameState.add_rune(1, killer)
-		queue_free()
+		set_physics_process(true)    # re-enable just for dissolve tick
+		_dissolve_progress = 0.0
 
 
 func _draw() -> void:

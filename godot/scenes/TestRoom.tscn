@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -12,6 +12,17 @@
 [ext_resource type="Script" path="res://scenes/Enemy.gd" id="10"]
 [ext_resource type="Script" path="res://scenes/StressMeter.gd" id="11"]
 [ext_resource type="Script" path="res://scenes/BodegaShop.gd" id="12"]
+[ext_resource type="Shader" path="res://assets/shaders/heat_wave.gdshader" id="13"]
+[ext_resource type="Script" path="res://scenes/SpawnGenerator.gd" id="14"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_generator"]
+size = Vector2(40, 40)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wave"]
+shader = ExtResource("13")
+shader_parameter/speed = 10.0
+shader_parameter/waves = 60.0
+shader_parameter/intensity = 0.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_16sq"]
 size = Vector2(16, 16)
@@ -195,3 +206,19 @@ offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -12.0
 text = "FIRE (Space)"
+
+[node name="CrackHouse1" type="StaticBody2D" parent="."]
+position = Vector2(850, 460)
+script = ExtResource("14")
+
+[node name="CrackHouseCollision" type="CollisionShape2D" parent="CrackHouse1"]
+shape = SubResource("RectangleShape2D_generator")
+
+[node name="WaveOverlayLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="WaveRect" type="ColorRect" parent="WaveOverlayLayer"]
+material = SubResource("ShaderMaterial_wave")
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
