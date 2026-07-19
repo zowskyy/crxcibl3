@@ -5,8 +5,18 @@ extends Control
 ## Vector2, zero when not being dragged) and falls back to arrow keys when
 ## this returns zero, so desktop testing works either way.
 
-@export var radius: float = 60.0
-@export var knob_radius: float = 24.0
+## Sized against the project's design-space viewport (384x216, see
+## project.godot's window/size/viewport_*), not real device pixels --
+## `canvas_items` stretch mode scales this whole canvas up to match actual
+## screen resolution, so a value that looks reasonable here ends up
+## correctly proportioned on any device. Previous 60/24 values were sized
+## without doing that math and ended up ~5-6x too large on a real phone
+## (150px footprint against a 216px-tall canvas is 69% of screen height
+## before any stretching even happens) -- keep future joystick/HUD sizing
+## as a modest fraction of 216 (viewport height), not arbitrary pixel
+## counts that "look right" in isolation.
+@export var radius: float = 20.0
+@export var knob_radius: float = 9.0
 @export var dead_zone: float = 0.15
 
 var output := Vector2.ZERO
