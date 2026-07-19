@@ -87,9 +87,35 @@ kept as-is for now, not actively developed — open question whether it's retire
   unwired — no player attack input or permanent-death system exists yet to trigger them
   honestly. Added `Stress.tick(delta)` to `TestRoom.gd` (nothing else owned a per-frame tick)
   and a `StressMeter.gd` debug HUD element so this is actually visible at runtime.
-- [ ] **2.14** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
-  the classic formula) — clearing conditions TBD, see Open Design Threads.
-- [ ] **2.15** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
+- [x] **2.14** — Combat direction pivot (Architect): Metal Slug-style gun combat + Warriors
+  (PS2)-style brawl economy, not another "kill the spawner" mechanic — this superseded the
+  originally-planned Crack House/Chop Shop generator for this slot (that idea still exists,
+  see below, just no longer next). `Bullet.gd` (built in code, not a saved scene) + `Player.
+  fire()` (Fire button/Space, 0.25s cooldown) give the player their first real attack — melee
+  was scaffolded in 2.11/2.12 but never actually wired to an input. `Enemy.gd` drops 1 Rune
+  per kill via `GameState.add_resource()`. Rune counter added to the debug HUD.
+- [ ] **2.15** — Bodega upgrade shop: a trigger zone at the boardwalk room's liquor store
+  (`Building1`, already built in 2.9) spends Rune on weapon upgrades (power, fire rate, reload
+  speed, unlimited ammo) — Architect's direction, styled after The Warriors (PS2)'s brawl-flow
+  economy (buying "Flash" heals from dealers mid-mission is the explicit reference for a
+  possible heal-for-Rune option too).
+- [ ] **2.16** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
+  the classic formula) — still open whether/how this fits now that combat is gun-based;
+  clearing conditions TBD either way, see Open Design Threads.
+- [ ] **2.17** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
+
+### Deferred architecture: unified combat pipeline (noted, not built)
+Architect proposed a `CombatDirector` (autoload) + `WeaponBehavior` strategy pattern
+(`MeleeWeapon`/`RangedWeapon`/`GrenadeThrow` subclasses with `start_attack()`/`apply_hit()`/
+`interrupt()`) + a centralized `HitResolver` (hurtboxes/hitboxes, damage, stun, team/gang
+alliances) + a formal FSM for `EnemyBehavior` (idle/patrol/chase/attack/retreat). This is a
+legitimate, well-established pattern (strategy pattern + FSM) — genuinely the right shape
+*once* there's real weapon/enemy variety to justify it. Right now there's exactly one gun,
+one unused melee stub, and one enemy with a 3-state chase/attack loop, so building the full
+framework now would be scaffolding around a single `if` statement — same "don't build all
+twelve before testing one" principle already guiding `Stress.gd`'s design. Revisit this
+the moment a second weapon type or second enemy archetype actually gets built (rule-of-three:
+abstract after 2-3 concrete cases exist, not before).
 
 ## Phase 3 — Full Roster & Story Content (NOT STARTED)
 - 12 playable hero variants (3 per class × 4 classes) — see `KNOWLEDGE_BASE.md` for full roster.
