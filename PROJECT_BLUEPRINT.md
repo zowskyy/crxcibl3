@@ -44,10 +44,23 @@ kept as-is for now, not actively developed — open question whether it's retire
   height, so it looked oversized on every device identically — not an orientation issue (a
   wrong first guess). Fixed by properly sizing it to ~26% of canvas height instead. See
   `PROJECT_STATE.md` for the full diagnostic writeup.
-- [ ] **2.9** — Recreate the boardwalk room: ground/building/fence/palm-tree tiles, collision,
-  camera follow with room bounds — parity with the Phaser prototype (`js/BoardwalkScene.js`
-  is the reference for layout/behavior, not code to port directly). Real art assets already
-  exist and are already Godot-imported in `assets/` — use those instead of placeholders.
+- [x] **2.9** — Boardwalk room: ground plane, 3 buildings, 2 fence segments as real
+  `StaticBody2D`/`CollisionShape2D` obstacles (640×360 room, `Camera2D` on Player with
+  `limit_*` set to match). Player upgraded from plain `Node2D` to `CharacterBody2D` +
+  `move_and_slide()` — it had no physics body at all before this, so it would have walked
+  straight through the new obstacles.
+  - Real art wired in: `crxcibl3art/`+`assets/` sit outside `godot/`'s project root and
+    aren't reachable via `res://`, so Architect picked the canonical asset per slot from a
+    visual gallery (`urban storefront4`→liquor store, `arcade2`→arcade, `apart3`→apartment
+    tower, `chainlink2`→fence), copied into `godot/assets/buildings/` with corrected
+    extensions (two picks were PNG data misnamed `.jpg`). Scale factors computed from each
+    source image's actual pixel dimensions, not guessed.
+  - **Real CI bug found and fixed:** new image resources need a Godot *import* pass before
+    they can load (unlike `.gd` scripts) — since these were added via file copy rather than
+    the editor, no `.import` metadata existed, and CI's plain `--quit` boot doesn't perform
+    first-time imports. Fixed by adding an explicit `godot --headless --path godot --import`
+    step to CI, so this doesn't depend on remembering to open the editor after every new
+    asset going forward.
 - [ ] **2.10** — Heat HUD wired to real `GameState.heat` (still a static demo value even in the
   Phaser build — first slice where Heat becomes real anywhere in any engine).
 - [ ] **2.11** — One playable hero class (start with Enforcer — simplest kit: melee, tank

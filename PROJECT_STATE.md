@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.4 — Android build toolchain fully set up)
+Last updated: 2026-07-19 (Slice 2.9 — boardwalk room with real art)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -210,13 +210,52 @@ Godot-related Actions later).
   69%. If a real proportion issue somehow remains, treat it as a new bug report, not a
   reason to revisit this reasoning — the math checks out.
 
-## Next slice (2.9)
-Recreate the boardwalk room: ground/building/fence/palm-tile tiles, collision, camera follow
-with room bounds — parity with the Phaser prototype (`js/BoardwalkScene.js` is the reference
-for layout/behavior). Real art assets already exist and are already Godot-imported in
-`assets/` (tiles, buildings, props, vfx, vehicles, ui, heroes, bosses) — worth checking
-whether to use those directly instead of placeholder shapes, unlike the Phaser prototype which
-only had generated placeholders.
+## Slice 2.9 — DONE: boardwalk room with real art
+`TestRoom.tscn` now has actual level geometry, not just the debug UI:
+- Ground plane (640×360 room), 3 buildings, 2 fence segments — all `StaticBody2D` +
+  `CollisionShape2D`, real collision (not just visual placeholders).
+- `Camera2D` added as a child of Player, `limit_left/top/right/bottom` set to the room
+  bounds so it stops scrolling at the edges instead of showing empty space beyond them.
+- **Player upgraded from `Node2D` to `CharacterBody2D`** (`velocity` + `move_and_slide()`).
+  It previously had no physics body at all — before this change, it would have walked
+  straight through the new obstacles regardless of their collision shapes.
+
+**Real art wired in, not placeholders — this took an extra correction pass:**
+- Discovered `crxcibl3art/` and `assets/` (the folders with all the curated/background-removed
+  art) sit at the repo root, *outside* `godot/`'s project root — Godot's `res://` filesystem
+  can't see them. Initially built the room with plain colored `Polygon2D` shapes instead
+  (matching the Phaser prototype's own placeholder approach) to avoid derailing into an
+  asset-pipeline tangent mid-slice.
+- Architect asked to bring real art in. Built a visual gallery artifact of building/fence
+  candidates (grouped by role: liquor/storefront, arcade, apartment tower, fence) so the
+  Architect could pick the canonical asset per slot rather than me guessing aesthetically —
+  I'd already done the mechanical background-removal matching in an earlier session, but
+  hadn't made "this is THE liquor store" calls, and several files are near-duplicate variants
+  (`arcade1-4`, `chainlink1-4`, etc.).
+- Architect picked: `urban storefront4` (liquor store), `arcade2` (arcade), `apart3`
+  (apartment tower), `chainlink2` (fence). Copied into `godot/assets/buildings/` — inside the
+  project root this time, so `res://` can reach them — with corrected extensions (two of the
+  picks were PNG data misnamed with a `.jpg` extension, confirmed via `Image.format`, not just
+  guessed). Scale factors for each `Sprite2D` were computed from each source image's actual
+  pixel dimensions (512–1024px sources → target ~64–90px world footprint), not eyeballed —
+  a deliberate callback to the joystick sizing mistake from Slice 2.8.
+- **New CI bug found and fixed:** first push failed with `No loader found for resource` —
+  image resources need a Godot *import* pass before they're loadable (unlike `.gd` scripts,
+  which don't need one). Since these were added via a plain file copy rather than through the
+  editor, no `.import` metadata existed yet, and CI's `--quit` boot doesn't perform first-time
+  imports. Fixed by adding `godot --headless --path godot --import` as an explicit CI step
+  before any boot check — this makes CI self-sufficient going forward; new assets no longer
+  depend on remembering to open the editor locally first.
+- APK built successfully with the real art and sent to the Architect. Not yet confirmed
+  on-device (Architect has been doing that verification themselves without reporting back
+  every time per their standing "move forward" instruction from Slice 2.8 — treat silence as
+  not-yet-checked, not as a failure).
+
+## Next slice (2.10)
+Heat HUD wired to real `GameState.heat` — the debug label/button in `TestRoom.tscn` already
+proves the read/write path works (Slice 2.5); this is about a real HUD design instead of a
+plain `Label`. After that, a real playable hero (2.11) and first enemy (2.12) are next per
+the blueprint.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
