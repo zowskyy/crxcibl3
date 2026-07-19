@@ -19,6 +19,13 @@ run/main_scene="res://scenes/TestRoom.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameState="*res://autoload/GameState.gd"
+Stress="*res://autoload/Stress.gd"
+SaveSystem="*res://autoload/SaveSystem.gd"
+Recap="*res://autoload/Recap.gd"
+
 [display]
 
 window/size/viewport_width=384
@@ -26,13 +33,6 @@ window/size/viewport_height=216
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation="landscape"
-
-[autoload]
-
-GameState="*res://autoload/GameState.gd"
-Stress="*res://autoload/Stress.gd"
-SaveSystem="*res://autoload/SaveSystem.gd"
-Recap="*res://autoload/Recap.gd"
 
 [input_devices]
 
