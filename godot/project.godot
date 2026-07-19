@@ -30,3 +30,7 @@ Recap="*res://autoload/Recap.gd"
 
 buffering/agile_event_flushing=true
 buffering/use_accumulated_input=false
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true
