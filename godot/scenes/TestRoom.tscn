@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/buildings/arcade.png" id="5"]
 [ext_resource type="Texture2D" path="res://assets/buildings/apartment_tower.png" id="6"]
 [ext_resource type="Texture2D" path="res://assets/buildings/chainlink_fence.png" id="7"]
+[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(16, 16)
@@ -89,12 +90,12 @@ limit_bottom = 540
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HeatLabel" type="Label" parent="CanvasLayer"]
+[node name="HeatMeter" type="Control" parent="CanvasLayer"]
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 220.0
-offset_bottom = 60.0
-text = "Heat: 0 / 100"
+offset_bottom = 48.0
+script = ExtResource("8")
 
 [node name="AddHeatButton" type="Button" parent="CanvasLayer"]
 offset_left = 20.0
