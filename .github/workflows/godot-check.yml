@@ -48,6 +48,20 @@ jobs:
           fi
           exit $status
 
+      - name: Boot every other scene headless (main-scene boot alone misses parse/load errors in scenes only reached via gameplay transitions)
+        run: |
+          set -o pipefail
+          status=0
+          for scene in godot/scenes/*.tscn; do
+            res="res://scenes/$(basename "$scene")"
+            echo "--- Booting $res"
+            godot --headless --path godot "$res" --quit 2>&1 | tee -a scenes.log || status=1
+          done
+          if grep -qE "SCRIPT ERROR|ERROR:|Failed to load" scenes.log; then
+            status=1
+          fi
+          exit $status
+
   android-build:
     needs: check
     runs-on: ubuntu-latest

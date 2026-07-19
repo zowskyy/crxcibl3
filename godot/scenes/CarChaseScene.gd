@@ -3,7 +3,7 @@ extends Node2D
 ## Follows directly from the rooftop: Blackwood vanishes off the roof and
 ## the crew scrambles to their car. Blackwood's town car is visible ahead,
 ## pulling away. Survive CHASE_DURATION seconds against escalating pursuit
-## cars to reach the act break (Emperor confrontation placeholder → TestRoom).
+## cars to reach the act break (Emperor confrontation, Slice 2.20).
 ##
 ## Road scrolls downward at SCROLL_SPEED to simulate forward movement.
 ## Pursuit cars spawn from off-screen top at increasing frequency.
@@ -93,9 +93,9 @@ func _spawn_pursuit_car() -> void:
 
 func _finish_chase() -> void:
 	_done = true
-	chase_label.text = "BLACKWOOD GOT AWAY..."
+	chase_label.text = "HE'S HEADED FOR THE HILLS..."
 	# Heat spikes — the chase was loud, the whole city saw it
 	GameState.modify_heat(25.0)
 	await get_tree().create_timer(2.5).timeout
-	# Emperor confrontation is Slice 2.20 — placeholder back to TestRoom for now
-	get_tree().change_scene_to_file("res://scenes/TestRoom.tscn")
+	# The chase ends where it was always going: the Emperor's estate (Slice 2.20)
+	get_tree().change_scene_to_file("res://scenes/EmperorScene.tscn")

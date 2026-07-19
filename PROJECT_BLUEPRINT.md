@@ -133,10 +133,17 @@ kept as-is for now, not actively developed — open question whether it's retire
   the rooftop encounter and the Emperor confrontation. Boss reference: Blackwood riding ahead
   in his town car; players must survive the chase to reach the finale. Boat run variant noted
   for a separate level (different geography, different boss — The Broker's compound has water).
-- [ ] **2.20** — The Emperor confrontation (Act 3 finale). Non-combat reckoning scene per lore —
-  Emperor confesses he traded the Seven Sorrows to save the crew's lives. Tag-team design note
-  (Architect): Blackwood + Emperor as a final combined challenge before the revelation;
-  Blackwood provides the physical threat while the Emperor arc resolves emotionally.
+- [x] **2.20** — The Emperor confrontation (Act 3 finale). `EmperorScene.tscn` (estate room,
+  reached automatically when the car chase ends). Tag-team per the Architect's note:
+  Blackwood makes his final stand first (`final_stand` export on `BossBlackwood.gd` — no
+  surprise phase, no flee, dies at 0 HP emitting `defeated(finisher)`, recorded via
+  `mark_boss_defeated`), then the non-combat reckoning: the Emperor's confession verbatim
+  from the lore doc, a FORGIVE HIM / TURN AWAY choice setting `GameState.emperor_forgiven`,
+  his death, heat -50, and the first real in-game `SaveSystem.save_game()` call. Crew walks
+  away — back to TestRoom (epilogue is Phase 3). Two pre-existing bugs fixed en route:
+  `Bullet.gd` never hit the `"boss"` group (rooftop Blackwood was bullet-immune), and
+  boss-forced deacon cleanup left the Stress combat flag stuck (new `Enemy.despawn()`).
+  CI now boots every scene in `godot/scenes/`, not just the main scene.
 
 ### Deferred architecture: unified combat pipeline (noted, not built)
 Architect proposed a `CombatDirector` (autoload) + `WeaponBehavior` strategy pattern

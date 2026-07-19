@@ -8,12 +8,18 @@ extends CharacterBody2D
 ##   FLEE       — triggered at FLEE_THRESHOLD HP. Fires a screen-blinding flashbang,
 ##                sprints to the exit marker, emits fled signal for the scene to catch.
 ##
+## Final stand (final_stand = true, Slice 2.20): the Emperor's estate variant.
+## No surprise window (he's guarding the Emperor, expecting the crew) and no
+## flee — opens in FIGHT and dies at 0 HP, emitting defeated with the name of
+## the hero who landed the killing shot. Nowhere left to run.
+##
 ## Fake "divine" illusion kit maps cleanly onto The Priest's lore moves:
 ##   Deacon spawns = loyal followers rushing the crew
 ##   Light projectiles = "God's wrath" blasts
 ##   Flashbang = "divine blinding light" escape
 
 signal fled
+signal defeated(finisher: String)
 
 const MAX_HP := 200
 const FLEE_THRESHOLD := 33   # low threshold — players feel they almost had him
@@ -33,7 +39,10 @@ const PROJECTILE_SCRIPT := preload("res://scenes/BossProjectile.gd")
 
 enum Phase { SURPRISED, FIGHT, FLEE, DONE }
 
+@export var final_stand := false
+
 var hp := MAX_HP
+var _last_hitter := ""
 var _phase := Phase.SURPRISED
 var _player: CharacterBody2D = null
 var _surprised_timer := 2.0
@@ -46,6 +55,8 @@ var _flashbang_node: ColorRect = null   # set by RooftopScene after _ready
 
 func _ready() -> void:
 	add_to_group("boss")
+	if final_stand:
+		_phase = Phase.FIGHT   # no free-shot window — he saw the crew coming
 	call_deferred("_find_player")
 
 
@@ -113,22 +124,45 @@ func _tick_flee(_delta: float) -> void:
 	pass  # leap is driven entirely by Tween, not _physics_process
 
 
-func take_damage(amount: int, _killer: String = "") -> void:
+func take_damage(amount: int, killer: String = "") -> void:
 	if _phase == Phase.FLEE or _phase == Phase.DONE:
 		return
+	if killer != "":
+		_last_hitter = killer
 	hp = maxi(0, hp - amount)
-	if hp <= FLEE_THRESHOLD and _phase == Phase.FIGHT:
+	if final_stand:
+		if hp == 0:
+			_die()
+	elif hp <= FLEE_THRESHOLD and _phase == Phase.FIGHT:
 		_trigger_flee()
 
 
 func _trigger_flee() -> void:
 	_phase = Phase.FLEE
-	# Kill remaining deacons so they don't linger after the boss runs
+	# Kill remaining deacons so they don't linger after the boss runs.
+	# despawn(), not queue_free() — a mid-chase removal must clear the
+	# deacon's Stress combat flag or it stays stuck forever (see Enemy.despawn).
 	for d in _live_deacons:
 		if is_instance_valid(d):
-			d.queue_free()
+			d.despawn()
 	_live_deacons.clear()
 	_fire_flashbang()
+
+
+func _die() -> void:
+	_phase = Phase.DONE
+	set_physics_process(false)
+	# Deacons drop with him — same despawn() reasoning as _trigger_flee.
+	for d in _live_deacons:
+		if is_instance_valid(d):
+			d.despawn()
+	_live_deacons.clear()
+	var tween := get_tree().create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.6)
+	tween.tween_callback(func():
+		emit_signal("defeated", _last_hitter)
+		queue_free()
+	)
 
 
 func _fire_flashbang() -> void:

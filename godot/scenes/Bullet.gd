@@ -36,7 +36,8 @@ func _on_body_entered(body: Node) -> void:
 	# Group check, not physics layers -- Player/Enemy are both on the
 	# engine's default layer/mask, so filtering by group is what keeps
 	# this from also triggering on the player who fired it.
-	if (body.is_in_group("enemy") or body.is_in_group("spawn_generator")) \
+	if (body.is_in_group("enemy") or body.is_in_group("spawn_generator") \
+			or body.is_in_group("boss")) \
 			and body.has_method("take_damage"):
 		body.take_damage(DAMAGE + damage_bonus, shooter)
 		Stress.on_hit_dealt()

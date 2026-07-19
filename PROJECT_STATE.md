@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.17 — Crack House spawn generator)
+Last updated: 2026-07-19 (Slice 2.20 — The Emperor confrontation, Act 3 finale)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -425,9 +425,50 @@ Two Godot 3 shaders ported to Godot 4 (`.gdshader` extension, `hint_color → so
 - Placed in `TestRoom` at (850, 460) near the right fence, `generator_id = "crack_house_1"`.
 - Placeholder visual: dark red square with an X (`_draw()`), same "behavior before art" pattern.
 
-## Next slice (2.18)
-Getaway/exit sequence for one level. Design thread still open: car chase, rooftop sprint,
-or boat run — needs an Architect call on which direction before building starts.
+## Slice 2.20 — DONE: The Emperor confrontation (Act 3 finale)
+`EmperorScene.tscn` + `EmperorScene.gd` — the Emperor's Estate in The Hills, reached
+automatically when the car chase (2.19) ends. Two-part structure per the Architect's
+tag-team design note:
+- **Blackwood's final stand:** `BossBlackwood.gd` gained an exported `final_stand` flag
+  (set in the scene, default false so the rooftop is untouched). When true: no SURPRISED
+  phase (he's guarding the Emperor, expecting the crew) and no flee — fights to 0 HP,
+  fades out, emits `defeated(finisher)`. Scene records it via
+  `GameState.mark_boss_defeated("Blackwood", true, finisher)` — the finisher name threads
+  through the existing `Bullet.shooter` → `take_damage(killer)` chain.
+- **The reckoning (non-combat, per lore):** fire button hides, a dialogue panel plays the
+  Emperor's confession **verbatim from the lore doc's "Final Reckoning" scene** ("I didn't
+  betray you. I made a deal with The Corrupted Six to save your lives..."). Then a choice:
+  FORGIVE HIM / TURN AWAY → sets `GameState.emperor_forgiven` (field + SaveSystem
+  persistence already existed, first real writer now). Forgive plays Big Body's answer from
+  the lore (attributed to "CREW" since the active hero varies); turn-away plays a colder
+  epitaph. Either way he dies — crew walks away, no takeover. On end: heat -50 (the war
+  dies with him), `"emperor_reckoning"` appended to `quests_completed`,
+  `GameState.current_act = 3` (set on scene entry — Recap's act line keys off it), and the
+  **first real in-game `SaveSystem.save_game()` call** — the story milestone worth
+  persisting. Then back to TestRoom (epilogue is Phase 3 scope).
+- The Emperor himself is `EmperorFigure.gd` — a drawn placeholder (dark suit, gold chain,
+  slumped), never a combat target, fades out via Tween when the reckoning ends.
+
+**Two real pre-existing bugs found and fixed while building this:**
+1. **`Bullet.gd` never included `"boss"` in its group check** — bullets flew straight
+   through Blackwood on the rooftop, so the 33 HP flee threshold (and this scene's final
+   stand) was unreachable by gunfire. Nothing in 2.18's notes claims the fight was
+   playtested to completion, which is consistent. Added `boss` to the hit groups.
+2. **Stuck Stress combat flag on deacon cleanup:** Blackwood `queue_free()`d his deacons
+   directly on flee (and now on death). `Enemy.gd` only clears its Stress combat state via
+   its own `take_damage` path, so a mid-chase force-free left `Stress._in_combat` stuck
+   true forever (no decay ever again). Added `Enemy.despawn()` — clears the flag, then
+   frees — and both Blackwood cleanup paths use it.
+
+**CI extended:** new step boots *every* scene in `godot/scenes/` headless (not just the
+main scene) — RooftopScene/CarChaseScene/EmperorScene are only reachable via gameplay
+transitions, so the main-scene boot check alone never compiled their scripts.
+
+## Next steps
+Phase 2's locked act arc (rooftop → car chase → Emperor) is complete. Natural candidates:
+full-loop playtest of the arc on-device, the boat run variant (Broker's compound), the
+epilogue/Recap surfacing of `emperor_forgiven`, or starting Phase 3 (roster/mechanics
+modules). Needs an Architect call.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired

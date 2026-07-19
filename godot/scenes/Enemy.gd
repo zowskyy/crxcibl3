@@ -114,5 +114,18 @@ func take_damage(amount: int, killer: String = "") -> void:
 		_dissolve_progress = 0.0
 
 
+## Boss scripts remove their spawned deacons directly (flee/death cleanup).
+## Going through here instead of a bare queue_free() keeps the Stress combat
+## bookkeeping honest -- a mid-chase removal otherwise leaves _in_combat
+## stuck true forever, since _physics_process never reaches its exit
+## transition on a freed node (same failure mode Slice 2.13 fixed for
+## take_damage-driven death).
+func despawn() -> void:
+	if _in_combat:
+		_in_combat = false
+		Stress.exit_combat()
+	queue_free()
+
+
 func _draw() -> void:
 	draw_rect(Rect2(-SIZE / 2, -SIZE / 2, SIZE, SIZE), Color(0.227, 0.227, 0.227))
