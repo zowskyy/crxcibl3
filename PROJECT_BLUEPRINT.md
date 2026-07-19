@@ -119,7 +119,24 @@ kept as-is for now, not actively developed — open question whether it's retire
   goes quiet. On clear: persists `"cleared_<id>"` in `GameState.group_upgrades`, drops heat
   by 20 (reward), `queue_free()`s. Placed in TestRoom at (850, 460) near the fence line.
   Bullets detect `spawn_generator` group so the stash is directly shootable.
-- [ ] **2.18** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
+- [x] **2.18** — Rooftop sprint + Blackwood surprise boss encounter. `RooftopScene.tscn`
+  (600×320 rooftop room). `RooftopTrigger` Area2D near Building3 (apartment tower) in TestRoom
+  loads the scene; skipped if encounter already logged in `GameState.bosses_fought`.
+  `BossBlackwood.gd` (200 HP, three phases): SURPRISED (2s idle — players get free shots),
+  FIGHT (mid-range orbiting, Deacon grunt spawns every 8s capped at 2, gold light projectiles
+  every 2.5s), FLEE at 80 HP threshold (kills deacons, fires white flashbang `ColorRect`
+  fade via Tween, sprints to FleeMarker, emits `fled` signal). On flee: records
+  `"Blackwood_rooftop"` in `GameState.bosses_fought`, spikes heat +15, returns to TestRoom.
+  `BossProjectile.gd`: boss-side ranged attack, same Area2D pattern as `Bullet.gd`.
+- [ ] **2.19** — Car chase getaway sequence. Blackwood's flee triggers a vehicle pursuit level
+  (top-down scrolling road, player vehicle vs. cop/crew cars). Designed as the bridge between
+  the rooftop encounter and the Emperor confrontation. Boss reference: Blackwood riding ahead
+  in his town car; players must survive the chase to reach the finale. Boat run variant noted
+  for a separate level (different geography, different boss — The Broker's compound has water).
+- [ ] **2.20** — The Emperor confrontation (Act 3 finale). Non-combat reckoning scene per lore —
+  Emperor confesses he traded the Seven Sorrows to save the crew's lives. Tag-team design note
+  (Architect): Blackwood + Emperor as a final combined challenge before the revelation;
+  Blackwood provides the physical threat while the Emperor arc resolves emotionally.
 
 ### Deferred architecture: unified combat pipeline (noted, not built)
 Architect proposed a `CombatDirector` (autoload) + `WeaponBehavior` strategy pattern
@@ -155,6 +172,13 @@ abstract after 2-3 concrete cases exist, not before).
   `KNOWLEDGE_BASE.md` art section.
 - One real art asset already referenced in code: `assets/heroes/hero_enforcer_ghost.png`
   (loaded in the Phaser build's `BoardwalkScene.js` preload, Phase 1).
+
+## Act arc (locked design, Architect-confirmed)
+1. **Rooftop (2.18 DONE)** — crew stumbles on Blackwood unguarded → surprise fight → flashbang flee
+2. **Car chase (2.19)** — Blackwood riding ahead, crew in pursuit, survive to reach the Emperor
+3. **Boat run variant (deferred)** — The Broker's compound, water geography, separate level
+4. **Emperor confrontation (2.20)** — Blackwood + Emperor tag-team challenge → Emperor's confession
+   reckoning → crew walks away (no takeover). Non-combat resolution per lore.
 
 ## Open Design Threads (unresolved, need an Architect call before the relevant slice)
 - Precise Heat thresholds/scaling per level (Recap.gd already has heat-tier text at 26/51/76
