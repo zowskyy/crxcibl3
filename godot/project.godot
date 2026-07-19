@@ -19,6 +19,13 @@ run/main_scene="res://scenes/TestRoom.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=384
+window/size/viewport_height=216
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [autoload]
 
 GameState="*res://autoload/GameState.gd"
