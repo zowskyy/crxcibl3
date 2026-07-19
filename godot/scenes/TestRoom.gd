@@ -19,11 +19,13 @@ extends Node2D
 @onready var rune_label: Label = $CanvasLayer/RuneLabel
 @onready var player: CharacterBody2D = $Player
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
+@onready var rooftop_trigger: Area2D = $RooftopTrigger
 
 
 func _ready() -> void:
 	add_heat_button.pressed.connect(_on_add_heat_pressed)
 	fire_button.pressed.connect(_on_fire_pressed)
+	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
 
 func _process(delta: float) -> void:
@@ -60,3 +62,13 @@ func _on_add_heat_pressed() -> void:
 
 func _on_fire_pressed() -> void:
 	player.fire()
+
+
+func _on_rooftop_trigger_entered(body: Node) -> void:
+	if not body.is_in_group("player"):
+		return
+	# Only trigger once per run — if the rooftop encounter is already done
+	# (boss fled and GameState recorded it) skip the scene transition.
+	if GameState.bosses_fought.has("Blackwood_rooftop"):
+		return
+	get_tree().change_scene_to_file("res://scenes/RooftopScene.tscn")
