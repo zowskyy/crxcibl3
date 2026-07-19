@@ -250,6 +250,14 @@ Godot-related Actions later).
   on-device (Architect has been doing that verification themselves without reporting back
   every time per their standing "move forward" instruction from Slice 2.8 — treat silence as
   not-yet-checked, not as a failure).
+- **Follow-up fix, same day:** Architect reported buildings read too close in size to the
+  player. Checked actual non-transparent content bounds first (68–96% of each canvas is real
+  artwork, ruling out alpha-padding as the cause) — the original scale factors were just too
+  conservative. Recomputed from each image's real visible-content bbox, targeting ~120–150px
+  displayed footprint (~7–9x the player's 16px, comfortably past the requested 30% minimum).
+  Widened the room 640×360 → 960×540 so bigger buildings have room to be spaced out, updated
+  `Camera2D` limits and collision box sizes (130×130 buildings, 100×90 fence — the fence art
+  is a squarish isometric crop, not a thin horizontal strip) to match.
 
 ## Next slice (2.10)
 Heat HUD wired to real `GameState.heat` — the debug label/button in `TestRoom.tscn` already
