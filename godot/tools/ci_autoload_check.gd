@@ -9,16 +9,16 @@ extends SceneTree
 func _initialize() -> void:
 	var ok := true
 
-	if not has_node("/root/GameState"):
+	if not root.has_node("GameState"):
 		push_error("Autoload missing: GameState")
 		ok = false
-	if not has_node("/root/Stress"):
+	if not root.has_node("Stress"):
 		push_error("Autoload missing: Stress")
 		ok = false
-	if not has_node("/root/SaveSystem"):
+	if not root.has_node("SaveSystem"):
 		push_error("Autoload missing: SaveSystem")
 		ok = false
-	if not has_node("/root/Recap"):
+	if not root.has_node("Recap"):
 		push_error("Autoload missing: Recap")
 		ok = false
 
