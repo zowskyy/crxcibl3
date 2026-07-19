@@ -34,21 +34,26 @@ kept as-is for now, not actively developed — open question whether it's retire
 - [x] **2.6** — Touch controls: draggable virtual joystick (`VirtualJoystick.gd`), bottom-left
   of `TestRoom`, also mouse-draggable for desktop testing. `Player.gd` reads it with an
   arrow-key fallback. CI confirms the scene still boots; visual/feel confirmation pending.
-- [ ] **2.7** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more
+- [x] **2.7** — First real APK export. Fixed a missing `icon.svg` reference and added
+  `export_presets.cfg` (portable debug keystore config, works identically locally and in CI).
+  New CI job builds and uploads the APK on every push. First attempt failed on a missing
+  project setting (ETC2/ASTC texture compression); fixed, second attempt succeeded — 28.2 MB,
+  verified well-formed, sent to the Architect for on-device sideload testing.
+- [ ] **2.8** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more
   than the Phaser build's fixed 320×180 @ 3x zoom assumed).
-- [ ] **2.8** — Recreate the boardwalk room: ground/building/fence/palm-tree tiles, collision,
+- [ ] **2.9** — Recreate the boardwalk room: ground/building/fence/palm-tree tiles, collision,
   camera follow with room bounds — parity with the Phaser prototype (`js/BoardwalkScene.js`
   is the reference for layout/behavior, not code to port directly).
-- [ ] **2.9** — Heat HUD wired to real `GameState.heat` (still a static demo value even in the
+- [ ] **2.10** — Heat HUD wired to real `GameState.heat` (still a static demo value even in the
   Phaser build — first slice where Heat becomes real anywhere in any engine).
-- [ ] **2.10** — One playable hero class (start with Enforcer — simplest kit: melee, tank
+- [ ] **2.11** — One playable hero class (start with Enforcer — simplest kit: melee, tank
   stats) using the balance numbers already in `configs/game_config.json`.
-- [ ] **2.11** — Enemy base + one enemy type (rival crew grunt) with basic chase/attack AI.
-- [ ] **2.12** — Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`,
+- [ ] **2.12** — Enemy base + one enemy type (rival crew grunt) with basic chase/attack AI.
+- [ ] **2.13** — Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`,
   `on_crew_member_downed`) into actual combat once it exists.
-- [ ] **2.13** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
+- [ ] **2.14** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
   the classic formula) — clearing conditions TBD, see Open Design Threads.
-- [ ] **2.14** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
+- [ ] **2.15** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
 
 ## Phase 3 — Full Roster & Story Content (NOT STARTED)
 - 12 playable hero variants (3 per class × 4 classes) — see `KNOWLEDGE_BASE.md` for full roster.

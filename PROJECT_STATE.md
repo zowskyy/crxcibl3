@@ -133,28 +133,63 @@ First use of a feature branch + PR in this project — everything before that we
 unclear next time a PR-worthy change comes up, or just keep pushing to `main` directly for
 solo-authored slices — either is fine until told otherwise.
 
-## Slice 2.6 — DONE (code side), NOT YET VISUALLY VERIFIED
+## Slice 2.6 — DONE and confirmed
 `godot/scenes/VirtualJoystick.gd` — draggable on-screen joystick, added to `TestRoom.tscn`
-under `CanvasLayer`, anchored bottom-left (150×150, 20px margin):
-- Exposes `output: Vector2`, normalized, zero when not being dragged, with a small dead zone
-  (0.15) so tiny jitters near center don't register as movement.
-- Handles both `InputEventScreenTouch`/`InputEventScreenDrag` (the real target: mobile) and
-  `InputEventMouseButton`/`InputEventMouseMotion` (so it's draggable with a mouse for desktop
-  testing in the editor, no touchscreen required).
-- `Player.gd` now checks the joystick's output first (via `get_tree().get_first_node_in_group
-  ("virtual_joystick")`) and falls back to arrow keys when it's zero — so desktop testing
-  still works without dragging the joystick if that's more convenient mid-development.
-- CI confirms the scene still boots cleanly with the new node — but as with Slice 2.5, CI
-  can't confirm the joystick actually *feels* right or drags smoothly. **Architect action
-  needed:** open the project, drag the joystick with the mouse (bottom-left of the window)
-  and confirm the player square moves correctly and stops when released.
+under `CanvasLayer`, anchored bottom-left (150×150, 20px margin). Exposes `output: Vector2`
+(normalized, dead zone 0.15), handles both touch and mouse drag, `Player.gd` reads it with
+an arrow-key fallback.
+- **Bug found + fixed:** `Player._ready()` looked up the joystick via
+  `get_tree().get_first_node_in_group("virtual_joystick")` before `VirtualJoystick._ready()`
+  had run (Player is declared earlier in the scene tree, and sibling `_ready()` order follows
+  scene declaration order) — the lookup always returned null, silently falling back to arrow
+  keys forever. Fixed by deferring the lookup (`call_deferred`) to after the whole tree's
+  `_ready()` pass completes.
+- **Input latency tightened:** Architect noticed a slight but real drag lag after the fix.
+  Added `[input_devices]` `buffering/agile_event_flushing=true` and
+  `buffering/use_accumulated_input=false` to `project.godot` — Godot's own documented fix for
+  exactly this (input events get flushed eagerly instead of batched once per frame).
+- **Architect confirmed the joystick moves the player correctly**, both before and after the
+  latency fix.
 
-## Next slice (2.7)
-Once touch controls are visually confirmed, a real `--export-debug` test build becomes worth
-attempting — the first actual APK, even before real level content exists.
+## Slice 2.7 — DONE: first real APK built and verified
+This is the real milestone — proof the entire toolchain (Slice 2.4) actually produces a
+working build, not just that it's installed:
+- Found `config/icon="res://icon.svg"` in `project.godot` referenced a file that never
+  actually existed (project was hand-assembled, not created via Godot's New Project wizard,
+  which normally auto-generates one). Added a placeholder `godot/icon.svg` before it could
+  cause an export failure.
+- `godot/export_presets.cfg` — one Android preset (`com.zowskyy.crxcibl3`, debug-signed,
+  non-Gradle build). Deliberately points `keystore/debug` at a project-relative
+  `res://debug.keystore` rather than relying on per-machine global editor settings, so the
+  exact same preset config works identically on this machine and in CI. A matching local
+  keystore was generated at `godot/debug.keystore` (gitignored — not committed; not a real
+  secret, it's the well-known debug alias/password, but binaries don't belong in the repo).
+- New CI job `android-build` (`.github/workflows/godot-check.yml`, gated on `check` passing
+  first): installs JDK (`actions/setup-java`) + Android SDK (`android-actions/setup-android`)
+  + Godot's export templates (`chickensoft-games/setup-godot` with `include-templates: true`),
+  generates the same debug keystore, points Godot's CI-local editor settings at the SDK
+  (writes a minimal `editor_settings-4.7.tres` to `~/.config/godot/`, mirroring what was done
+  locally), runs `--export-debug`, and uploads the APK as a build artifact.
+- **First attempt failed** with a clean, specific error: `ETC2/ASTC texture compression is
+  required for Android export`. Fixed with one project setting:
+  `[rendering] textures/vram_compression/import_etc2_astc=true`.
+- **Second attempt succeeded.** Downloaded and verified the artifact — 28.2 MB, a well-formed
+  APK containing `AndroidManifest.xml`, `classes*.dex`, and `lib/arm64-v8a/libgodot_android.so`.
+  Sent to the Architect for sideload testing on an actual phone.
+
+**Not yet done:** actual on-device install/run confirmation (the APK is built and structurally
+valid, but hasn't been confirmed to install and run correctly on a real Android device yet).
+Also note: `godot-engine` was used as the `path` override for `chickensoft-games/setup-godot`
+in both CI jobs (default is `godot`, which would collide with this repo's own `godot/`
+project folder — worth remembering if adding more Godot-related Actions later).
+
+## Next slice (2.8)
+Once on-device install is confirmed, a screen-size/aspect-ratio scaling strategy — phones and
+tablets vary a lot more than the Phaser build's fixed 320×180 @ 3x zoom assumed. After that,
+2.9 recreates the boardwalk room from the Phaser prototype — the first real level content.
 
 ## Blocking / needs Architect input
-- Visual/interactive confirmation of the joystick (see above).
+- On-device confirmation: does the APK actually install and run on a real phone?
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
