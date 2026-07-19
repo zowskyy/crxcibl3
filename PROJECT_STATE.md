@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.12 — first enemy, chase/attack AI)
+Last updated: 2026-07-19 (Slice 2.13 — Stress combat hooks wired)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -318,11 +318,28 @@ can't hit back yet), damage feedback/UI (health has no on-screen indicator), or 
 for either side beyond the enemy's `queue_free()`. These are natural next steps but weren't
 in this slice's stated scope ("chase/attack AI" describes the enemy, not player combat).
 
-## Next slice (2.13)
-Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`, `on_crew_member_downed`) into
-the combat that now exists — `Stress.gd` has had these methods sitting unused since the
-project's Godot-era code was first discovered, this is the first slice where there's actual
-combat to wire them into.
+## Slice 2.13 — DONE: Stress hooks wired into real combat
+- `Enemy.gd` calls `Stress.enter_combat()`/`exit_combat()` on the transition (not every frame)
+  of the player entering/leaving `DETECTION_RADIUS` — Stress climbs for the whole chase, not
+  just the moment of a hit. Guarded against the enemy dying mid-combat: `queue_free()` stops
+  `_physics_process` forever, which would've left `Stress._in_combat` stuck `true` with no
+  decay ever applying again, so `take_damage()` clears it explicitly before freeing.
+- `Enemy._try_attack()` calls `Stress.on_hit_taken()` on a successful hit.
+- `Player.take_damage()` calls `Stress.on_crew_member_downed()` once (guarded against firing
+  again on repeat hits at 0 HP) when health first reaches 0.
+- `Stress.on_hit_dealt()` and `on_crew_member_ghosted()` are **not wired** — no player attack
+  input exists (player can be hit but can't hit back), and there's no permanent-death system.
+  Left honestly unwired rather than faked with a placeholder trigger.
+- `TestRoom.gd` now calls `Stress.tick(delta)` every frame — nothing else in the scene owned
+  a per-frame tick, and `tick()` is what applies the out-of-combat decay; without it Stress
+  would climb but never come back down.
+- `StressMeter.gd` — new debug HUD element (same idiom as `HeatMeter.gd`, purple instead of
+  orange), added below the Heat bar, so this wiring is actually visible/verifiable at runtime
+  instead of wired blind.
+
+## Next slice (2.14)
+Crack House / Chop Shop spawn generator (replaces "monster generator" from the classic
+formula) — clearing conditions still TBD, see Open Design Threads in `PROJECT_BLUEPRINT.md`.
 
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired

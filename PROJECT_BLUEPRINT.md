@@ -80,8 +80,13 @@ kept as-is for now, not actively developed — open question whether it's retire
   dealing 8 damage through the player's `take_damage()` from 2.11. 40 HP, `queue_free()`s at
   0. One instance placed in `TestRoom.tscn` just outside the player's starting detection
   range, so approaching it demonstrates the idle→chase transition.
-- [ ] **2.13** — Wire `Stress.gd`'s combat hooks (`on_hit_taken`, `on_hit_dealt`,
-  `on_crew_member_downed`) into actual combat once it exists.
+- [x] **2.13** — Wired `Stress.gd`'s real hooks into combat: `enter_combat()`/`exit_combat()`
+  toggle on Enemy.gd's detection radius (guarded against getting stuck if the enemy dies
+  mid-combat), `on_hit_taken()` fires when the enemy lands a hit, `on_crew_member_downed()`
+  fires once when the player hits 0 HP. `on_hit_dealt()`/`on_crew_member_ghosted()` left
+  unwired — no player attack input or permanent-death system exists yet to trigger them
+  honestly. Added `Stress.tick(delta)` to `TestRoom.gd` (nothing else owned a per-frame tick)
+  and a `StressMeter.gd` debug HUD element so this is actually visible at runtime.
 - [ ] **2.14** — Crack House / Chop Shop spawn generator (replaces "monster generator" from
   the classic formula) — clearing conditions TBD, see Open Design Threads.
 - [ ] **2.15** — Getaway/exit sequence for one level (car chase, rooftop sprint, or boat run).
