@@ -25,6 +25,7 @@ window/size/viewport_width=384
 window/size/viewport_height=216
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation="landscape"
 
 [autoload]
 
