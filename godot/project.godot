@@ -25,3 +25,8 @@ GameState="*res://autoload/GameState.gd"
 Stress="*res://autoload/Stress.gd"
 SaveSystem="*res://autoload/SaveSystem.gd"
 Recap="*res://autoload/Recap.gd"
+
+[input_devices]
+
+buffering/agile_event_flushing=true
+buffering/use_accumulated_input=false
