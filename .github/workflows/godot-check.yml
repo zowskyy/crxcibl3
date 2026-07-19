@@ -33,3 +33,13 @@ jobs:
             status=1
           fi
           exit $status
+
+      - name: Boot the main scene headless (catches scene/script errors on load)
+        run: |
+          set -o pipefail
+          godot --headless --path godot --quit 2>&1 | tee scene.log
+          status=$?
+          if grep -qE "SCRIPT ERROR|ERROR:|Failed to load" scene.log; then
+            status=1
+          fi
+          exit $status
