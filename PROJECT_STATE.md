@@ -133,12 +133,28 @@ First use of a feature branch + PR in this project — everything before that we
 unclear next time a PR-worthy change comes up, or just keep pushing to `main` directly for
 solo-authored slices — either is fine until told otherwise.
 
-## Next slice (2.6)
-Touch controls — replace `Player.gd`'s arrow-key input with a virtual joystick or
-tap-to-move scheme, since the confirmed target is mobile and arrow keys won't exist there.
-Once that's in, a real `--export-debug` test build becomes worth attempting.
+## Slice 2.6 — DONE (code side), NOT YET VISUALLY VERIFIED
+`godot/scenes/VirtualJoystick.gd` — draggable on-screen joystick, added to `TestRoom.tscn`
+under `CanvasLayer`, anchored bottom-left (150×150, 20px margin):
+- Exposes `output: Vector2`, normalized, zero when not being dragged, with a small dead zone
+  (0.15) so tiny jitters near center don't register as movement.
+- Handles both `InputEventScreenTouch`/`InputEventScreenDrag` (the real target: mobile) and
+  `InputEventMouseButton`/`InputEventMouseMotion` (so it's draggable with a mouse for desktop
+  testing in the editor, no touchscreen required).
+- `Player.gd` now checks the joystick's output first (via `get_tree().get_first_node_in_group
+  ("virtual_joystick")`) and falls back to arrow keys when it's zero — so desktop testing
+  still works without dragging the joystick if that's more convenient mid-development.
+- CI confirms the scene still boots cleanly with the new node — but as with Slice 2.5, CI
+  can't confirm the joystick actually *feels* right or drags smoothly. **Architect action
+  needed:** open the project, drag the joystick with the mouse (bottom-left of the window)
+  and confirm the player square moves correctly and stops when released.
+
+## Next slice (2.7)
+Once touch controls are visually confirmed, a real `--export-debug` test build becomes worth
+attempting — the first actual APK, even before real level content exists.
 
 ## Blocking / needs Architect input
+- Visual/interactive confirmation of the joystick (see above).
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)

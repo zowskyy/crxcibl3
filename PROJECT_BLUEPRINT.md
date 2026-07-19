@@ -31,8 +31,9 @@ kept as-is for now, not actively developed — open question whether it's retire
   compiles/boots cleanly, and the Architect confirmed in the running editor that heat
   actually updates on click/H-press — reads/writes work end-to-end. An actual APK export
   still hasn't been attempted.
-- [ ] **2.6** — Touch controls (virtual joystick or tap-to-move) — nothing built yet, the
-  Phaser prototype's WASD assumption doesn't carry over to mobile.
+- [x] **2.6** — Touch controls: draggable virtual joystick (`VirtualJoystick.gd`), bottom-left
+  of `TestRoom`, also mouse-draggable for desktop testing. `Player.gd` reads it with an
+  arrow-key fallback. CI confirms the scene still boots; visual/feel confirmation pending.
 - [ ] **2.7** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more
   than the Phaser build's fixed 320×180 @ 3x zoom assumed).
 - [ ] **2.8** — Recreate the boardwalk room: ground/building/fence/palm-tree tiles, collision,
