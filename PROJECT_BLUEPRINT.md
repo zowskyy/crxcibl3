@@ -21,10 +21,11 @@ kept as-is for now, not actively developed — open question whether it's retire
   in `project.godot` in dependency order (GameState → Stress → SaveSystem → Recap). Also set
   up GitHub Actions CI (`.github/workflows/godot-check.yml`) that boots the engine headless
   and verifies all four autoloads resolve on every push — confirmed green.
-- [ ] **2.4** — Android SDK/NDK/JDK install + point Godot's Export → Android settings at them;
-  download Godot's Android export templates; generate a signing keystore (`keytool`, free,
-  scriptable). Target: sideload-only APK for friends, not a Play Store release — no Play
-  Console/store-listing scope needed.
+- [x] **2.4** — Android SDK (already present from an earlier machine setup) + JDK (Android
+  Studio's bundled JBR) pointed to from Godot's Export → Android settings; debug keystore
+  generated; official Godot 4.7.1 Android export templates (1.2 GB) downloaded and installed.
+  NDK skipped — not needed unless Gradle Build gets turned on later. Target: sideload-only
+  APK for friends, not a Play Store release — no Play Console/store-listing scope needed.
 - [ ] **2.5** — Minimal test scene: one room, a placeholder player node, confirm GameState
   reads/writes correctly at runtime before porting any real level content.
 - [ ] **2.6** — Touch controls (virtual joystick or tap-to-move) — nothing built yet, the

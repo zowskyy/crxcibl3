@@ -1,6 +1,6 @@
 # CRXCIBL3 — Project State
 
-Last updated: 2026-07-19 (Slice 2.3 — CI live and green, autoloads registered)
+Last updated: 2026-07-19 (Slice 2.4 — Android build toolchain fully set up)
 
 ## Engine status — Godot is the target, confirmed
 Lineage: Godot (early, code-only) → Phaser 3 web prototype (playable reference) →
@@ -79,18 +79,42 @@ which runs properly containerized/headless.
 ## Mobile/Android target
 Confirmed goal: build an installable `.apk` to share directly with friends (sideload),
 **not** a Play Store release — this drops Play Console/store-listing/compliance scope
-entirely. Still needed before a build is possible:
-- Android SDK + NDK + JDK installed and pointed to from Godot's Editor Settings →
-  Export → Android (one-time, mostly automatable).
-- A signing keystore (`keytool`, fully scriptable, no cost).
-- Godot's Android export templates (free, downloadable from within the editor or via CLI).
-- Touch controls — nothing built yet, WASD assumption from the Phaser prototype won't
-  carry over.
+entirely.
 
-## Next slice (2.4)
-1. Android SDK/NDK/JDK + export templates + keystore setup (mostly scriptable).
-2. First scene: a minimal test room with a placeholder player node, just enough to confirm
-   `GameState` reads/writes correctly at runtime before porting any real level content.
+## Slice 2.4 — DONE (Android build toolchain)
+Turned out most of this was already half-done on the machine from an earlier, unrelated
+Android Studio install — found via `editor_settings-4.7.tres`, not built from scratch:
+- **Android SDK** — already present at `C:\Users\mrscp\AppData\Local\Android\Sdk`
+  (`build-tools 36.0.0`, `platform android-36.1`); `export/android/android_sdk_path` was
+  already set in Godot's editor settings from a prior session.
+- **JDK** — no standalone JDK existed, but Android Studio's bundled JBR (OpenJDK 21) at
+  `C:\Program Files\Android\Android Studio\jbr` works. Set
+  `export/android/java_sdk_path` to that path directly in `editor_settings-4.7.tres`
+  (plain-text Godot resource file, editable the same way as `project.godot`).
+- **Debug keystore** — generated via `keytool` at
+  `C:\Users\mrscp\AppData\Roaming\Godot\keystores\debug.keystore`, matching the path/alias/
+  password (`androiddebugkey` / `android`) Godot's editor settings already expected. Good
+  enough for sideloading to friends. A **release** keystore was deliberately *not* generated
+  — only needed later if pushing updates to the same install without everyone reinstalling,
+  and losing that password permanently breaks future updates, so it should be a deliberate
+  choice with a password the Architect actually saves, not something auto-generated silently.
+- **Export templates** — downloaded (official `Godot_v4.7.1-stable_export_templates.tpz`,
+  1.2 GB, from github.com/godotengine/godot releases, Architect confirmed the download) and
+  installed to `C:\Users\mrscp\AppData\Roaming\Godot\export_templates\4.7.1.stable\`.
+  Confirmed `android_debug.apk`/`android_release.apk`/`android_source.zip` present.
+- **NDK** — not installed, and not needed yet. Only required if the project later turns on
+  Gradle Build (custom Android permissions, native plugins) — the default Godot Android
+  export path doesn't need it.
+- **Not yet tested:** an actual export. Deliberately skipped running the local Godot binary
+  for this — there's no scene yet to export (see Slice 2.5), and the earlier incident
+  (`--headless` still popping a native Windows dialog on a startup error) makes running the
+  local exe from a shell command risky until there's something that won't hit an error path.
+  First real export attempt happens once Slice 2.5's test scene exists.
+
+## Next slice (2.5)
+First scene: a minimal test room with a placeholder player node, just enough to confirm
+`GameState` reads/writes correctly at runtime before porting any real level content — and
+the first point where an actual `--export-debug` build becomes worth attempting.
 
 ## Blocking / needs Architect input
 - None currently blocking code work.
