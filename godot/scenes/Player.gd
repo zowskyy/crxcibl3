@@ -45,7 +45,14 @@ func _physics_process(_delta: float) -> void:
 
 
 func take_damage(amount: int) -> void:
+	var was_dead := is_dead()
 	health = maxi(0, health - amount)
+	# Guarded so this only fires once per knockout, not on every hit that
+	# happens to land while already at 0 -- Stress.on_crew_member_downed()
+	# is a one-shot stress spike (Slice 2.13), not a per-hit thing like
+	# on_hit_taken() is.
+	if is_dead() and not was_dead:
+		Stress.on_crew_member_downed()
 
 
 func is_dead() -> bool:
