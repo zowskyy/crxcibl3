@@ -1,8 +1,12 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
 [ext_resource type="Script" path="res://scenes/VirtualJoystick.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/buildings/liquor_store.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/buildings/arcade.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/buildings/apartment_tower.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/buildings/chainlink_fence.png" id="7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(16, 16)
@@ -23,9 +27,9 @@ polygon = PackedVector2Array(0, 0, 640, 0, 640, 360, 0, 360)
 [node name="Building1" type="StaticBody2D" parent="."]
 position = Vector2(100, 90)
 
-[node name="Building1Fill" type="Polygon2D" parent="Building1"]
-color = Color(0.545, 0.271, 0.075, 1)
-polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+[node name="Building1Sprite" type="Sprite2D" parent="Building1"]
+scale = Vector2(0.078, 0.078)
+texture = ExtResource("4")
 
 [node name="Building1Collision" type="CollisionShape2D" parent="Building1"]
 shape = SubResource("RectangleShape2D_building")
@@ -33,9 +37,9 @@ shape = SubResource("RectangleShape2D_building")
 [node name="Building2" type="StaticBody2D" parent="."]
 position = Vector2(320, 70)
 
-[node name="Building2Fill" type="Polygon2D" parent="Building2"]
-color = Color(0.361, 0.180, 0.051, 1)
-polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+[node name="Building2Sprite" type="Sprite2D" parent="Building2"]
+scale = Vector2(0.156, 0.156)
+texture = ExtResource("5")
 
 [node name="Building2Collision" type="CollisionShape2D" parent="Building2"]
 shape = SubResource("RectangleShape2D_building")
@@ -43,9 +47,9 @@ shape = SubResource("RectangleShape2D_building")
 [node name="Building3" type="StaticBody2D" parent="."]
 position = Vector2(540, 100)
 
-[node name="Building3Fill" type="Polygon2D" parent="Building3"]
-color = Color(0.239, 0.149, 0.031, 1)
-polygon = PackedVector2Array(-32, -32, 32, -32, 32, 32, -32, 32)
+[node name="Building3Sprite" type="Sprite2D" parent="Building3"]
+scale = Vector2(0.18, 0.18)
+texture = ExtResource("6")
 
 [node name="Building3Collision" type="CollisionShape2D" parent="Building3"]
 shape = SubResource("RectangleShape2D_building")
@@ -53,9 +57,9 @@ shape = SubResource("RectangleShape2D_building")
 [node name="Fence1" type="StaticBody2D" parent="."]
 position = Vector2(220, 320)
 
-[node name="Fence1Fill" type="Polygon2D" parent="Fence1"]
-color = Color(0.102, 0.102, 0.102, 1)
-polygon = PackedVector2Array(-30, -7, 30, -7, 30, 7, -30, 7)
+[node name="Fence1Sprite" type="Sprite2D" parent="Fence1"]
+scale = Vector2(0.0625, 0.0625)
+texture = ExtResource("7")
 
 [node name="Fence1Collision" type="CollisionShape2D" parent="Fence1"]
 shape = SubResource("RectangleShape2D_fence")
@@ -63,9 +67,9 @@ shape = SubResource("RectangleShape2D_fence")
 [node name="Fence2" type="StaticBody2D" parent="."]
 position = Vector2(420, 320)
 
-[node name="Fence2Fill" type="Polygon2D" parent="Fence2"]
-color = Color(0.102, 0.102, 0.102, 1)
-polygon = PackedVector2Array(-30, -7, 30, -7, 30, 7, -30, 7)
+[node name="Fence2Sprite" type="Sprite2D" parent="Fence2"]
+scale = Vector2(0.0625, 0.0625)
+texture = ExtResource("7")
 
 [node name="Fence2Collision" type="CollisionShape2D" parent="Fence2"]
 shape = SubResource("RectangleShape2D_fence")
