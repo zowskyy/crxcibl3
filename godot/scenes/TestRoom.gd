@@ -26,7 +26,10 @@ func _process(delta: float) -> void:
 	# Stress.tick() is what applies its out-of-combat decay -- without
 	# this it would climb from Enemy.gd's hooks but never come back down.
 	Stress.tick(delta)
-	rune_label.text = "Rune: %d" % GameState.resources.get("Rune", 0)
+	var contrib := ""
+	for hero in GameState.rune_contributions:
+		contrib += "  %s:%d" % [hero, GameState.rune_contributions[hero]]
+	rune_label.text = "Rune (group): %d%s" % [GameState.resources.get("Rune", 0), contrib]
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

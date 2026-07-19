@@ -19,6 +19,7 @@ const BULLET_SCRIPT := preload("res://scenes/Bullet.gd")
 const FIRE_COOLDOWN := 0.25  # ~4 shots/sec, Metal Slug-ish rapid but not instant
 
 var health := MAX_HEALTH
+var hero_name: String = "enforcer"  # set by whoever spawns the player
 
 var _joystick: Control = null
 var _facing := Vector2.RIGHT
@@ -66,6 +67,7 @@ func fire() -> void:
 	var bullet := Area2D.new()
 	bullet.set_script(BULLET_SCRIPT)
 	bullet.direction = _facing
+	bullet.shooter = hero_name
 	get_parent().add_child(bullet)
 	bullet.global_position = global_position + _facing * 12.0
 

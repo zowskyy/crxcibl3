@@ -10,6 +10,7 @@ const LIFETIME := 1.2
 const RADIUS := 5.0
 
 var direction := Vector2.RIGHT
+var shooter: String = ""  # hero_name of the player who fired this
 
 var _age := 0.0
 
@@ -35,7 +36,7 @@ func _on_body_entered(body: Node) -> void:
 	# engine's default layer/mask, so filtering by group is what keeps
 	# this from also triggering on the player who fired it.
 	if body.is_in_group("enemy") and body.has_method("take_damage"):
-		body.take_damage(DAMAGE)
+		body.take_damage(DAMAGE, shooter)
 		Stress.on_hit_dealt()
 		queue_free()
 

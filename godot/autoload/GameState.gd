@@ -29,7 +29,15 @@ var emperor_forgiven = null          # null until decided, then true/false
 var morale: int = 0
 var reputation_ruthlessness: int = 0
 var reputation_solidarity: int = 0
-var resources: Dictionary = {"Cash": 0, "Ammo": 0, "Intel": 0}
+var resources: Dictionary = {"Cash": 0, "Ammo": 0, "Intel": 0, "Rune": 0}
+
+# --- Group upgrades (shared pool — nobody owns upgrades individually) ---
+# key: upgrade id string -> true once purchased
+var group_upgrades: Dictionary = {}
+
+# --- Per-hero rune contributions (solidarity metric, not a wallet) ---
+# key: hero name -> int total Runes that hero's kills have generated this run
+var rune_contributions: Dictionary = {}
 var ghost_count: int = 0             # permanently-lost crew members
 var last_ghosted: String = ""
 
@@ -67,11 +75,43 @@ func add_resource(kind: String, amount: int) -> void:
 	resources[kind] = resources.get(kind, 0) + amount
 
 
+func add_rune(amount: int, hero: String = "") -> void:
+	resources["Rune"] = resources.get("Rune", 0) + amount
+	if hero != "":
+		rune_contributions[hero] = rune_contributions.get(hero, 0) + amount
+
+
 func spend_resource(kind: String, amount: int) -> bool:
 	if resources.get(kind, 0) < amount:
 		return false
 	resources[kind] -= amount
 	return true
+
+
+## Purchase a group upgrade from the shared Rune pool.
+## Returns true and marks it purchased on success; false if already owned or
+## the group can't afford it.
+func purchase_upgrade(id: String, cost: int) -> bool:
+	if group_upgrades.get(id, false):
+		return false
+	if not spend_resource("Rune", cost):
+		return false
+	group_upgrades[id] = true
+	return true
+
+
+func has_upgrade(id: String) -> bool:
+	return group_upgrades.get(id, false)
+
+
+func top_contributor() -> String:
+	var best := ""
+	var best_count := 0
+	for hero in rune_contributions:
+		if rune_contributions[hero] > best_count:
+			best_count = rune_contributions[hero]
+			best = hero
+	return best
 
 
 func mark_boss_defeated(boss_name: String, executed: bool, finisher: String) -> void:
@@ -94,7 +134,9 @@ func reset_for_new_game() -> void:
 	morale = 0
 	reputation_ruthlessness = 0
 	reputation_solidarity = 0
-	resources = {"Cash": 0, "Ammo": 0, "Intel": 0}
+	resources = {"Cash": 0, "Ammo": 0, "Intel": 0, "Rune": 0}
+	group_upgrades.clear()
+	rune_contributions.clear()
 	ghost_count = 0
 	last_ghosted = ""
 	alliances_formed = 0

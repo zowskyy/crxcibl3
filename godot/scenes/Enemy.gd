@@ -73,7 +73,7 @@ func _try_attack() -> void:
 		_attack_timer = ATTACK_COOLDOWN
 
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, killer: String = "") -> void:
 	health = maxi(0, health - amount)
 	if health <= 0:
 		# Dying stops _physics_process from ever running again, so it would
@@ -83,11 +83,9 @@ func take_damage(amount: int) -> void:
 		if _in_combat:
 			_in_combat = false
 			Stress.exit_combat()
-		# Rune drop (Architect's direction: earn Rune currency from mission
-		# combat, spend it at the bodega shop). "Rune" isn't in GameState's
-		# resources dict's initial keys (Cash/Ammo/Intel) but add_resource()
-		# creates it on first use -- no GameState.gd change needed for this.
-		GameState.add_resource("Rune", 1)
+		# Rune goes into the shared group pool. killer credits that hero's
+		# contribution tally (solidarity metric shown at end-of-run recap).
+		GameState.add_rune(1, killer)
 		queue_free()
 
 
