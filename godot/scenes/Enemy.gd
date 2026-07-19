@@ -21,6 +21,7 @@ var _in_combat := false
 
 
 func _ready() -> void:
+	add_to_group("enemy")
 	# Deferred for the same reason Player's joystick lookup is: whichever
 	# node calls add_to_group("player") might not have run its _ready()
 	# yet at this point, depending on scene tree declaration order.
@@ -82,6 +83,11 @@ func take_damage(amount: int) -> void:
 		if _in_combat:
 			_in_combat = false
 			Stress.exit_combat()
+		# Rune drop (Architect's direction: earn Rune currency from mission
+		# combat, spend it at the bodega shop). "Rune" isn't in GameState's
+		# resources dict's initial keys (Cash/Ammo/Intel) but add_resource()
+		# creates it on first use -- no GameState.gd change needed for this.
+		GameState.add_resource("Rune", 1)
 		queue_free()
 
 

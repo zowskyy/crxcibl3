@@ -13,11 +13,16 @@ extends CharacterBody2D
 
 const SPEED := 120.0
 const MAX_HEALTH := 120
-const MELEE_DAMAGE := 15
+const MELEE_DAMAGE := 15  # kept for reference/lore continuity; no longer the attack path
+
+const BULLET_SCRIPT := preload("res://scenes/Bullet.gd")
+const FIRE_COOLDOWN := 0.25  # ~4 shots/sec, Metal Slug-ish rapid but not instant
 
 var health := MAX_HEALTH
 
 var _joystick: Control = null
+var _facing := Vector2.RIGHT
+var _fire_timer := 0.0
 
 
 func _ready() -> void:
@@ -34,7 +39,7 @@ func _find_joystick() -> void:
 	_joystick = get_tree().get_first_node_in_group("virtual_joystick")
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	var input_vector := Vector2.ZERO
 	if _joystick and _joystick.output.length() > 0.0:
 		input_vector = _joystick.output
@@ -42,6 +47,27 @@ func _physics_process(_delta: float) -> void:
 		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	velocity = input_vector * SPEED
 	move_and_slide()
+
+	if input_vector.length() > 0.0:
+		_facing = input_vector.normalized()
+
+	_fire_timer = maxf(0.0, _fire_timer - delta)
+
+
+## Public so TestRoom.gd can wire a Fire button/key to it (same pattern as
+## the existing Add Heat button) -- Metal Slug-style gun combat per the
+## Architect's direction, replacing the melee-contact assumption from
+## Slice 2.11/2.12 (MELEE_DAMAGE was never actually used by any attack).
+func fire() -> void:
+	if _fire_timer > 0.0:
+		return
+	_fire_timer = FIRE_COOLDOWN
+
+	var bullet := Area2D.new()
+	bullet.set_script(BULLET_SCRIPT)
+	bullet.direction = _facing
+	get_parent().add_child(bullet)
+	bullet.global_position = global_position + _facing * 12.0
 
 
 func take_damage(amount: int) -> void:
