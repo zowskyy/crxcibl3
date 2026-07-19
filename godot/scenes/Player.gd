@@ -11,6 +11,15 @@ var _joystick: Control = null
 
 
 func _ready() -> void:
+	# Deferred: Player is declared before CanvasLayer/VirtualJoystick in the
+	# scene tree, so at _ready() time the joystick hasn't added itself to
+	# the group yet (sibling _ready() order follows scene declaration
+	# order). Deferring to the end of the frame runs this after the whole
+	# tree has finished its _ready() pass.
+	call_deferred("_find_joystick")
+
+
+func _find_joystick() -> void:
 	_joystick = get_tree().get_first_node_in_group("virtual_joystick")
 
 
