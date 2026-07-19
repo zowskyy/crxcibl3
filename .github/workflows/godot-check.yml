@@ -19,6 +19,9 @@ jobs:
           use-dotnet: false
           path: godot-engine
 
+      - name: Import project resources (required before any headless boot -- images/etc. need a Godot import pass, unlike scripts)
+        run: godot --headless --path godot --import
+
       - name: Boot autoloads and verify they resolve (also catches compile/parse errors in any autoload script)
         run: |
           # Note: `--check-only --script` compiles a script in total isolation and
