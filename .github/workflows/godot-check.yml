@@ -17,6 +17,7 @@ jobs:
         with:
           version: 4.7.1
           use-dotnet: false
+          path: godot-engine
 
       - name: Boot autoloads and verify they resolve (also catches compile/parse errors in any autoload script)
         run: |
@@ -43,3 +44,59 @@ jobs:
             status=1
           fi
           exit $status
+
+  android-build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK (for keytool)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Set up Godot (with export templates)
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.1
+          use-dotnet: false
+          path: godot-engine
+          include-templates: true
+
+      - name: Generate the debug keystore (matches export_presets.cfg's res://debug.keystore)
+        run: |
+          keytool -genkeypair -v \
+            -keystore godot/debug.keystore \
+            -storepass android -keypass android \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Point Godot at the CI Android SDK
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Export debug APK
+        run: |
+          mkdir -p godot/build
+          godot --headless --path godot --export-debug "Android" build/crxcibl3-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crxcibl3-debug-apk
+          path: godot/build/crxcibl3-debug.apk
+          if-no-files-found: error

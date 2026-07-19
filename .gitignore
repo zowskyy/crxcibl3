@@ -1,2 +1,10 @@
 # Godot editor cache/import artifacts (regenerated per machine)
 godot/.godot/
+
+# Debug signing keystore -- not a real secret (well-known alias/password),
+# but binaries don't belong in the repo. Regenerated identically by both
+# local dev and CI via keytool; see export_presets.cfg.
+godot/debug.keystore
+
+# Local export output
+godot/build/
