@@ -21,9 +21,15 @@ func _initialize() -> void:
 	if not root.has_node("Recap"):
 		push_error("Autoload missing: Recap")
 		ok = false
+	if not root.has_node("CutsceneDirector"):
+		push_error("Autoload missing: CutsceneDirector")
+		ok = false
+	if not root.has_node("EnemyRegistry"):
+		push_error("Autoload missing: EnemyRegistry")
+		ok = false
 
 	if ok:
-		print("All autoloads registered and resolved: GameState, Stress, SaveSystem, Recap")
+		print("All autoloads registered and resolved: GameState, Stress, SaveSystem, Recap, CutsceneDirector, EnemyRegistry")
 	else:
 		print("Autoload check FAILED")
 

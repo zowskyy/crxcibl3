@@ -31,6 +31,7 @@ var _dissolve_mat: ShaderMaterial = null
 
 func _ready() -> void:
 	add_to_group("enemy")
+	EnemyRegistry.register(self)   # auto-unregisters on tree_exiting
 	call_deferred("_find_player")
 	_setup_dissolve_shader()
 

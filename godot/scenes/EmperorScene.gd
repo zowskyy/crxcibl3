@@ -142,13 +142,15 @@ func _end_reckoning() -> void:
 		GameState.quests_completed.append("emperor_reckoning")
 	# The war dies with him — the city stops hunting a crew that's walking away.
 	GameState.modify_heat(-50.0)
-	# The Emperor fades out where he sits.
-	var tween := get_tree().create_tween()
-	tween.tween_property(emperor, "modulate:a", 0.0, 2.0)
-	await tween.finished
-	await get_tree().create_timer(1.0).timeout
-	# First real in-game use of SaveSystem: the reckoning is the story
-	# milestone worth persisting (act 3, Blackwood dead, emperor_forgiven).
-	SaveSystem.save_game()
-	# Epilogue is Phase 3 scope — back to the boardwalk for now.
-	get_tree().change_scene_to_file("res://scenes/TestRoom.tscn")
+
+	# CutsceneDirector sequences the closing beat:
+	#   Emperor fades → pause → save → scene change.
+	# First real in-game use of both CutsceneDirector and SaveSystem.save_game().
+	var pb := PatternBuilder.new()
+	pb.add_interpolate_value(emperor, "modulate:a", 1.0, 0.0, 2.0) \
+	  .add_wait(1.0) \
+	  .add_call_method(SaveSystem, "save_game", []) \
+	  .add_call_method(get_tree(), "change_scene_to_file",
+	                   ["res://scenes/TestRoom.tscn"]) \
+	  .done()
+	CutsceneDirector.start(pb.build())
