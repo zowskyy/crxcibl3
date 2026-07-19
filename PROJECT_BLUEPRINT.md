@@ -26,8 +26,10 @@ kept as-is for now, not actively developed — open question whether it's retire
   generated; official Godot 4.7.1 Android export templates (1.2 GB) downloaded and installed.
   NDK skipped — not needed unless Gradle Build gets turned on later. Target: sideload-only
   APK for friends, not a Play Store release — no Play Console/store-listing scope needed.
-- [ ] **2.5** — Minimal test scene: one room, a placeholder player node, confirm GameState
-  reads/writes correctly at runtime before porting any real level content.
+- [x] **2.5** — `TestRoom.tscn`: placeholder drawn-square player (arrow keys) + a Heat label
+  and button wired to `GameState.modify_heat()`, set as the main scene. CI confirms it
+  compiles/boots cleanly; **visual/interactive behavior and an actual export still need
+  Architect verification** — CI doesn't prove the UI looks or responds correctly.
 - [ ] **2.6** — Touch controls (virtual joystick or tap-to-move) — nothing built yet, the
   Phaser prototype's WASD assumption doesn't carry over to mobile.
 - [ ] **2.7** — Screen-size/aspect-ratio scaling strategy (phones and tablets vary a lot more

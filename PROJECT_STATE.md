@@ -105,19 +105,36 @@ Android Studio install — found via `editor_settings-4.7.tres`, not built from 
 - **NDK** — not installed, and not needed yet. Only required if the project later turns on
   Gradle Build (custom Android permissions, native plugins) — the default Godot Android
   export path doesn't need it.
-- **Not yet tested:** an actual export. Deliberately skipped running the local Godot binary
-  for this — there's no scene yet to export (see Slice 2.5), and the earlier incident
-  (`--headless` still popping a native Windows dialog on a startup error) makes running the
-  local exe from a shell command risky until there's something that won't hit an error path.
-  First real export attempt happens once Slice 2.5's test scene exists.
+## Slice 2.5 — DONE (code side), NOT YET VISUALLY VERIFIED
+`godot/scenes/TestRoom.tscn` (+ `TestRoom.gd`, `Player.gd`) — minimal scene, set as the
+project's `run/main_scene`:
+- A placeholder player: a drawn crimson square (`Player.gd`, `_draw()`/`queue_redraw()`, no
+  real art yet) that moves with arrow keys — a stopgap until touch controls (Slice 2.6).
+- A `HeatLabel` + `AddHeatButton` wired directly to `GameState.modify_heat(10.0)`, so pressing
+  the button (or the H key) visibly bumps the Heat value on screen — the actual proof that
+  `GameState` reads/writes work at runtime, which was the point of this slice.
+- Room named `TestRoom` deliberately, to match the default value already hardcoded in
+  `GameState.gd`'s `last_scene` field.
+- CI extended with a second check that boots this scene headless
+  (`godot --headless --path godot --quit`) and greps for script/load errors — confirmed
+  green, so the scene compiles and boots cleanly with no errors.
 
-## Next slice (2.5)
-First scene: a minimal test room with a placeholder player node, just enough to confirm
-`GameState` reads/writes correctly at runtime before porting any real level content — and
-the first point where an actual `--export-debug` build becomes worth attempting.
+**What CI does *not* prove:** that the label/button actually look right or respond correctly
+to a click, or that `--export-debug` actually produces a working APK. CI only catches
+compile/load errors, not visual or interactive correctness, and no export has been attempted
+yet (still avoiding local Godot invocations from a shell after the earlier GUI-dialog
+incident). **Architect action needed:** open the project in the editor, run the scene
+(F5) to confirm heat updates visibly on click/H-press, and — once that looks right —
+either run a test export from the editor's Export menu, or ask to have it attempted via CI
+(GitHub Actions can build the APK too, using the same free toolchain, as a follow-up).
+
+## Next slice (2.6)
+Touch controls — replace `Player.gd`'s arrow-key input with a virtual joystick or
+tap-to-move scheme, since the confirmed target is mobile and arrow keys won't exist there.
 
 ## Blocking / needs Architect input
-- None currently blocking code work.
+- Visual/interactive confirmation of the TestRoom scene (see above) — first real "does this
+  actually work" checkpoint since CI only proves it compiles, not that it behaves correctly.
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
