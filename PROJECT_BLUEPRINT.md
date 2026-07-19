@@ -163,6 +163,10 @@ abstract after 2-3 concrete cases exist, not before).
   Green fill, turns red + "DOWNED" text at 0 HP. `Player.gd` freezes input on death and
   auto-respawns at full HP after 3s (`downed`/`respawned` signals). Added to TestRoom,
   RooftopScene, EmperorScene CanvasLayers. Permanent death is a separate later module.
+- [x] **3.2** — HUD cleanup: removed debug elements (AddHeatButton, StressMeter, RuneLabel
+  from TestRoom; StressLabel from Rooftop/Emperor scenes). Compacted permanent meters to
+  corners — HealthBar top-left (4,4→134,22), HeatMeter top-right (right-anchored,
+  -134,4→-4,22) — both 130×18 px. Font size 13→11, text label shortened to "HP N" / "HEAT N".
 - 12 playable hero variants (3 per class × 4 classes) — see `KNOWLEDGE_BASE.md` for full roster.
 - Relationship system — `GameState.gd` already has the full pairwise (-10..+10) model built;
   this phase is about wiring it into actual gameplay triggers, not building it from scratch.

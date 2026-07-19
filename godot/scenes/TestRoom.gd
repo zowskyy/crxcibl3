@@ -14,16 +14,13 @@ extends Node2D
 ## GameState.heat -- kicks in past the 51 threshold already used by the
 ## vignette/tint in the visual direction doc, maxes out at heat 100.
 
-@onready var add_heat_button: Button = $CanvasLayer/AddHeatButton
 @onready var fire_button: Button = $CanvasLayer/FireButton
-@onready var rune_label: Label = $CanvasLayer/RuneLabel
 @onready var player: CharacterBody2D = $Player
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
 @onready var rooftop_trigger: Area2D = $RooftopTrigger
 
 
 func _ready() -> void:
-	add_heat_button.pressed.connect(_on_add_heat_pressed)
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
@@ -34,14 +31,7 @@ func _process(delta: float) -> void:
 	# this it would climb from Enemy.gd's hooks but never come back down.
 	Stress.tick(delta)
 
-	var contrib := ""
-	for hero in GameState.rune_contributions:
-		contrib += "  %s:%d" % [hero, GameState.rune_contributions[hero]]
-	rune_label.text = "Rune (group): %d%s" % [GameState.resources.get("Rune", 0), contrib]
-
 	# Wave intensity: 0 below heat 51, ramps to 1.0 at heat 100.
-	# Using the same 51 breakpoint already established in the visual direction
-	# doc for the orange tint threshold -- consistent sensory escalation.
 	var heat_t := clampf((GameState.heat - 51.0) / 49.0, 0.0, 1.0)
 	var mat := wave_rect.material as ShaderMaterial
 	if mat:

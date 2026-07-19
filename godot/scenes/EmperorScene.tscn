@@ -85,10 +85,12 @@ script = ExtResource("7")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HeatMeter" type="Control" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 220.0
-offset_bottom = 48.0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -134.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 22.0
 script = ExtResource("5")
 
 [node name="ArrivalLabel" type="Label" parent="CanvasLayer"]
@@ -98,18 +100,11 @@ offset_right = 480.0
 offset_bottom = 140.0
 text = "THE HILLS — The Emperor's Estate. Blackwood won't run this time."
 
-[node name="StressLabel" type="Label" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 56.0
-offset_right = 220.0
-offset_bottom = 76.0
-text = "Stress: 0"
-
 [node name="HealthBar" type="Control" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 84.0
-offset_right = 220.0
-offset_bottom = 112.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 134.0
+offset_bottom = 22.0
 script = ExtResource("8")
 
 [node name="VirtualJoystick" type="Control" parent="CanvasLayer"]

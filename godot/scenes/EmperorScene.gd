@@ -16,7 +16,6 @@ extends Node2D
 @onready var emperor: Node2D = $EmperorFigure
 @onready var player: CharacterBody2D = $Player
 @onready var arrival_label: Label = $CanvasLayer/ArrivalLabel
-@onready var stress_label: Label = $CanvasLayer/StressLabel
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var dialogue_panel: ColorRect = $CanvasLayer/DialoguePanel
 @onready var dialogue_label: Label = $CanvasLayer/DialoguePanel/DialogueLabel
@@ -81,7 +80,6 @@ func _process(delta: float) -> void:
 		arrival_label.visible = true
 		if _arrival_timer <= 0.0:
 			arrival_label.visible = false
-	stress_label.text = "Stress: %.0f" % Stress.stress
 
 
 func _on_blackwood_defeated(finisher: String) -> void:

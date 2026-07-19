@@ -12,7 +12,6 @@ extends Node2D
 @onready var flee_marker: Marker2D = $FleeMarker
 @onready var flashbang: ColorRect = $FlashbangLayer/Flashbang
 @onready var arrival_label: Label = $CanvasLayer/ArrivalLabel
-@onready var stress_label: Label = $CanvasLayer/StressLabel
 @onready var heat_meter = $CanvasLayer/HeatMeter
 @onready var player: CharacterBody2D = $Player
 @onready var fire_button: Button = $CanvasLayer/FireButton
@@ -42,7 +41,6 @@ func _process(delta: float) -> void:
 		arrival_label.visible = true
 		if _arrival_timer <= 0.0:
 			arrival_label.visible = false
-	stress_label.text = "Stress: %.0f" % Stress.stress
 
 
 func _on_boss_fled() -> void:

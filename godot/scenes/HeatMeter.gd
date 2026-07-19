@@ -22,6 +22,6 @@ func _draw() -> void:
 
 	draw_rect(Rect2(Vector2.ZERO, size), BORDER_COLOR, false, 2.0)
 
-	var label := "HEAT  %d / %d" % [int(GameState.heat), int(GameState.HEAT_MAX)]
-	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(8, size.y - 8), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, TEXT_COLOR)
+	var label := "HEAT  %d" % int(GameState.heat)
+	draw_string(ThemeDB.fallback_font, Vector2(4, size.y - 4), label,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, TEXT_COLOR)

@@ -36,7 +36,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, Vector2(size.x * fill, size.y)), bar_col)
 	draw_rect(Rect2(Vector2.ZERO, size), BORDER_COLOR, false, 2.0)
 
-	var label := "DOWNED — respawning..." if _player.is_dead() \
-		else "HP  %d / %d" % [_player.health, _player.MAX_HEALTH]
-	draw_string(ThemeDB.fallback_font, Vector2(8, size.y - 8), label,
-		HORIZONTAL_ALIGNMENT_LEFT, -1, 13, TEXT_COLOR)
+	var label := "DOWNED..." if _player.is_dead() \
+		else "HP  %d" % _player.health
+	draw_string(ThemeDB.fallback_font, Vector2(4, size.y - 4), label,
+		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, TEXT_COLOR)

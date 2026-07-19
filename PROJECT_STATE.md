@@ -480,6 +480,24 @@ After `RESPAWN_TIME = 3.0s`, health restores to `MAX_HEALTH`, physics re-enables
 `respawned` emits. Permanent death is a separate Phase 3 mechanics module (PermanentDeath
 from `Stress.gd`'s template list) — this is the soft-death / checkpoint respawn layer.
 
+## Slice 3.2 — DONE: HUD cleanup
+Permanent meters moved to compact corner positions (130×18 px each, 4px margin):
+- **HealthBar** — top-left, offsets `4, 4 → 134, 22` (all three scenes).
+- **HeatMeter** — top-right, `anchor_left/right = 1.0`, offsets `-134, 4 → -4, 22` (all three scenes).
+
+Font size dropped 13→11 in both meter scripts; text shortened to `"HP N"` and `"HEAT N"` to
+fit the narrower bar without wrapping. "DOWNED..." replaces the longer "DOWNED — respawning..."
+in HealthBar for the same reason.
+
+Debug elements removed from all scenes:
+- **TestRoom:** `AddHeatButton` node, `StressMeter` node + `ExtResource("11")` reference,
+  `RuneLabel` node. `TestRoom.gd` stripped of the matching `@onready` vars, the
+  `add_heat_button.pressed.connect()`, and the rune-contribution polling loop. `load_steps`
+  22→21. H-key shortcut + `_on_add_heat_pressed()` method retained for heat testing.
+- **RooftopScene:** `StressLabel` node removed; `RooftopScene.gd` `@onready var stress_label`
+  and its `_process` update removed.
+- **EmperorScene:** same `StressLabel` removal in `.tscn` and `.gd`.
+
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
