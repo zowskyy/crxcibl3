@@ -8,3 +8,9 @@ godot/debug.keystore
 
 # Local export output
 godot/build/
+
+# Stray APK export dir that landed at repo root from an earlier slice's build
+UsersmrscpAppDataLocalTempapk-slice220/
+
+# Generated production ZIP (regenerable from the source .md docs it bundles)
+CRXCIBL3_ANIMATION_VOICEOVER_PRODUCTION_PACKAGE.zip
