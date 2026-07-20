@@ -29,6 +29,14 @@ SaveSystem="*res://autoload/SaveSystem.gd"
 Recap="*res://autoload/Recap.gd"
 CutsceneDirector="*res://autoload/CutsceneDirector.gd"
 EnemyRegistry="*res://autoload/EnemyRegistry.gd"
+Scarcity="*res://autoload/Scarcity.gd"
+Injury="*res://autoload/Injury.gd"
+Hideout="*res://autoload/Hideout.gd"
+Morale="*res://autoload/Morale.gd"
+Reputation="*res://autoload/Reputation.gd"
+Alliance="*res://autoload/Alliance.gd"
+DialogueIntensity="*res://autoload/DialogueIntensity.gd"
+PermanentDeath="*res://autoload/PermanentDeath.gd"
 
 [display]
 
