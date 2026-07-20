@@ -15,14 +15,26 @@ extends Node2D
 ## vignette/tint in the visual direction doc, maxes out at heat 100.
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
-@onready var player: CharacterBody2D = $Player
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
 @onready var rooftop_trigger: Area2D = $RooftopTrigger
+
+var player: CharacterBody2D  # Spawned dynamically by HeroFactory
 
 
 func _ready() -> void:
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
+
+	# Spawn active hero via HeroFactory (Slice 3.5)
+	var hero_id = GameState.get_active_hero()
+	if hero_id.is_empty() and not GameState.squad.is_empty():
+		hero_id = GameState.squad[0]
+
+	if not hero_id.is_empty():
+		player = HeroFactory.spawn_player(hero_id, Vector2(550, 300), self)
+	else:
+		# Fallback: no squad selected (shouldn't happen in normal flow, but debug fallback)
+		player = HeroFactory.spawn_player("enforcer_ghost", Vector2(550, 300), self)
 
 
 func _process(delta: float) -> void:

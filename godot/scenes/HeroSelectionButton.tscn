@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://yj7ctj54aon7"]
+
+[node name="HeroSelectionButton" type="Button"]
+toggle_mode=true
+text="Hero"

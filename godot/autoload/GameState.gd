@@ -12,7 +12,8 @@ var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in
 const HEAT_MAX: float = 100.0
 
 # --- Active crew ---
-var squad: Array = []          # Hero name strings currently in the active party (up to 4)
+var squad: Array = []          # Hero variant IDs currently in the active party (up to 4)
+var current_hero_index: int = 0  # Index into squad[] for the currently active hero
 
 # --- Relationships (pairwise, -10 to +10) ---
 var relationships: Dictionary = {}   # key: "heroA_heroB" (sorted) -> int
@@ -121,9 +122,23 @@ func mark_boss_defeated(boss_name: String, executed: bool, finisher: String) -> 
 	boss_finisher[boss_name] = finisher
 
 
+func get_active_hero() -> String:
+	if squad.is_empty():
+		return ""
+	if current_hero_index < 0 or current_hero_index >= squad.size():
+		current_hero_index = 0
+	return squad[current_hero_index] if current_hero_index < squad.size() else ""
+
+
+func switch_to_hero(index: int) -> void:
+	if index >= 0 and index < squad.size():
+		current_hero_index = index
+
+
 func reset_for_new_game() -> void:
 	heat = 0.0
 	squad.clear()
+	current_hero_index = 0
 	relationships.clear()
 	secrets_unlocked.clear()
 	quests_completed.clear()
