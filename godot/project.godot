@@ -22,6 +22,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameState="*res://autoload/GameState.gd"
+HeroDefinitions="*res://autoload/HeroDefinitions.gd"
+HeroFactory="*res://autoload/HeroFactory.gd"
 Stress="*res://autoload/Stress.gd"
 SaveSystem="*res://autoload/SaveSystem.gd"
 Recap="*res://autoload/Recap.gd"
