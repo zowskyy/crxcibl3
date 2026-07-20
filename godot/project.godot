@@ -37,6 +37,10 @@ Reputation="*res://autoload/Reputation.gd"
 Alliance="*res://autoload/Alliance.gd"
 DialogueIntensity="*res://autoload/DialogueIntensity.gd"
 PermanentDeath="*res://autoload/PermanentDeath.gd"
+Blame="*res://autoload/Blame.gd"
+Bosses="*res://autoload/Bosses.gd"
+Emperor="*res://autoload/Emperor.gd"
+Epilogue="*res://autoload/Epilogue.gd"
 
 [display]
 
