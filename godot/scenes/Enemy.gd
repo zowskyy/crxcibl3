@@ -1,39 +1,37 @@
 extends CharacterBody2D
-## Rival crew grunt -- Slice 2.12's first enemy. Placeholder dark square
-## (no enemy art exists yet -- same "build the behavior first, swap real
-## art in later" pattern already used for the player and the boardwalk
-## buildings). Chases the player once within DETECTION_RADIUS and attacks
-## on contact with a cooldown.
+## Rival crew grunt. Chase/attack AI with AnimatedSprite2D animation system.
 ##
-## Slice 2.16 shader integration: on death, runs a dissolve animation via
-## enemy_dissolve.gdshader before freeing. The dark square gets a
-## ShaderMaterial applied at runtime (no separate .tscn needed) and
-## dissolve_progress ramps from 0 -> 1 over DISSOLVE_TIME seconds.
+## Animation states: idle, walk, attack, die
+## Sheets loaded from res://assets/sprites/enemies/grunt/ at runtime.
+## Falls back to _draw() dark square if sheets are missing.
 
-const SPEED := 70.0
-const SIZE := 16.0
+const SPEED            := 70.0
+const SIZE             := 16.0
 const DETECTION_RADIUS := 150.0
-const ATTACK_RANGE := 20.0
-const ATTACK_DAMAGE := 8
-const ATTACK_COOLDOWN := 1.0
-const MAX_HEALTH := 40
-const DISSOLVE_TIME := 0.5  # seconds for death dissolve
+const ATTACK_RANGE     := 20.0
+const ATTACK_DAMAGE    := 8
+const ATTACK_COOLDOWN  := 1.0
+const MAX_HEALTH       := 40
+const DISSOLVE_TIME    := 0.5
 
 var health := MAX_HEALTH
 
-var _attack_timer := 0.0
+var _attack_timer     := 0.0
 var _player: CharacterBody2D = null
-var _in_combat := false
-var _dying := false
+var _in_combat        := false
+var _dying            := false
 var _dissolve_progress := 0.0
 var _dissolve_mat: ShaderMaterial = null
+var _anim: AnimatedSprite2D = null
+var _has_sheets       := false
 
 
 func _ready() -> void:
 	add_to_group("enemy")
-	EnemyRegistry.register(self)   # auto-unregisters on tree_exiting
+	EnemyRegistry.register(self)
 	call_deferred("_find_player")
 	_setup_dissolve_shader()
+	call_deferred("_setup_animation")
 
 
 func _find_player() -> void:
@@ -47,6 +45,24 @@ func _setup_dissolve_shader() -> void:
 	_dissolve_mat = ShaderMaterial.new()
 	_dissolve_mat.shader = shader
 	material = _dissolve_mat
+
+
+func _setup_animation() -> void:
+	_anim = AnimatedSprite2D.new()
+	_anim.name = "Anim"
+	_anim.position = Vector2(0, -8)
+	add_child(_anim)
+
+	var sprite_dir := "res://assets/sprites/enemies/grunt/"
+	var sf := AnimationLoader.build_frames(AnimationLoader.enemy_anims(sprite_dir))
+	if sf == null:
+		_anim.visible = false
+		return
+
+	_anim.sprite_frames = sf
+	_anim.visible       = true
+	_has_sheets         = true
+	_anim.play("idle")
 
 
 func _physics_process(delta: float) -> void:
@@ -64,14 +80,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var to_player := _player.global_position - global_position
-	var distance := to_player.length()
+	var distance  := to_player.length()
 
-	# Combat state (Slice 2.13): Stress climbs while a threat is nearby and
-	# decays once it isn't -- tied to detection range rather than only the
-	# attack itself, so the crew's nerves stay frayed for the whole
-	# chase, not just the instant of a hit. Only toggled on transition,
-	# not every frame -- enter_combat()/exit_combat() are idempotent flag
-	# sets, but there's no reason to call them 60x/second.
 	var threat_nearby := distance <= DETECTION_RADIUS
 	if threat_nearby and not _in_combat:
 		_in_combat = true
@@ -82,13 +92,21 @@ func _physics_process(delta: float) -> void:
 
 	if distance <= ATTACK_RANGE:
 		velocity = Vector2.ZERO
+		_set_anim("attack")
 		_try_attack()
 	elif distance <= DETECTION_RADIUS:
 		velocity = to_player.normalized() * SPEED
+		_set_anim("walk")
 	else:
 		velocity = Vector2.ZERO
+		_set_anim("idle")
 
 	move_and_slide()
+
+
+func _set_anim(state: String) -> void:
+	if _anim and _has_sheets and _anim.animation != state:
+		_anim.play(state)
 
 
 func _try_attack() -> void:
@@ -102,25 +120,20 @@ func take_damage(amount: int, killer: String = "") -> void:
 	health = maxi(0, health - amount)
 	if health <= 0 and not _dying:
 		_dying = true
-		set_physics_process(false)   # stop chasing/attacking immediately
-		# Clear combat state -- _physics_process won't reach the exit transition
-		# anymore now that it's blocked, so clear explicitly (same reasoning as before).
+		set_physics_process(false)
 		if _in_combat:
 			_in_combat = false
 			Stress.exit_combat()
-		# Credit the group Rune pool immediately at kill, not after dissolve,
-		# so the player sees the counter tick on the killing shot.
 		GameState.add_rune(1, killer)
-		set_physics_process(true)    # re-enable just for dissolve tick
+		if killer != "":
+			RelationshipSystem.on_kill_together(killer)
+		# Play die animation then let dissolve take over
+		if _anim and _has_sheets:
+			_anim.play("die")
+		set_physics_process(true)
 		_dissolve_progress = 0.0
 
 
-## Boss scripts remove their spawned deacons directly (flee/death cleanup).
-## Going through here instead of a bare queue_free() keeps the Stress combat
-## bookkeeping honest -- a mid-chase removal otherwise leaves _in_combat
-## stuck true forever, since _physics_process never reaches its exit
-## transition on a freed node (same failure mode Slice 2.13 fixed for
-## take_damage-driven death).
 func despawn() -> void:
 	if _in_combat:
 		_in_combat = false
@@ -129,4 +142,6 @@ func despawn() -> void:
 
 
 func _draw() -> void:
+	if _has_sheets:
+		return  # real art loaded — don't overdraw
 	draw_rect(Rect2(-SIZE / 2, -SIZE / 2, SIZE, SIZE), Color(0.227, 0.227, 0.227))
