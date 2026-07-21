@@ -42,6 +42,11 @@ func _process(delta: float) -> void:
 	# Stress.tick() is what applies its out-of-combat decay -- without
 	# this it would climb from Enemy.gd's hooks but never come back down.
 	Stress.tick(delta)
+	Morale.tick(delta)
+	Injury.tick(delta)
+	DialogueIntensity.tick(delta)
+	Hideout.tick(delta)
+	Scarcity.tick(delta)
 
 	# Wave intensity: 0 below heat 51, ramps to 1.0 at heat 100.
 	var heat_t := clampf((GameState.heat - 51.0) / 49.0, 0.0, 1.0)

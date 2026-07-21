@@ -34,8 +34,9 @@ const PROJECTILE_DAMAGE := 12
 
 const FLASHBANG_DURATION := 1.8  # seconds the screen stays white
 
-const ENEMY_SCRIPT    := preload("res://scenes/Enemy.gd")
+const ENEMY_SCRIPT      := preload("res://scenes/Enemy.gd")
 const PROJECTILE_SCRIPT := preload("res://scenes/BossProjectile.gd")
+const ANIM_LOADER       := preload("res://scenes/AnimationLoader.gd")
 
 enum Phase { SURPRISED, FIGHT, FLEE, DONE }
 
@@ -47,21 +48,48 @@ var _phase := Phase.SURPRISED
 var _player: CharacterBody2D = null
 var _surprised_timer := 2.0
 var _deacon_timer := 0.0
-var _projectile_timer := 1.0  # slight delay before first shot
+var _projectile_timer := 1.0
 var _live_deacons: Array = []
 var _flee_target: Vector2 = Vector2.ZERO
-var _flashbang_node: ColorRect = null   # set by RooftopScene after _ready
+var _flashbang_node: ColorRect = null
+
+var _anim: AnimatedSprite2D = null
+var _has_sheets := false
 
 
 func _ready() -> void:
 	add_to_group("boss")
 	if final_stand:
-		_phase = Phase.FIGHT   # no free-shot window — he saw the crew coming
+		_phase = Phase.FIGHT
 	call_deferred("_find_player")
+	call_deferred("_setup_animation")
 
 
 func _find_player() -> void:
 	_player = get_tree().get_first_node_in_group("player")
+
+
+func _setup_animation() -> void:
+	_anim = AnimatedSprite2D.new()
+	_anim.name = "Anim"
+	_anim.position = Vector2(0, -20)
+	add_child(_anim)
+
+	var sprite_dir := "res://assets/sprites/bosses/blackwood/"
+	var sf: SpriteFrames = ANIM_LOADER.build_frames(ANIM_LOADER.boss_anims(sprite_dir))
+	if sf == null:
+		_anim.visible = false
+		return
+
+	_anim.sprite_frames = sf
+	_anim.visible = true
+	_has_sheets   = true
+	_anim.play("idle")
+
+
+func _set_boss_anim(state: String) -> void:
+	if _anim and _has_sheets and _anim.animation != state:
+		_anim.play(state)
 
 
 func set_flee_target(pos: Vector2) -> void:
@@ -83,26 +111,28 @@ func _physics_process(delta: float) -> void:
 
 
 func _tick_surprised(delta: float) -> void:
+	_set_boss_anim("idle")
 	_surprised_timer -= delta
 	if _surprised_timer <= 0.0:
 		_phase = Phase.FIGHT
-		_deacon_timer = DEACON_SPAWN_INTERVAL * 0.5  # first deacon wave comes faster
+		_deacon_timer = DEACON_SPAWN_INTERVAL * 0.5
 
 
 func _tick_fight(delta: float) -> void:
 	if _player == null:
 		return
 
-	# Keep a mid-range distance — close enough to feel threatening,
-	# far enough that players can hit him without running into him.
 	var to_player := _player.global_position - global_position
 	var dist := to_player.length()
 	if dist < 120.0:
-		velocity = -to_player.normalized() * SPEED_FIGHT  # back away
+		velocity = -to_player.normalized() * SPEED_FIGHT
+		_set_boss_anim("walk")
 	elif dist > 200.0:
-		velocity = to_player.normalized() * SPEED_FIGHT   # close in
+		velocity = to_player.normalized() * SPEED_FIGHT
+		_set_boss_anim("walk")
 	else:
 		velocity = Vector2.ZERO
+		_set_boss_anim("idle")
 	move_and_slide()
 
 	# Prune freed deacons
@@ -146,6 +176,12 @@ func _trigger_flee() -> void:
 		if is_instance_valid(d):
 			d.despawn()
 	_live_deacons.clear()
+	# Blackwood spared (fled) — solidarity point, boss not executed.
+	Bosses.register_boss_defeat("Blackwood_rooftop", _last_hitter, false)
+	Morale.on_boss_defeated()
+	Reputation.on_boss_spared()
+	DialogueIntensity.on_boss_defeated(false)
+	RelationshipSystem.on_boss_defeated_together()
 	_fire_flashbang()
 
 
@@ -157,6 +193,12 @@ func _die() -> void:
 		if is_instance_valid(d):
 			d.despawn()
 	_live_deacons.clear()
+	# Final stand only: Blackwood executed (fought to 0 HP, never fled).
+	Bosses.register_boss_defeat("Blackwood_final", _last_hitter, true)
+	Morale.on_boss_defeated()
+	Reputation.on_boss_executed()
+	DialogueIntensity.on_boss_defeated(true)
+	RelationshipSystem.on_boss_defeated_together()
 	var tween := get_tree().create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.6)
 	tween.tween_callback(func():
@@ -253,13 +295,18 @@ func _fire_projectile(direction: Vector2) -> void:
 
 
 func _draw() -> void:
-	# Placeholder: white robe silhouette with a gold cross.
-	# Replaced with real Blackwood sprite when art lands.
-	draw_rect(Rect2(-12, -20, 24, 40), Color(0.95, 0.95, 0.9))   # robe
-	draw_rect(Rect2(-2, -28, 4, 14), Color(0.9, 0.75, 0.1))       # cross vertical
-	draw_rect(Rect2(-6, -24, 12, 3), Color(0.9, 0.75, 0.1))       # cross horizontal
-	# HP bar above sprite
+	if _has_sheets:
+		# HP bar only — sprite is drawn by AnimatedSprite2D
+		var bar_w := 40.0
+		var fill  := bar_w * (float(hp) / float(MAX_HP))
+		draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
+		draw_rect(Rect2(-bar_w / 2, -36, fill,  4), Color(0.9, 0.75, 0.1))
+		return
+	# Placeholder: white robe + gold cross + HP bar
+	draw_rect(Rect2(-12, -20, 24, 40), Color(0.95, 0.95, 0.9))
+	draw_rect(Rect2(-2, -28, 4, 14),   Color(0.9, 0.75, 0.1))
+	draw_rect(Rect2(-6, -24, 12, 3),   Color(0.9, 0.75, 0.1))
 	var bar_w := 40.0
-	var fill := bar_w * (float(hp) / float(MAX_HP))
+	var fill  := bar_w * (float(hp) / float(MAX_HP))
 	draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
-	draw_rect(Rect2(-bar_w / 2, -36, fill, 4), Color(0.9, 0.75, 0.1))
+	draw_rect(Rect2(-bar_w / 2, -36, fill,  4), Color(0.9, 0.75, 0.1))

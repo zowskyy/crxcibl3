@@ -61,6 +61,8 @@ func _ready() -> void:
 	dialogue_panel.visible = false
 	forgive_button.visible = false
 	turn_away_button.visible = false
+	# Entering the estate is the final story beat — maximum tension.
+	DialogueIntensity.on_boss_encountered("Emperor")
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -74,6 +76,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	Stress.tick(delta)
+	Morale.tick(delta)
+	Injury.tick(delta)
+	DialogueIntensity.tick(delta)
+	Hideout.tick(delta)
+	Scarcity.tick(delta)
 
 	if _arrival_timer > 0.0:
 		_arrival_timer -= delta
@@ -85,7 +92,9 @@ func _process(delta: float) -> void:
 func _on_blackwood_defeated(finisher: String) -> void:
 	# Blackwood dies here — he fled the rooftop, but there's nowhere left
 	# to run. executed=true: this was a fight to the death, not a sparing.
-	GameState.mark_boss_defeated("Blackwood", true, finisher)
+	# Bosses.register_boss_defeat already called by BossBlackwood._die() in
+	# the final_stand path — GameState.mark_boss_defeated is called there.
+	Emperor.start_reckoning()
 	_reckoning = true
 	fire_button.visible = false
 	await get_tree().create_timer(1.5).timeout
@@ -124,6 +133,12 @@ func _offer_choice() -> void:
 
 func _choose(forgive: bool) -> void:
 	GameState.emperor_forgiven = forgive
+	Emperor.on_emperor_choice(forgive)          # heat adjustment + signal
+	DialogueIntensity.on_dialogue_choice_made(15)  # moral reckoning spikes tension
+	if forgive:
+		Reputation.on_crew_saved()              # mercy = solidarity
+	else:
+		Reputation.on_boss_executed()           # vengeance = ruthlessness
 	_awaiting_choice = false
 	forgive_button.visible = false
 	turn_away_button.visible = false
@@ -136,19 +151,19 @@ func _choose(forgive: bool) -> void:
 
 func _end_reckoning() -> void:
 	dialogue_panel.visible = false
-	if not GameState.quests_completed.has("emperor_reckoning"):
-		GameState.quests_completed.append("emperor_reckoning")
-	# The war dies with him — the city stops hunting a crew that's walking away.
-	GameState.modify_heat(-50.0)
+	# Emperor.on_emperor_death() records the quest, drops heat -50, and emits arc_complete.
+	# No need to touch quests_completed or heat here — it's all inside that call.
+	Morale.on_quest_completed(20)    # major win — big morale boost
+	Emperor.on_emperor_death()       # records quest, -50 heat, arc_complete signal
+	Epilogue.start_epilogue()        # determines ending type from current state
 
 	# CutsceneDirector sequences the closing beat:
-	#   Emperor fades → pause → save → scene change.
-	# First real in-game use of both CutsceneDirector and SaveSystem.save_game().
+	#   Emperor fades → 1s silence → save → Epilogue scene.
 	var pb := PatternBuilder.new()
 	pb.add_interpolate_value(emperor, "modulate:a", 1.0, 0.0, 2.0) \
 	  .add_wait(1.0) \
 	  .add_call_method(SaveSystem, "save_game", []) \
 	  .add_call_method(get_tree(), "change_scene_to_file",
-	                   ["res://scenes/TestRoom.tscn"]) \
+	                   ["res://scenes/EpilogueScene.tscn"]) \
 	  .done()
 	CutsceneDirector.start(pb.build())

@@ -4,7 +4,7 @@ extends Control
 ## Display 12 hero portraits in a 4×3 grid, allow player to select 1–4 heroes.
 ## "Start Mission" button loads TestRoom with selected squad.
 
-@onready var hero_grid: GridContainer = $ScrollContainer/GridContainer
+@onready var hero_grid: GridContainer = $VBoxContainer/ScrollContainer/GridContainer
 @onready var squad_label: Label = $VBoxContainer/SquadLabel
 @onready var start_button: Button = $VBoxContainer/StartButton
 
