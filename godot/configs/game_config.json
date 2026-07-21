@@ -1,0 +1,116 @@
+﻿{
+  "game": {
+    "name": "CRXCIBL3",
+    "version": "0.1.0",
+    "fps": 60,
+    "view_width": 320,
+    "view_height": 180
+  },
+  "gameplay": {
+    "heat_max": 100,
+    "heat_generation_rate": 0.5,
+    "heat_reduction_rate": 2.0,
+    "resources_starting": 100,
+    "enemy_wave_interval": 30
+  },
+  "balance": {
+    "hero_health": {
+      "enforcer": 120,
+      "wheelman": 100,
+      "hacker": 60,
+      "street_rat": 70
+    },
+    "hero_damage": {
+      "enforcer": 15,
+      "wheelman": 10,
+      "hacker": 20,
+      "street_rat": 12
+    }
+  },
+  "heroes": {
+    "enforcer_big_body": {
+      "name": "Big Body",
+      "variant_id": "enforcer_big_body",
+      "archetype": "enforcer",
+      "real_name": "Marcus Williams",
+      "role": "the oldest"
+    },
+    "enforcer_ghost": {
+      "name": "Ghost",
+      "variant_id": "enforcer_ghost",
+      "archetype": "enforcer",
+      "real_name": "Victor Reyes",
+      "role": "the operator"
+    },
+    "enforcer_mamas_boy": {
+      "name": "Mama's Boy",
+      "variant_id": "enforcer_mamas_boy",
+      "archetype": "enforcer",
+      "real_name": "DeShawn Johnson",
+      "role": "the youngest"
+    },
+    "wheelman_slick": {
+      "name": "Slick",
+      "variant_id": "wheelman_slick",
+      "archetype": "wheelman",
+      "real_name": "Elena Rodriguez",
+      "role": "the driver"
+    },
+    "wheelman_grinder": {
+      "name": "Grinder",
+      "variant_id": "wheelman_grinder",
+      "archetype": "wheelman",
+      "real_name": "Eddie Kowalski",
+      "role": "the mechanic"
+    },
+    "wheelman_bonnie": {
+      "name": "Bonnie",
+      "variant_id": "wheelman_bonnie",
+      "archetype": "wheelman",
+      "real_name": "Bonnie Greene",
+      "role": "the fixer"
+    },
+    "hacker_byte": {
+      "name": "Byte",
+      "variant_id": "hacker_byte",
+      "archetype": "hacker",
+      "real_name": "Kevin Chen",
+      "role": "the coder"
+    },
+    "hacker_hacktivist": {
+      "name": "Hacktivist",
+      "variant_id": "hacker_hacktivist",
+      "archetype": "hacker",
+      "real_name": "Maya Park",
+      "role": "the activist"
+    },
+    "hacker_skeez": {
+      "name": "Skeez",
+      "variant_id": "hacker_skeez",
+      "archetype": "hacker",
+      "real_name": "Archibald Whitmore III",
+      "role": "the grifter"
+    },
+    "street_rat_slink": {
+      "name": "Slink",
+      "variant_id": "street_rat_slink",
+      "archetype": "street_rat",
+      "real_name": "José Reyes",
+      "role": "the scout"
+    },
+    "street_rat_vex": {
+      "name": "Vex",
+      "variant_id": "street_rat_vex",
+      "archetype": "street_rat",
+      "real_name": "Vanessa Martinez",
+      "role": "the shadow"
+    },
+    "street_rat_mouse": {
+      "name": "Mouse",
+      "variant_id": "street_rat_mouse",
+      "archetype": "street_rat",
+      "real_name": "Terrence Johnson",
+      "role": "the ghost"
+    }
+  }
+}

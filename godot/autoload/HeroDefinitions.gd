@@ -47,7 +47,7 @@ func _load_from_config() -> void:
 		push_error("Failed to parse hero config JSON: %s" % json.get_error_message())
 		return
 
-	var data := json.data
+	var data: Dictionary = json.data as Dictionary
 	if data == null or data.get("heroes") == null:
 		push_error("Hero config missing 'heroes' section")
 		return
