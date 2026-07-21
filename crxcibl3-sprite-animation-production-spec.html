@@ -1,0 +1,354 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>CRXCIBL3 — Sprite &amp; Animation Production Spec</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+    background: #ffffff; color: #1f2328;
+    max-width: 760px; margin: 0 auto; padding: 24px 16px 48px;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 28px 0 8px;
+       padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
+  h3 { font-size: 13px; font-weight: 700; margin: 18px 0 6px; color: #1f2328; }
+  p  { margin-bottom: 8px; color: #1f2328; }
+  .muted { color: #57606a; font-size: 12px; }
+  .badge {
+    display: inline-block; padding: 1px 7px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; margin-right: 4px;
+    background: #f7f8fa; border: 1px solid #e5e7eb; color: #57606a;
+  }
+  .badge.foss  { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+  .badge.free  { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+  .badge.warn  { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 13px; }
+  th { background: #f7f8fa; text-align: left; padding: 6px 8px;
+       border: 1px solid #e5e7eb; font-weight: 600; }
+  td { padding: 5px 8px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .sheet {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 4px; padding: 10px 12px; margin: 8px 0 14px;
+  }
+  .sheet code {
+    font-family: "Consolas", "Fira Mono", monospace; font-size: 12px;
+    display: block; white-space: pre-wrap; color: #1f2328;
+    word-break: break-word;
+  }
+  .prompt-box {
+    background: #1f2328; border-radius: 4px; padding: 10px 12px; margin: 8px 0 14px;
+  }
+  .prompt-box code {
+    font-family: "Consolas", "Fira Mono", monospace; font-size: 11.5px;
+    display: block; white-space: pre-wrap; color: #e5e7eb;
+    word-break: break-word;
+  }
+  .anim-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+  .anim-cell {
+    background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 4px;
+    padding: 5px 8px; font-size: 12px; min-width: 110px;
+  }
+  .anim-cell strong { display: block; color: #3b82d4; font-size: 11px; }
+  .path-box {
+    font-family: "Consolas", "Fira Mono", monospace; font-size: 11px;
+    color: #57606a; background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 3px; padding: 2px 5px; display: inline-block; margin: 1px 0;
+  }
+  .section-label {
+    font-size: 11px; font-weight: 700; color: #57606a;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+  }
+  footer {
+    margin-top: 48px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 11px; color: #57606a;
+  }
+</style>
+</head>
+<body>
+
+<h1>CRXCIBL3 — Sprite &amp; Animation Production Spec</h1>
+<p class="muted">Metal Slug–style 12-frame character animations · All tools 100% free &amp; open-source</p>
+
+
+<h2>Tool Chain (FOSS only)</h2>
+<p>Replace Leonardo.ai with this fully free, locally-run pipeline:</p>
+
+<table>
+  <tr>
+    <th>Step</th><th>Tool</th><th>Purpose</th><th>License</th>
+  </tr>
+  <tr>
+    <td>1 · Generate</td>
+    <td><strong>Stable Diffusion</strong> via <strong>AUTOMATIC1111 WebUI</strong><br />
+    <span class="muted">or ComfyUI — both free, run locally on GPU or CPU</span></td>
+    <td>Generate base pose reference image from prompt. Use <em>anything-v3</em> or <em>DreamShaper</em> checkpoint + <em>Pixel Art XL</em> LoRA for pixel style.</td>
+    <td><span class="badge foss">AGPL-3</span></td>
+  </tr>
+  <tr>
+    <td>2 · Pixelate</td>
+    <td><strong>Aseprite</strong> (compile from source free) <em>or</em> <strong>LibreSprite</strong> (binary free)<br />
+    <span class="muted">LibreSprite = Aseprite fork, MIT licensed, binary downloads available</span></td>
+    <td>Import SD output, resize to target frame size with Nearest Neighbor, quantize palette to 12–16 colors, hand-correct outlines.</td>
+    <td><span class="badge foss">MIT</span></td>
+  </tr>
+  <tr>
+    <td>3 · Animate</td>
+    <td><strong>LibreSprite</strong> (same tool)<br />
+    <span class="muted">Has full animation timeline, onion-skinning, and export to horizontal strip PNG</span></td>
+    <td>Draw remaining frames using first AI pose as reference. Use onion-skinning to maintain consistent limb length across frames.</td>
+    <td><span class="badge foss">MIT</span></td>
+  </tr>
+  <tr>
+    <td>4 · Export</td>
+    <td><strong>LibreSprite</strong> Export Sprite Sheet</td>
+    <td>Export as horizontal strip PNG (all frames left-to-right on one row). Filename matches AnimationLoader convention.</td>
+    <td><span class="badge foss">MIT</span></td>
+  </tr>
+  <tr>
+    <td>5 · Import</td>
+    <td><strong>Godot 4.7</strong> editor (or <code>--headless --import</code> in CI)</td>
+    <td>Drop PNG into correct <code>res://assets/sprites/</code> subfolder. Godot auto-imports with Nearest filter on next boot or CI import step.</td>
+    <td><span class="badge foss">MIT</span></td>
+  </tr>
+</table>
+
+<p><strong>Download links:</strong><br />
+AUTOMATIC1111: <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">github.com/AUTOMATIC1111/stable-diffusion-webui</a><br />
+LibreSprite: <a href="https://libresprite.github.io">libresprite.github.io</a><br />
+Pixel Art XL LoRA: <a href="https://civitai.com/models/120096">civitai.com/models/120096</a> (free download, Civitai account required)</p>
+
+
+<h2>Sprite Specifications</h2>
+
+<table>
+  <tr><th>Character type</th><th>Frame size</th><th>Godot scale</th><th>Approx world px</th><th>Folder</th></tr>
+  <tr>
+    <td>Player heroes</td><td>32 × 48 px</td><td>1.0</td><td>32 × 48 world units</td>
+    <td><span class="path-box">res://assets/sprites/heroes/&lt;variant_id&gt;/</span></td>
+  </tr>
+  <tr>
+    <td>Grunt enemy</td><td>24 × 32 px</td><td>1.0</td><td>24 × 32 world units</td>
+    <td><span class="path-box">res://assets/sprites/enemies/grunt/</span></td>
+  </tr>
+  <tr>
+    <td>Boss characters</td><td>48 × 64 px</td><td>1.0</td><td>48 × 64 world units</td>
+    <td><span class="path-box">res://assets/sprites/bosses/&lt;boss_id&gt;/</span></td>
+  </tr>
+</table>
+
+<p class="muted">All sprite sheets are horizontal strips: N frames × frame_width pixels wide, frame_height pixels tall. One animation per file. AnimationLoader.gd reads frame count from sheet width ÷ frame_w automatically.</p>
+
+
+<h2>Style Anchor String</h2>
+<p>Append to <strong>every</strong> Stable Diffusion prompt:</p>
+<div class="prompt-box"><code>16-bit pixel art, top-down 3/4 angle game sprite, flat color fills, hard black outlines, no gradients, no anti-aliasing, limited retro palette of 12-16 colors, muted gritty urban tones, transparent background, single character centered, Metal Slug sprite style</code></div>
+
+<p>Recommended SD settings: Steps 30, CFG 7.5, Sampler DPM++ 2M Karras, 512×512 output then resize to target in LibreSprite with Nearest Neighbor.</p>
+
+
+<h2>Player Hero Animations (7 states)</h2>
+
+<table>
+  <tr>
+    <th>File name</th><th>Frames</th><th>FPS</th><th>Loop</th><th>Sheet size</th><th>Description</th>
+  </tr>
+  <tr><td><span class="path-box">idle.png</span></td><td>6</td><td>8</td><td>yes</td><td>192 × 48</td><td>Subtle breathing: chest rises, head bobs 1px, weapon rests</td></tr>
+  <tr><td><span class="path-box">walk_right.png</span></td><td>12</td><td>12</td><td>yes</td><td>384 × 48</td><td>Full stride cycle moving right, weapon raised</td></tr>
+  <tr><td><span class="path-box">walk_left.png</span></td><td>12</td><td>12</td><td>yes</td><td>384 × 48</td><td>Mirror of walk_right (can be generated as H-flip in LibreSprite)</td></tr>
+  <tr><td><span class="path-box">walk_up.png</span></td><td>8</td><td>12</td><td>yes</td><td>256 × 48</td><td>Moving away from camera, back view, arms at sides</td></tr>
+  <tr><td><span class="path-box">walk_down.png</span></td><td>8</td><td>12</td><td>yes</td><td>256 × 48</td><td>Moving toward camera, full front view stride</td></tr>
+  <tr><td><span class="path-box">shoot.png</span></td><td>4</td><td>12</td><td>no</td><td>128 × 48</td><td>Raise weapon, muzzle flash frame, recoil, recover. Played for 0.12s then returns to walk/idle.</td></tr>
+  <tr><td><span class="path-box">downed.png</span></td><td>6</td><td>10</td><td>no</td><td>192 × 48</td><td>Hit flash white, stumble, collapse to ground. Holds on last frame until respawn.</td></tr>
+</table>
+
+<p><strong>Total frames per hero: 56. Time to animate one hero: ~4–6 hours in LibreSprite using AI reference pose.</strong></p>
+
+
+<h3>Per-Hero Prompts</h3>
+<p class="muted">Use for the idle.png reference pose in SD. Then animate remaining frames by hand in LibreSprite using this as your visual anchor. Append the Style Anchor string to every prompt.</p>
+
+<div class="section-label">Enforcer archetype (Big Body · Ghost · Mama's Boy)</div>
+<div class="prompt-box"><code>pixel art game sprite, Black male character, broad-shouldered enforcer, wearing dark urban streetwear, baggy jacket, bandana, holding a handgun at waist level, standing idle pose, 3/4 top-down view, gritty 90s West Coast style</code></div>
+
+<div class="section-label">Wheelman archetype (Slick · Grinder · Bonnie)</div>
+<div class="prompt-box"><code>pixel art game sprite, Latina female character, slim build, mechanic-style outfit, fingerless gloves, utility vest, grease stains, arms relaxed at sides, standing idle pose, 3/4 top-down view, gritty 90s West Coast style</code></div>
+
+<div class="section-label">Hacker archetype (Byte · Hacktivist · Skeez)</div>
+<div class="prompt-box"><code>pixel art game sprite, Asian male character, thin frame, oversized hoodie with circuit-board print, laptop bag strap across chest, head slightly tilted, standing idle pose, 3/4 top-down view, gritty urban tech style</code></div>
+
+<div class="section-label">Street Rat archetype (Slink · Vex · Mouse)</div>
+<div class="prompt-box"><code>pixel art game sprite, Latino youth character, wiry athletic build, tank top, cargo shorts, high-top sneakers, crouched slightly as if ready to sprint, standing idle pose, 3/4 top-down view, gritty 90s West Coast style</code></div>
+
+<p class="muted">Variant differences (Big Body vs Ghost vs Mama's Boy etc.) are handled by palette swaps and minor clothing detail changes in LibreSprite after the base animation is complete — not separate SD generations. This cuts work from 36 sets down to 4 base sets × 3 recolors.</p>
+
+
+<h2>Hero Variant ID → Folder Map</h2>
+<table>
+  <tr><th>variant_id (used in code)</th><th>Sprite folder</th><th>Base archetype</th></tr>
+  <tr><td>enforcer_big_body</td>  <td><span class="path-box">heroes/enforcer_big_body/</span></td>  <td>enforcer (palette A)</td></tr>
+  <tr><td>enforcer_ghost</td>     <td><span class="path-box">heroes/enforcer_ghost/</span></td>     <td>enforcer (palette B)</td></tr>
+  <tr><td>enforcer_mamas_boy</td> <td><span class="path-box">heroes/enforcer_mamas_boy/</span></td> <td>enforcer (palette C)</td></tr>
+  <tr><td>wheelman_slick</td>     <td><span class="path-box">heroes/wheelman_slick/</span></td>     <td>wheelman (palette A)</td></tr>
+  <tr><td>wheelman_grinder</td>   <td><span class="path-box">heroes/wheelman_grinder/</span></td>   <td>wheelman (palette B)</td></tr>
+  <tr><td>wheelman_bonnie</td>    <td><span class="path-box">heroes/wheelman_bonnie/</span></td>    <td>wheelman (palette C)</td></tr>
+  <tr><td>hacker_byte</td>        <td><span class="path-box">heroes/hacker_byte/</span></td>        <td>hacker (palette A)</td></tr>
+  <tr><td>hacker_hacktivist</td>  <td><span class="path-box">heroes/hacker_hacktivist/</span></td>  <td>hacker (palette B)</td></tr>
+  <tr><td>hacker_skeez</td>       <td><span class="path-box">heroes/hacker_skeez/</span></td>       <td>hacker (palette C)</td></tr>
+  <tr><td>street_rat_slink</td>   <td><span class="path-box">heroes/street_rat_slink/</span></td>   <td>street_rat (palette A)</td></tr>
+  <tr><td>street_rat_vex</td>     <td><span class="path-box">heroes/street_rat_vex/</span></td>     <td>street_rat (palette B)</td></tr>
+  <tr><td>street_rat_mouse</td>   <td><span class="path-box">heroes/street_rat_mouse/</span></td>   <td>street_rat (palette C)</td></tr>
+</table>
+
+
+<h2>Enemy Animations (4 states)</h2>
+
+<table>
+  <tr><th>File name</th><th>Frames</th><th>FPS</th><th>Loop</th><th>Sheet size</th><th>Description</th></tr>
+  <tr><td><span class="path-box">idle.png</span></td>  <td>4</td> <td>8</td>  <td>yes</td><td>96 × 32</td>  <td>Grunt standing, weight shifting, weapon low</td></tr>
+  <tr><td><span class="path-box">walk.png</span></td>  <td>8</td> <td>12</td> <td>yes</td><td>192 × 32</td> <td>Aggressive stride toward player</td></tr>
+  <tr><td><span class="path-box">attack.png</span></td><td>4</td> <td>12</td> <td>no</td> <td>96 × 32</td>  <td>Lunge/swing animation, played on ATTACK_COOLDOWN</td></tr>
+  <tr><td><span class="path-box">die.png</span></td>   <td>6</td> <td>10</td> <td>no</td> <td>144 × 32</td> <td>Hit flash, stagger back, fall — dissolve shader takes over at end</td></tr>
+</table>
+
+<p><strong>Total frames: 22. Folder:</strong> <span class="path-box">res://assets/sprites/enemies/grunt/</span></p>
+
+<div class="section-label">SD Prompt for grunt enemy</div>
+<div class="prompt-box"><code>pixel art game sprite, rival gang member, male, dark hoodie, jeans, combat boots, holding a bat or pistol, walking pose, menacing expression, 3/4 top-down view, gritty urban style, single character centered on transparent background</code></div>
+
+
+<h2>Boss Animations (5 states)</h2>
+
+<table>
+  <tr><th>File name</th><th>Frames</th><th>FPS</th><th>Loop</th><th>Sheet size</th><th>Description</th></tr>
+  <tr><td><span class="path-box">idle.png</span></td>  <td>6</td>  <td>8</td>  <td>yes</td><td>288 × 64</td> <td>Imposing stance, slow breathing, robe/coat sways</td></tr>
+  <tr><td><span class="path-box">walk.png</span></td>  <td>8</td>  <td>12</td> <td>yes</td><td>384 × 64</td> <td>Deliberate advance or retreat stride</td></tr>
+  <tr><td><span class="path-box">attack.png</span></td><td>6</td>  <td>12</td> <td>no</td> <td>288 × 64</td> <td>Wind-up, fire/strike, recovery — loops on PROJECTILE_INTERVAL</td></tr>
+  <tr><td><span class="path-box">die.png</span></td>   <td>8</td>  <td>10</td> <td>no</td> <td>384 × 64</td> <td>Stagger, kneel, collapse — dissolve tween fires after last frame</td></tr>
+  <tr><td><span class="path-box">flee.png</span></td>  <td>8</td>  <td>14</td> <td>no</td> <td>384 × 64</td> <td>Sprint frames — played during flashbang/leap escape sequence</td></tr>
+</table>
+
+<p><strong>Total frames per boss: 36.</strong></p>
+
+<h3>Boss-specific prompts</h3>
+
+<div class="section-label">Blackwood — The Priest (folder: <span class="path-box">bosses/blackwood/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, tall Black male preacher, white robes with gold trim, gold cross necklace, staff weapon glowing faintly, imposing stance, 3/4 top-down view, dramatic lighting from below, gritty urban religious aesthetic</code></div>
+
+<div class="section-label">Cross — The Fixer (folder: <span class="path-box">bosses/cross/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, middle-aged white male politician, expensive suit, American flag pin, earpiece, flanked by invisible bodyguards suggestion in pose, pointing gesture as attack, 3/4 top-down view, corrupt official aesthetic</code></div>
+
+<div class="section-label">Voss — The Broker (folder: <span class="path-box">bosses/voss/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, slim male corporate figure, all-black tactical suit, tablet/hologram device in hand, drone controller gauntlet, calculating cold expression, 3/4 top-down view, cyberpunk financial thriller aesthetic</code></div>
+
+<div class="section-label">Moreau — The Pusher (folder: <span class="path-box">bosses/moreau/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, female scientist character, torn lab coat over tactical gear, cracked visor, chemical injector in hand, veins glowing green suggesting transformation, 3/4 top-down view, body horror pharmaceutical aesthetic</code></div>
+
+<div class="section-label">Hayes — The Warden (folder: <span class="path-box">bosses/hayes/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, stocky male prison warden, riot gear armor, full face shield, reinforced baton and shield, intimidating bulk, 3/4 top-down view, institutional brutality aesthetic</code></div>
+
+<div class="section-label">Webb — The Trader (folder: <span class="path-box">bosses/webb/</span>)</div>
+<div class="prompt-box"><code>pixel art game sprite, male tech mogul, casual expensive clothes, mech suit lower half visible, data visor, holographic shield emitter on wrist, smug expression, 3/4 top-down view, Silicon Valley villain aesthetic</code></div>
+
+
+<h2>Step-by-Step Workflow Per Character</h2>
+
+<table>
+  <tr><th>#</th><th>Step</th><th>Time (est.)</th><th>Notes</th></tr>
+  <tr>
+    <td>1</td>
+    <td>Generate idle reference in SD</td>
+    <td>10–20 min</td>
+    <td>Run ~20 generations, pick best pose. Save at 512×512. You only need 1 good reference image per archetype base.</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Import into LibreSprite, resize to frame size</td>
+    <td>5 min</td>
+    <td>File → New canvas at frame size (e.g. 32×48). Paste SD output as layer. Scale down with Nearest Neighbor. Clean up outline pixels manually.</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Trace + simplify to 12–16 color palette</td>
+    <td>20–30 min</td>
+    <td>Use Palette → Quantize. Delete the SD layer. Redraw clean pixel art over the trace using solid colors only. No anti-aliasing.</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Animate remaining frames (walk, shoot, downed)</td>
+    <td>2–4 hrs</td>
+    <td>Enable onion skin. Duplicate idle frame as base. Adjust limb positions per frame. Walk cycle: contact→down→passing→up→contact. 12 frames = 2 full stride cycles.</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Export as horizontal strip</td>
+    <td>2 min</td>
+    <td>File → Export Sprite Sheet. Layout: Horizontal strip. Check "Trim cels." Output: PNG. Filename matches animation name (e.g. walk_right.png).</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Place in correct Godot folder</td>
+    <td>1 min</td>
+    <td>Drop into godot/assets/sprites/heroes/&lt;variant_id&gt;/. Run godot --headless --path godot --import or just open editor. AnimationLoader auto-picks it up at next boot — no code changes needed.</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Palette variants for same archetype</td>
+    <td>15 min each</td>
+    <td>In LibreSprite: Edit → Replace Color for each skin/clothes color. Save as separate folder. 3 variants per archetype = 3 palette swaps, not 3 full redraws.</td>
+  </tr>
+</table>
+
+
+<h2>12-Frame Walk Cycle Breakdown (Metal Slug reference)</h2>
+<p>Walk right: frame-by-frame body position for 32×48 sprite. Right = positive X direction.</p>
+
+<table>
+  <tr><th>Frame</th><th>Phase</th><th>Right leg</th><th>Left leg</th><th>Torso</th><th>Weapon arm</th></tr>
+  <tr><td>1</td><td>Contact R</td><td>Forward, foot flat</td><td>Back, toe push</td><td>Upright</td><td>Forward</td></tr>
+  <tr><td>2</td><td>Down R</td><td>Under body, knee bent</td><td>Lifting</td><td>Slight dip (−1px)</td><td>Mid</td></tr>
+  <tr><td>3</td><td>Passing R</td><td>Planted, straight</td><td>Passing through center</td><td>Tallest (+1px)</td><td>Back</td></tr>
+  <tr><td>4</td><td>Up R</td><td>Behind, pushing</td><td>Swinging forward</td><td>Rising</td><td>Forward</td></tr>
+  <tr><td>5</td><td>Contact L</td><td>Back, toe push</td><td>Forward, foot flat</td><td>Upright</td><td>Back</td></tr>
+  <tr><td>6</td><td>Down L</td><td>Lifting</td><td>Under body, knee bent</td><td>Slight dip (−1px)</td><td>Mid</td></tr>
+  <tr><td>7</td><td>Passing L</td><td>Passing through center</td><td>Planted, straight</td><td>Tallest (+1px)</td><td>Forward</td></tr>
+  <tr><td>8</td><td>Up L</td><td>Swinging forward</td><td>Behind, pushing</td><td>Rising</td><td>Back</td></tr>
+  <tr><td>9–12</td><td>Repeat 1–4</td><td colspan="4">Second stride cycle — identical to frames 1–4</td></tr>
+</table>
+<p class="muted">Key rule: body height oscillates ±1 pixel per frame. Arms counter-swing to legs. Weapon stays level regardless of body bob. This is what makes Metal Slug feel snappy vs. floaty.</p>
+
+
+<h2>Recommended Production Order</h2>
+<table>
+  <tr><th>#</th><th>Asset</th><th>Why first</th></tr>
+  <tr><td>1</td><td>enforcer_ghost — all 7 states</td><td>Already in the game as static sprite. Swap-in is immediate visual upgrade. Confirms the pipeline works end-to-end.</td></tr>
+  <tr><td>2</td><td>grunt enemy — all 4 states</td><td>Appears in every scene. Most visible animated character after the player.</td></tr>
+  <tr><td>3</td><td>BossBlackwood — all 5 states</td><td>Named boss with phases that map directly to animation states.</td></tr>
+  <tr><td>4</td><td>Remaining 11 hero variants</td><td>Palette-swap from base archetypes — fast after base is done.</td></tr>
+  <tr><td>5</td><td>Remaining 5 bosses</td><td>Each needs unique design but shares the same 5-state structure.</td></tr>
+</table>
+
+
+<h2>How the Code Picks Up New Art (no changes needed)</h2>
+<div class="sheet"><code>## When you drop idle.png into:
+## godot/assets/sprites/heroes/enforcer_ghost/idle.png
+
+## AnimationLoader.gd automatically detects it:
+var sprite_dir := "res://assets/sprites/heroes/enforcer_ghost/"
+var sf: SpriteFrames = ANIM_LOADER.build_frames(
+    ANIM_LOADER.player_anims(sprite_dir)
+)
+## → builds SpriteFrames from all PNGs found in that folder
+## → assigns to AnimatedSprite2D child "Anim"
+## → hides static Sprite2D "PlayerSprite" automatically
+
+## Nothing else to change. Zero code edits per character.</code></div>
+
+<p>If only <em>some</em> animations exist (e.g. only idle.png is ready), AnimationLoader creates dummy 0-frame entries for missing states. The game keeps running — missing states silently show nothing while the present ones animate normally.</p>
+
+<footer>Made with IBM Bob</footer>
+</body>
+</html>
