@@ -514,6 +514,44 @@ Effect on gameplay loop: taking repeated hits in a long fight escalates into the
 moving sluggishly and shooting slowly, naturally rewarding spacing and retreating to let
 Stress decay before re-engaging. Matches the intended "fraying nerves" narrative of the meter.
 
+## Slice 3.4 — DONE: all mechanics modules wired into gameplay
+
+All 12 stub autoload modules (registered since earlier slices but calling nothing) are now
+wired into real gameplay events. No new files — every change was an additive hook into
+existing scenes and `GameState.reset_for_new_game()`.
+
+**Per-frame ticks added** — all four scenes (`TestRoom`, `RooftopScene`, `CarChaseScene`,
+`EmperorScene`) now tick `Morale`, `Injury`, `DialogueIntensity`, `Hideout`, and `Scarcity`
+alongside the existing `Stress.tick()` call.
+
+**Event hooks wired:**
+- `Player.take_damage()` → `Injury.on_hero_downed()` on first death hit.
+- `BossBlackwood._trigger_flee()` → `Bosses.register_boss_defeat("Blackwood_rooftop",
+  finisher, false)` + `Morale.on_boss_defeated()` + `Reputation.on_boss_spared()` +
+  `DialogueIntensity.on_boss_defeated(false)`. Removed the duplicate bare
+  `GameState.bosses_fought.append` from `RooftopScene._on_boss_fled()`.
+- `BossBlackwood._die()` (final stand) → same set with `executed=true`,
+  `"Blackwood_final"`, and `Reputation.on_boss_executed()`.
+- `RooftopScene._ready()` → `DialogueIntensity.on_boss_encountered("Blackwood")`.
+- `EmperorScene._ready()` → `DialogueIntensity.on_boss_encountered("Emperor")`.
+- `EmperorScene._on_blackwood_defeated()` → `Emperor.start_reckoning()`. Removed old
+  bare `GameState.mark_boss_defeated("Blackwood", ...)` — now handled by `Bosses`.
+- `EmperorScene._choose()` → `Emperor.on_emperor_choice(forgive)` +
+  `DialogueIntensity.on_dialogue_choice_made(15)` + `Reputation.on_crew_saved()` /
+  `on_boss_executed()`.
+- `EmperorScene._end_reckoning()` → `Morale.on_quest_completed(20)` +
+  `Emperor.on_emperor_death()` + `Epilogue.start_epilogue()`. Removed inline quest append
+  and `modify_heat(-50.0)` — both now inside `Emperor.on_emperor_death()`.
+
+**New-game reset** — `GameState.reset_for_new_game()` now calls `reset()` on all 13
+mechanics singletons. Previously a new game kept stale Stress / Injury / Morale state.
+
+**Not wired (intentional):**
+- `Alliance` / `Blame` — no faction or friendly-fire trigger exists yet; `reset()` wired.
+- `PermanentDeath` — soft-respawn means no permanent deaths yet; hook exists for Phase 3.
+- `Scarcity` — ticks/decays live; raise trigger will land when ammo economy is built.
+- `Hideout` — ticks; `enter_hideout()` wired but no safe-house zone in any scene yet.
+
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,

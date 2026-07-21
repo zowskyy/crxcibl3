@@ -160,3 +160,17 @@ func reset_for_new_game() -> void:
 	blame_ledger.clear()
 	current_act = 1
 	last_scene = "TestRoom"
+	# Reset all mechanics modules so a new run starts clean.
+	Stress.reset()
+	Scarcity.reset()
+	Injury.reset()
+	Hideout.reset()
+	Morale.reset()
+	Reputation.reset()
+	Alliance.reset()
+	DialogueIntensity.reset()
+	PermanentDeath.reset()
+	Blame.reset()
+	Bosses.reset()
+	Emperor.reset()
+	Epilogue.reset()

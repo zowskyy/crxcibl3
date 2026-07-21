@@ -100,6 +100,7 @@ func take_damage(amount: int) -> void:
 	health = clampi(health - amount, 0, MAX_HEALTH)
 	if is_dead() and not was_dead:
 		Stress.on_crew_member_downed()
+		Injury.on_hero_downed()          # crew injury tracker
 		set_physics_process(false)   # freeze movement and firing input
 		downed.emit()
 		_start_respawn()

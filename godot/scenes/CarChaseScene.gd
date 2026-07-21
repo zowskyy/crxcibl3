@@ -51,6 +51,11 @@ func _process(delta: float) -> void:
 
 	_elapsed += delta
 	Stress.tick(delta)
+	Morale.tick(delta)
+	Injury.tick(delta)
+	DialogueIntensity.tick(delta)
+	Hideout.tick(delta)
+	Scarcity.tick(delta)
 
 	# Scroll road
 	_scroll += SCROLL_SPEED * delta

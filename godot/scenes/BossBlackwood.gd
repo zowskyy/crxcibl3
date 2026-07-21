@@ -146,6 +146,11 @@ func _trigger_flee() -> void:
 		if is_instance_valid(d):
 			d.despawn()
 	_live_deacons.clear()
+	# Blackwood spared (fled) — solidarity point, boss not executed.
+	Bosses.register_boss_defeat("Blackwood_rooftop", _last_hitter, false)
+	Morale.on_boss_defeated()
+	Reputation.on_boss_spared()
+	DialogueIntensity.on_boss_defeated(false)
 	_fire_flashbang()
 
 
@@ -157,6 +162,11 @@ func _die() -> void:
 		if is_instance_valid(d):
 			d.despawn()
 	_live_deacons.clear()
+	# Final stand only: Blackwood executed (fought to 0 HP, never fled).
+	Bosses.register_boss_defeat("Blackwood_final", _last_hitter, true)
+	Morale.on_boss_defeated()
+	Reputation.on_boss_executed()
+	DialogueIntensity.on_boss_defeated(true)
 	var tween := get_tree().create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.6)
 	tween.tween_callback(func():

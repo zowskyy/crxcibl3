@@ -26,6 +26,8 @@ func _ready() -> void:
 	boss.fled.connect(_on_boss_fled)
 	flashbang.visible = false
 	fire_button.pressed.connect(func(): player.fire())
+	# Rooftop entry is the first boss encounter — tension spikes immediately.
+	DialogueIntensity.on_boss_encountered("Blackwood")
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -35,6 +37,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	Stress.tick(delta)
+	Morale.tick(delta)
+	Injury.tick(delta)
+	DialogueIntensity.tick(delta)
+	Hideout.tick(delta)
+	Scarcity.tick(delta)
 
 	if _arrival_timer > 0.0:
 		_arrival_timer -= delta
@@ -45,9 +52,9 @@ func _process(delta: float) -> void:
 
 func _on_boss_fled() -> void:
 	# Blackwood escaped — mission complete for this encounter.
-	# Mark the rooftop encounter done in GameState so it can't repeat,
-	# and return to the boardwalk (TestRoom).
-	GameState.bosses_fought.append("Blackwood_rooftop")
+	# Bosses.register_boss_defeat() was already called inside BossBlackwood._trigger_flee()
+	# (which runs just before the fled signal fires), so bosses_fought is already updated.
+	# The heat spike and scene transition are this scene's responsibility.
 	GameState.modify_heat(15.0)   # heat spikes from the confrontation
 	# Blackwood hit the street running — crew gives chase
 	await get_tree().create_timer(1.5).timeout
