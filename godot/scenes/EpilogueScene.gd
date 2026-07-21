@@ -25,22 +25,22 @@ func _on_play_again() -> void:
 
 func _format_summary(s: Dictionary) -> String:
 	var lines: Array = []
-	lines.append("— Run Summary —")
+	lines.append("- Run Summary -")
 	lines.append("")
-	lines.append("Bosses defeated:  %d / 7" % s.get("bosses_defeated", 0))
-	lines.append("Crew lost:        %d" % s.get("crew_lost", 0))
-	lines.append("Final heat:       %.0f" % s.get("heat_final", 0.0))
-	lines.append("Final morale:     %d" % s.get("morale_final", 0))
+	lines.append("Bosses defeated:  %d / 7" % int(s.get("bosses_defeated", 0)))
+	lines.append("Crew lost:        %d"     % int(s.get("crew_lost",       0)))
+	lines.append("Final heat:       %.0f"  % float(s.get("heat_final",    0.0)))
+	lines.append("Final morale:     %d"    % int(s.get("morale_final",    0)))
 
-	var forgiven = s.get("emperor_forgiven", null)
+	var forgiven: Variant = s.get("emperor_forgiven", null)
 	if forgiven == true:
 		lines.append("Emperor:          Forgiven")
 	elif forgiven == false:
 		lines.append("Emperor:          Turned away")
 	else:
-		lines.append("Emperor:          —")
+		lines.append("Emperor:          -")
 
-	var top := s.get("top_contributor", "")
+	var top: String = str(s.get("top_contributor", ""))
 	if top != "":
 		lines.append("Most Runes:       %s" % top)
 
