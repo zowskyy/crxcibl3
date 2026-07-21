@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="CRXCIBL3"
-run/main_scene="res://scenes/HeroSelectionUI.tscn"
+run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
@@ -41,6 +41,7 @@ Blame="*res://autoload/Blame.gd"
 Bosses="*res://autoload/Bosses.gd"
 Emperor="*res://autoload/Emperor.gd"
 Epilogue="*res://autoload/Epilogue.gd"
+RelationshipSystem="*res://autoload/RelationshipSystem.gd"
 
 [display]
 

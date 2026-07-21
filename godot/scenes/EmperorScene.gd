@@ -158,13 +158,12 @@ func _end_reckoning() -> void:
 	Epilogue.start_epilogue()        # determines ending type from current state
 
 	# CutsceneDirector sequences the closing beat:
-	#   Emperor fades → pause → save → scene change.
-	# First real in-game use of both CutsceneDirector and SaveSystem.save_game().
+	#   Emperor fades → 1s silence → save → Epilogue scene.
 	var pb := PatternBuilder.new()
 	pb.add_interpolate_value(emperor, "modulate:a", 1.0, 0.0, 2.0) \
 	  .add_wait(1.0) \
 	  .add_call_method(SaveSystem, "save_game", []) \
 	  .add_call_method(get_tree(), "change_scene_to_file",
-	                   ["res://scenes/TestRoom.tscn"]) \
+	                   ["res://scenes/EpilogueScene.tscn"]) \
 	  .done()
 	CutsceneDirector.start(pb.build())

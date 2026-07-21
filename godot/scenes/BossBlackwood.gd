@@ -36,6 +36,7 @@ const FLASHBANG_DURATION := 1.8  # seconds the screen stays white
 
 const ENEMY_SCRIPT      := preload("res://scenes/Enemy.gd")
 const PROJECTILE_SCRIPT := preload("res://scenes/BossProjectile.gd")
+const ANIM_LOADER       := preload("res://scenes/AnimationLoader.gd")
 
 enum Phase { SURPRISED, FIGHT, FLEE, DONE }
 
@@ -75,7 +76,7 @@ func _setup_animation() -> void:
 	add_child(_anim)
 
 	var sprite_dir := "res://assets/sprites/bosses/blackwood/"
-	var sf := AnimationLoader.build_frames(AnimationLoader.boss_anims(sprite_dir))
+	var sf: SpriteFrames = ANIM_LOADER.build_frames(ANIM_LOADER.boss_anims(sprite_dir))
 	if sf == null:
 		_anim.visible = false
 		return

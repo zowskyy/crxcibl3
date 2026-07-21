@@ -55,20 +55,15 @@ func _find_joystick() -> void:
 
 
 func _setup_animation() -> void:
-	# Look for a child AnimatedSprite2D named "Anim".
-	# Scenes that embed Player nodes (TestRoom, RooftopScene, EmperorScene) all
-	# have a Sprite2D child "PlayerSprite" for the static hero image — that stays
-	# and stays visible until sheets are loaded, then we hide it.
 	_anim = get_node_or_null("Anim") as AnimatedSprite2D
 	if _anim == null:
-		# Create it at runtime so scene files don't need manual editing.
 		_anim = AnimatedSprite2D.new()
 		_anim.name = "Anim"
 		_anim.position = Vector2(0, -12)
 		add_child(_anim)
 
 	var sprite_dir := "res://assets/sprites/heroes/%s/" % hero_name
-	var sf := AnimationLoader.build_frames(AnimationLoader.player_anims(sprite_dir))
+	var sf: SpriteFrames = ANIM_LOADER.build_frames(ANIM_LOADER.player_anims(sprite_dir))
 	if sf == null:
 		# No sheets — keep static Sprite2D visible, hide AnimatedSprite2D.
 		_anim.visible = false

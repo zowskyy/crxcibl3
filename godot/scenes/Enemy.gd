@@ -47,6 +47,8 @@ func _setup_dissolve_shader() -> void:
 	material = _dissolve_mat
 
 
+const ANIM_LOADER := preload("res://scenes/AnimationLoader.gd")
+
 func _setup_animation() -> void:
 	_anim = AnimatedSprite2D.new()
 	_anim.name = "Anim"
@@ -54,7 +56,7 @@ func _setup_animation() -> void:
 	add_child(_anim)
 
 	var sprite_dir := "res://assets/sprites/enemies/grunt/"
-	var sf := AnimationLoader.build_frames(AnimationLoader.enemy_anims(sprite_dir))
+	var sf: SpriteFrames = ANIM_LOADER.build_frames(ANIM_LOADER.enemy_anims(sprite_dir))
 	if sf == null:
 		_anim.visible = false
 		return
