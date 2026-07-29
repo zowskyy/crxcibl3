@@ -20,21 +20,37 @@ extends Node2D
 
 var player: CharacterBody2D  # Spawned dynamically by HeroFactory
 
+const INVENTORY_UI_SCRIPT := preload("res://scenes/InventoryUI.gd")
+var _inventory_ui: CanvasLayer = null
+
+const SAMPLE_QUEST := {
+	"id": "clear_crack_house",
+	"title": "Clear the Crack House",
+	"objectives": [
+		{"id": "kill_grunts", "type": "kill", "target": "enemy", "count": 3},
+	],
+	"rewards": {"runes": 20, "items": ["9mm_extended_mag"]},
+}
+
 
 func _ready() -> void:
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
+
+	QuestManager.register_quest(SAMPLE_QUEST)
+	QuestManager.start_quest(SAMPLE_QUEST["id"])
 
 	# Spawn active hero via HeroFactory (Slice 3.5)
 	var hero_id = GameState.get_active_hero()
 	if hero_id.is_empty() and not GameState.squad.is_empty():
 		hero_id = GameState.squad[0]
 
+	var world_bounds := Rect2(Vector2(0, 0), Vector2(1100, 600))
 	if not hero_id.is_empty():
-		player = HeroFactory.spawn_player(hero_id, Vector2(550, 300), self)
+		player = HeroFactory.spawn_player(hero_id, Vector2(550, 300), self, world_bounds)
 	else:
 		# Fallback: no squad selected (shouldn't happen in normal flow, but debug fallback)
-		player = HeroFactory.spawn_player("enforcer_ghost", Vector2(550, 300), self)
+		player = HeroFactory.spawn_player("enforcer_ghost", Vector2(550, 300), self, world_bounds)
 
 
 func _process(delta: float) -> void:
@@ -61,6 +77,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_on_add_heat_pressed()
 		elif event.keycode == KEY_SPACE:
 			_on_fire_pressed()
+		elif event.keycode == KEY_I:
+			_toggle_inventory()
 
 
 func _on_add_heat_pressed() -> void:
@@ -69,6 +87,16 @@ func _on_add_heat_pressed() -> void:
 
 func _on_fire_pressed() -> void:
 	player.fire()
+
+
+func _toggle_inventory() -> void:
+	if _inventory_ui and is_instance_valid(_inventory_ui):
+		_inventory_ui.queue_free()
+		_inventory_ui = null
+		return
+	_inventory_ui = CanvasLayer.new()
+	_inventory_ui.set_script(INVENTORY_UI_SCRIPT)
+	add_child(_inventory_ui)
 
 
 func _on_rooftop_trigger_entered(body: Node) -> void:

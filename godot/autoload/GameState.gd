@@ -174,3 +174,6 @@ func reset_for_new_game() -> void:
 	Bosses.reset()
 	Emperor.reset()
 	Epilogue.reset()
+	RelationshipSystem.reset()
+	Inventory.reset()
+	QuestManager.reset()

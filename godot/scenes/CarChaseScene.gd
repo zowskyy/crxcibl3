@@ -33,6 +33,7 @@ var _done         := false
 
 func _ready() -> void:
 	fire_button.pressed.connect(func(): player_car.fire())
+	player_car.owner_hero_id = GameState.get_active_hero()
 	# Apply bodega upgrades carried from the boardwalk
 	if GameState.has_upgrade("bullet_damage"):
 		player_car.bullet_damage_bonus += 10

@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -14,6 +14,8 @@
 [ext_resource type="Shader" path="res://assets/shaders/heat_wave.gdshader" id="13"]
 [ext_resource type="Script" path="res://scenes/SpawnGenerator.gd" id="14"]
 [ext_resource type="Script" path="res://scenes/HealthBar.gd" id="15"]
+[ext_resource type="Script" path="res://scenes/NPC.gd" id="16"]
+[ext_resource type="Script" path="res://scenes/CoverPoint.gd" id="17"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_generator"]
 size = Vector2(40, 40)
@@ -35,6 +37,9 @@ size = Vector2(190, 190)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fence"]
 size = Vector2(100, 90)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_14sq"]
+size = Vector2(14, 14)
 
 [node name="TestRoom" type="Node2D"]
 script = ExtResource("1")
@@ -93,30 +98,37 @@ texture = ExtResource("7")
 [node name="Fence2Collision" type="CollisionShape2D" parent="Fence2"]
 shape = SubResource("RectangleShape2D_fence")
 
-[node name="Player" type="CharacterBody2D" parent="."]
-position = Vector2(550, 300)
-script = ExtResource("2")
-
-[node name="PlayerSprite" type="Sprite2D" parent="Player"]
-position = Vector2(0, -12)
-scale = Vector2(0.064, 0.064)
-texture = ExtResource("9")
-
-[node name="PlayerCollision" type="CollisionShape2D" parent="Player"]
-shape = SubResource("RectangleShape2D_16sq")
-
-[node name="Camera2D" type="Camera2D" parent="Player"]
-limit_left = 0
-limit_top = 0
-limit_right = 1100
-limit_bottom = 600
-
 [node name="Enemy1" type="CharacterBody2D" parent="."]
 position = Vector2(780, 400)
 script = ExtResource("10")
 
 [node name="Enemy1Collision" type="CollisionShape2D" parent="Enemy1"]
 shape = SubResource("RectangleShape2D_16sq")
+
+[node name="NPC1" type="CharacterBody2D" parent="."]
+position = Vector2(450, 420)
+script = ExtResource("16")
+
+[node name="NPC1Collision" type="CollisionShape2D" parent="NPC1"]
+shape = SubResource("RectangleShape2D_14sq")
+
+[node name="NPC2" type="CharacterBody2D" parent="."]
+position = Vector2(620, 400)
+script = ExtResource("16")
+
+[node name="NPC2Collision" type="CollisionShape2D" parent="NPC2"]
+shape = SubResource("RectangleShape2D_14sq")
+
+[node name="CoverPoint1" type="Node2D" parent="."]
+position = Vector2(680, 380)
+script = ExtResource("17")
+block_normal = Vector2(-1, 0)
+
+[node name="CoverPoint2" type="Node2D" parent="."]
+position = Vector2(650, 440)
+script = ExtResource("17")
+high_cover = true
+block_normal = Vector2(-1, 0)
 
 [node name="BodegaShop" type="Node2D" parent="."]
 position = Vector2(200, 240)

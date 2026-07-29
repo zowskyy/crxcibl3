@@ -42,6 +42,10 @@ Bosses="*res://autoload/Bosses.gd"
 Emperor="*res://autoload/Emperor.gd"
 Epilogue="*res://autoload/Epilogue.gd"
 RelationshipSystem="*res://autoload/RelationshipSystem.gd"
+NPCManager="*res://autoload/NPCManager.gd"
+SquadController="*res://autoload/SquadController.gd"
+Inventory="*res://autoload/Inventory.gd"
+QuestManager="*res://autoload/QuestManager.gd"
 
 [display]
 
