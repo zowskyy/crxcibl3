@@ -13,12 +13,11 @@ const PROJ_DAMAGE    := 10
 const DESPAWN_Y      := 270.0  # past bottom of canvas — safe to free
 
 const PROJECTILE_SCRIPT := preload("res://scenes/BossProjectile.gd")
+const SIREN_SCRIPT       := preload("res://scenes/VehicleSiren.gd")
 
 var _player: CharacterBody2D = null
 var _fire_timer  := randf_range(1.0, 3.0)  # stagger first shot per car
 var _ram_timer   := 0.0
-var _siren_timer := 0.0
-var _siren_red   := true
 
 
 func _ready() -> void:
@@ -28,6 +27,13 @@ func _ready() -> void:
 	rect.size = Vector2(20, 32)
 	col.shape = rect
 	add_child(col)
+
+	var siren := Node2D.new()
+	siren.name = "Siren"
+	siren.set_script(SIREN_SCRIPT)
+	siren.position = Vector2(0, -17.5)
+	add_child(siren)
+
 	call_deferred("_find_player")
 
 
@@ -56,13 +62,6 @@ func _physics_process(delta: float) -> void:
 		_fire_timer = FIRE_INTERVAL
 		_fire_shot(to_player.normalized())
 
-	# Siren blink
-	_siren_timer -= delta
-	if _siren_timer <= 0.0:
-		_siren_timer = 0.25
-		_siren_red = not _siren_red
-		queue_redraw()
-
 	# Despawn when fully off-screen below
 	if global_position.y > DESPAWN_Y:
 		queue_free()
@@ -88,11 +87,7 @@ func _draw() -> void:
 	draw_rect(Rect2(-10, -16, 20, 32), Color(0.18, 0.08, 0.08))
 	# Windshield (rear — facing player since car comes from top)
 	draw_rect(Rect2(-8, -4, 16, 9), Color(0.4, 0.6, 0.8, 0.45))
-	# Siren bar — alternates red/blue
-	var left_color  := Color(0.9, 0.1, 0.1) if _siren_red else Color(0.15, 0.15, 0.85)
-	var right_color := Color(0.15, 0.15, 0.85) if _siren_red else Color(0.9, 0.1, 0.1)
-	draw_rect(Rect2(-10, -20, 10, 5), left_color)
-	draw_rect(Rect2(0,   -20, 10, 5), right_color)
+	# Siren drawn by the optional Siren child node (VehicleSiren.gd)
 	# Wheels
 	draw_rect(Rect2(-14, -12, 5, 9), Color(0.08, 0.08, 0.08))
 	draw_rect(Rect2(9,   -12, 5, 9), Color(0.08, 0.08, 0.08))

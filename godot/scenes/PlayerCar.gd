@@ -14,12 +14,25 @@ const ROAD_RIGHT  := 306.0
 const CHASE_TOP   := 110.0
 const CHASE_BOT   := 200.0
 
-const BULLET_SCRIPT := preload("res://scenes/Bullet.gd")
+const BULLET_SCRIPT     := preload("res://scenes/Bullet.gd")
+const HEADLIGHTS_SCRIPT := preload("res://scenes/VehicleHeadlights.gd")
+
+const RESPAWN_TIME := 2.0
+
+signal downed
+signal respawned
 
 var hp := MAX_HP
 var hero_name: String = "enforcer"
 var bullet_damage_bonus: int = 0
 var fire_cooldown_override: float = 0.0  # set by CarChaseScene if fire_rate upgrade owned
+
+## Owner-based access control (Vehicle system, wow.txt spec). Empty means
+## anyone can drive it; set to a hero_id to restrict it to one owner. Not
+## yet enforced by an "enter vehicle" trigger -- CarChaseScene places the
+## player directly in the driver's seat -- but the check is ready for when
+## a free-roam vehicle-entry interaction lands.
+@export var owner_hero_id: String = ""
 
 var _joystick: Control = null
 var _fire_timer := 0.0
@@ -28,6 +41,21 @@ var _fire_timer := 0.0
 func _ready() -> void:
 	add_to_group("player")
 	call_deferred("_find_joystick")
+	_setup_headlights()
+
+
+func _setup_headlights() -> void:
+	if has_node("Headlights"):
+		return
+	var lights := Node2D.new()
+	lights.name = "Headlights"
+	lights.set_script(HEADLIGHTS_SCRIPT)
+	lights.position = Vector2(0, -16.5)
+	add_child(lights)
+
+
+func can_be_entered_by(hero_id: String) -> bool:
+	return owner_hero_id.is_empty() or owner_hero_id == hero_id
 
 
 func _find_joystick() -> void:
@@ -65,9 +93,21 @@ func fire() -> void:
 
 
 func take_damage(amount: int) -> void:
+	var was_dead := is_dead()
 	hp = clampi(hp - amount, 0, MAX_HP)
-	if hp <= 0:
+	if is_dead() and not was_dead:
 		Stress.on_crew_member_downed()
+		set_physics_process(false)
+		downed.emit()
+		_start_respawn()
+	queue_redraw()
+
+
+func _start_respawn() -> void:
+	await get_tree().create_timer(RESPAWN_TIME).timeout
+	hp = MAX_HP
+	set_physics_process(true)
+	respawned.emit()
 	queue_redraw()
 
 
@@ -80,9 +120,7 @@ func _draw() -> void:
 	draw_rect(Rect2(-11, -18, 22, 36), Color(0.12, 0.14, 0.18))
 	draw_rect(Rect2(-9,  -12, 18,  9), Color(0.45, 0.7, 0.85, 0.55))  # windshield
 	draw_rect(Rect2(-9,   5,  18,  7), Color(0.45, 0.7, 0.85, 0.35))  # rear window
-	# Headlights (facing up = forward)
-	draw_rect(Rect2(-11, -18, 5, 3), Color(0.95, 0.92, 0.6))
-	draw_rect(Rect2(6,   -18, 5, 3), Color(0.95, 0.92, 0.6))
+	# Headlights drawn by the optional Headlights child node (VehicleHeadlights.gd)
 	# Wheels
 	draw_rect(Rect2(-15, -14, 5, 9), Color(0.08, 0.08, 0.08))
 	draw_rect(Rect2(10,  -14, 5, 9), Color(0.08, 0.08, 0.08))

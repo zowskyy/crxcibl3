@@ -22,6 +22,8 @@ const RESPAWN_TIME  := 3.0
 const BULLET_SCRIPT  := preload("res://scenes/Bullet.gd")
 const ANIM_LOADER    := preload("res://scenes/AnimationLoader.gd")
 const FIRE_COOLDOWN  := 0.25
+const RECOIL_SPREAD_DEG := 4.0  # random kick applied to fired direction (hitscan combat stats spec)
+const ARMOR_K := 50.0  # same diminishing-returns curve as Enemy.gd's armor mitigation
 
 signal downed
 signal respawned
@@ -152,20 +154,29 @@ func fire() -> void:
 		return
 	var base      := fire_cooldown_override if fire_cooldown_override > 0.0 else FIRE_COOLDOWN
 	var s_mult    := 2.0 if Stress.stress >= Stress.THRESHOLD_CRITICAL else 1.0
-	_fire_timer   = base * s_mult
+	base         *= (1.0 + Inventory.get_stat_bonus("fire_rate"))  # gear bonus is negative = faster
+	_fire_timer   = maxf(0.05, base * s_mult)
 	_shoot_timer  = SHOOT_ANIM_DURATION
+
+	var recoil_angle := deg_to_rad(randf_range(-RECOIL_SPREAD_DEG, RECOIL_SPREAD_DEG))
 
 	var bullet := Area2D.new()
 	bullet.set_script(BULLET_SCRIPT)
-	bullet.direction     = _facing
+	bullet.direction     = _facing.rotated(recoil_angle)
 	bullet.shooter       = hero_name
 	bullet.damage_bonus  = bullet_damage_bonus \
 		+ RelationshipSystem.get_damage_bonus(hero_name)
+	bullet.crit_chance_bonus = Inventory.get_stat_bonus("crit_chance")
 	get_parent().add_child(bullet)
 	bullet.global_position = global_position + _facing * 12.0
 
 
 func take_damage(amount: int) -> void:
+	var armor_bonus := Inventory.get_stat_bonus("armor")
+	if armor_bonus > 0.0:
+		var mitigation := armor_bonus / (armor_bonus + ARMOR_K)
+		amount = int(round(amount * (1.0 - mitigation)))
+
 	var was_dead := is_dead()
 	health = clampi(health - amount, 0, MAX_HEALTH)
 	if is_dead() and not was_dead:
