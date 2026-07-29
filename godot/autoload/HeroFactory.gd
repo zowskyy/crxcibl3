@@ -13,7 +13,7 @@ extends Node
 const PLAYER_SCRIPT := preload("res://scenes/Player.gd")
 
 
-func spawn_player(variant_id: String, spawn_pos: Vector2, parent: Node) -> CharacterBody2D:
+func spawn_player(variant_id: String, spawn_pos: Vector2, parent: Node, world_bounds: Rect2 = Rect2()) -> CharacterBody2D:
 	var variant = HeroDefinitions.get_variant(variant_id)
 	if variant == null:
 		push_error("Cannot spawn player: variant '%s' not found" % variant_id)
@@ -31,6 +31,32 @@ func spawn_player(variant_id: String, spawn_pos: Vector2, parent: Node) -> Chara
 	rect.size = Vector2(16, 16)
 	col.shape = rect
 	player.add_child(col)
+
+	# Static portrait sprite -- named "PlayerSprite" to match Player.gd's fallback
+	# convention (it's hidden automatically once/if animated sheets are found for
+	# this hero_name under res://assets/sprites/heroes/<variant_id>/).
+	var sprite := Sprite2D.new()
+	sprite.name = "PlayerSprite"
+	sprite.position = Vector2(0, -12)
+	var portrait_path := "res://assets/heroes/portraits/%s.png" % variant_id
+	if ResourceLoader.exists(portrait_path):
+		var tex: Texture2D = load(portrait_path)
+		sprite.texture = tex
+		var largest := maxf(tex.get_width(), tex.get_height())
+		if largest > 0.0:
+			sprite.scale = Vector2.ONE * (24.0 / largest)
+	player.add_child(sprite)
+
+	# Camera follows whichever hero is actually spawned (previously a separate
+	# baked Player node in TestRoom.tscn carried the camera, which meant the
+	# selected hero was invisible and you always saw that node's placeholder art).
+	var cam := Camera2D.new()
+	if world_bounds.size != Vector2.ZERO:
+		cam.limit_left = int(world_bounds.position.x)
+		cam.limit_top = int(world_bounds.position.y)
+		cam.limit_right = int(world_bounds.end.x)
+		cam.limit_bottom = int(world_bounds.end.y)
+	player.add_child(cam)
 
 	# Set hero identity and stats before _ready() runs
 	player.hero_name = variant.variant_id

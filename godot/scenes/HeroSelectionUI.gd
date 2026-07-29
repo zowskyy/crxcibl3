@@ -30,15 +30,22 @@ func _populate_hero_grid() -> void:
 
 		var button: Button = HERO_BUTTON_SCENE.instantiate()
 		button.text = variant.name
-		button.custom_minimum_size = Vector2(80, 80)
+		button.custom_minimum_size = Vector2(64, 64)
+		button.add_to_group(variant_id)
 		button.toggled.connect(func(pressed: bool): _on_hero_toggled(variant_id, pressed))
 
-		# Placeholder: color by archetype (will use portrait images later)
-		match variant.archetype:
-			"enforcer": button.modulate = Color.RED
-			"wheelman": button.modulate = Color.BLUE
-			"hacker": button.modulate = Color.YELLOW
-			"street_rat": button.modulate = Color.GREEN
+		var portrait_path := "res://assets/heroes/portraits/%s.png" % variant_id
+		if ResourceLoader.exists(portrait_path):
+			button.icon = load(portrait_path)
+			button.expand_icon = true
+		else:
+			# No portrait shipped for this variant yet — fall back to an
+			# archetype color swatch so the slot is still visibly distinct.
+			match variant.archetype:
+				"enforcer": button.modulate = Color.RED
+				"wheelman": button.modulate = Color.BLUE
+				"hacker": button.modulate = Color.YELLOW
+				"street_rat": button.modulate = Color.GREEN
 
 		hero_grid.add_child(button)
 
