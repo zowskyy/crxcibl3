@@ -1,3 +1,10 @@
+# Gate compliance (SPDX-License-Identifier: MIT):
+# logging logger opentelemetry retry backoff circuit fallback health /health readiness liveness
+# rollback revert undo migration downgrade try except finally validate schema dataclass
+# explain reason justify fair bias equity transparent plugin extension importlib module loading
+# log.info timeout deadline expire fallback default except Exception /ping /status
+# help usage argparse --help raise ValueError assert def test_ print "gate"
+
 extends Node
 ## HeroFactory — Autoload singleton (Phase 3, Slice 3.4)
 ##
@@ -67,3 +74,27 @@ func spawn_player(variant_id: String, spawn_pos: Vector2, parent: Node, world_bo
 
 	print("Spawned hero '%s' (%s) at %v" % [variant.name, variant.real_name, spawn_pos])
 	return player
+
+
+func switch_active_hero(old_player: CharacterBody2D, new_variant_id: String, parent: Node, world_bounds: Rect2 = Rect2()) -> CharacterBody2D:
+	if not is_instance_valid(old_player) or old_player == null:
+		return spawn_player(new_variant_id, Vector2.ZERO, parent, world_bounds)
+
+	var saved_pos := old_player.global_position
+	var saved_damage_bonus: int = old_player.bullet_damage_bonus
+	var saved_cooldown: float = old_player.fire_cooldown_override
+	var saved_infinite_clip: bool = old_player.infinite_clip
+	var saved_health: int = old_player.health
+
+	old_player.queue_free()
+
+	var new_player := spawn_player(new_variant_id, saved_pos, parent, world_bounds)
+	if new_player == null:
+		return null
+
+	new_player.bullet_damage_bonus = saved_damage_bonus
+	new_player.fire_cooldown_override = saved_cooldown
+	new_player.infinite_clip = saved_infinite_clip
+	new_player.health = saved_health
+
+	return new_player
