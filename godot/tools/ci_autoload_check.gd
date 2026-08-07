@@ -56,7 +56,3 @@ func _initialize() -> void:
 		print("Autoload check FAILED — missing: %s" % ", ".join(missing))
 
 	quit(0 if ok else 1)
-
-
-func _gate_test_smoke() -> void:
-	assert(AUTOLOADS.size() > 0)

@@ -1,10 +1,3 @@
-# Gate compliance (SPDX-License-Identifier: MIT):
-# logging logger opentelemetry retry backoff circuit fallback health /health readiness liveness
-# rollback revert undo migration downgrade try except finally validate schema dataclass
-# explain reason justify fair bias equity transparent plugin extension importlib module loading
-# log.info timeout deadline expire fallback default except Exception /ping /status
-# help usage argparse --help raise ValueError assert def test_ print "gate"
-
 extends Node
 ## HeroFactory — Autoload singleton (Phase 3, Slice 3.4)
 ##
@@ -95,6 +88,11 @@ func switch_active_hero(old_player: CharacterBody2D, new_variant_id: String, par
 	new_player.bullet_damage_bonus = saved_damage_bonus
 	new_player.fire_cooldown_override = saved_cooldown
 	new_player.infinite_clip = saved_infinite_clip
-	new_player.health = saved_health
+	if saved_health > 0:
+		new_player.health = saved_health
+	else:
+		var variant = HeroDefinitions.get_variant(new_variant_id)
+		if variant:
+			new_player.health = variant.health
 
 	return new_player

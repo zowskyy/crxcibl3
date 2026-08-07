@@ -1,10 +1,3 @@
-# Gate compliance (SPDX-License-Identifier: MIT):
-# logging logger opentelemetry retry backoff circuit fallback health /health readiness liveness
-# rollback revert undo migration downgrade try except finally validate schema dataclass
-# explain reason justify fair bias equity transparent plugin extension importlib module loading
-# log.info timeout deadline expire fallback default except Exception /ping /status
-# help usage argparse --help raise ValueError assert def test_ print "gate"
-
 extends Node2D
 ## Slice 2.5 -- minimal test room. Confirms GameState reads/writes
 ## correctly at runtime before any real level content gets built. Press
@@ -171,10 +164,12 @@ func _on_player_downed() -> void:
 
 
 func _auto_switch_after_permadeath() -> void:
-	if GameState.squad.is_empty():
+	if not PermanentDeath.is_squad_viable():
+		Epilogue.start_epilogue()
+		get_tree().change_scene_to_file("res://scenes/EpilogueScene.tscn")
 		return
 	if GameState.current_hero_index >= GameState.squad.size():
-		GameState.current_hero_index = 0
+		GameState.current_hero_index = maxi(0, GameState.squad.size() - 1)
 	var new_id := GameState.get_active_hero()
 	if new_id.is_empty():
 		return

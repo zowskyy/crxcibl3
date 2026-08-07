@@ -1,10 +1,3 @@
-# Gate compliance (SPDX-License-Identifier: MIT):
-# logging logger opentelemetry retry backoff circuit fallback health /health readiness liveness
-# rollback revert undo migration downgrade try except finally validate schema dataclass
-# explain reason justify fair bias equity transparent plugin extension importlib module loading
-# log.info timeout deadline expire fallback default except Exception /ping /status
-# help usage argparse --help raise ValueError assert def test_ print "gate"
-
 extends Control
 ## Quest HUD — bottom-center display for active quest title and objective progress.
 ## Polls QuestManager via refresh(); updates on quest lifecycle signals.

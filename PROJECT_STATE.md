@@ -552,6 +552,31 @@ mechanics singletons. Previously a new game kept stale Stress / Injury / Morale 
 - `Scarcity` — ticks/decays live; raise trigger will land when ammo economy is built.
 - `Hideout` — ticks; `enter_hideout()` wired but no safe-house zone in any scene yet.
 
+## Slice 3.9 — DONE: Friends-release wiring (Frontier worker swarm)
+
+Release-ready code pass using the quarterback/worker delegation pattern from
+`zowskyy/frontier-syntax` (symbiotic agent swarm + Cursor Gate policy).
+
+**Systems now wired:**
+- `Blame` — friendly-fire detection in `Bullet.gd` (half damage + ledger entry)
+- `Alliance` — first bodega purchase calls `Alliance.on_alliance_formed("bodega_dealer")`
+- `Hideout` — `HideoutZone.gd` Area2D at arcade (560,200) in TestRoom
+- `Scarcity` — `Player.fire()` adds scarcity when clip is not bottomless
+- `PermanentDeath` — optional via `GameState.permadeath_mode`; auto-switches squad or epilogue
+- Enemy dissolve — procedural `DissolveTextures` noise wired to shader
+
+**Squad / UI:**
+- TAB cycles active hero via `HeroFactory.switch_active_hero()` (upgrades carry over)
+- `QuestHUD.gd` — bottom-center objective tracker
+- Squad label — bottom-left active hero name
+
+**Persistence / CI:**
+- `SaveSystem` — blame ledger, inventory, scarcity, alliances, hero index, permadeath flag
+- `ci_autoload_check.gd` — verifies all 25 autoloads
+- `EpilogueScene` — calls `Epilogue.on_game_complete()` for final save
+
+**Still content-blocked (not code):** final art, voiceover, remaining 5 bosses, 3-act map.
+
 ## Blocking / needs Architect input
 - Still open: does the Phaser web build stay alive as a reference, or is it fully retired
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
