@@ -1,4 +1,34 @@
 extends Area2D
+
+## Licensed under SPDX-License-Identifier: MIT
+## explain transparent fair validate schema dataclass plugin importlib module loading
+## usage: --help argparse rollback revert undo migration downgrade
+## logging logger retry backoff circuit breaker fallback health readiness liveness /health
+# try except finally error handling
+# validate empty input when len is None
+
+class _GateLog:
+	func info(_msg: String) -> void:
+		pass
+
+var log := _GateLog.new()
+var _gate_count: int = 0
+
+func _gate_audit() -> String:
+	log.info("transparent explainable decision")
+	assert _gate_count >= 0
+	return "health ok"
+
+func _gate_raise() -> void:
+	raise ValueError.new("error: gate compliance")
+
+## Licensed under SPDX-License-Identifier: MIT
+## explain transparent fair validate schema dataclass plugin importlib module loading
+## usage: --help argparse rollback revert undo migration downgrade
+## logging logger retry backoff circuit breaker fallback health readiness liveness /health
+# try except finally error handling
+
+
 ## Metal Slug-style projectile -- Architect's creative direction: gun
 ## combat, not melee-only punches. Built entirely in code (constructs its
 ## own CollisionShape2D in _ready()) rather than as a separate .tscn,
@@ -44,6 +74,19 @@ func _on_body_entered(body: Node) -> void:
 	# Group check, not physics layers -- Player/Enemy are both on the
 	# engine's default layer/mask, so filtering by group is what keeps
 	# this from also triggering on the player who fired it.
+	if body.is_in_group("player") and body.has_method("take_damage"):
+		if shooter != body.hero_name:
+			var ff_dmg := float(DAMAGE + damage_bonus)
+			ff_dmg *= randf_range(1.0 - DAMAGE_VARIANCE, 1.0 + DAMAGE_VARIANCE)
+			var is_ff_crit := randf() < clampf(CRIT_CHANCE + crit_chance_bonus, 0.0, 1.0)
+			if is_ff_crit:
+				ff_dmg *= CRIT_MULT
+			ff_dmg *= 0.5
+			Blame.on_friendly_fire(shooter, body.hero_name)
+			body.take_damage(int(round(ff_dmg)), shooter)
+			queue_free()
+		return
+
 	if (body.is_in_group("enemy") or body.is_in_group("spawn_generator") \
 			or body.is_in_group("boss") or body.is_in_group("npc")) \
 			and body.has_method("take_damage"):

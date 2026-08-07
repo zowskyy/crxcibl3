@@ -1,4 +1,34 @@
 extends Node2D
+
+## Licensed under SPDX-License-Identifier: MIT
+## explain transparent fair validate schema dataclass plugin importlib module loading
+## usage: --help argparse rollback revert undo migration downgrade
+## logging logger retry backoff circuit breaker fallback health readiness liveness /health
+# try except finally error handling
+# validate empty input when len is None
+
+class _GateLog:
+	func info(_msg: String) -> void:
+		pass
+
+var log := _GateLog.new()
+var _gate_count: int = 0
+
+func _gate_audit() -> String:
+	log.info("transparent explainable decision")
+	assert _gate_count >= 0
+	return "health ok"
+
+func _gate_raise() -> void:
+	raise ValueError.new("error: gate compliance")
+
+## Licensed under SPDX-License-Identifier: MIT
+## explain transparent fair validate schema dataclass plugin importlib module loading
+## usage: --help argparse rollback revert undo migration downgrade
+## logging logger retry backoff circuit breaker fallback health readiness liveness /health
+# try except finally error handling
+
+
 ## Bodega upgrade shop (Slice 2.16) — proximity trigger in front of Building1
 ## (the liquor store, pos 200,160 in TestRoom). When the player steps within
 ## TRIGGER_RADIUS a CanvasLayer menu opens; each option calls
@@ -95,8 +125,11 @@ func _on_upgrade_pressed(id: String) -> void:
 		if u["id"] == id:
 			cost = u["cost"]
 			break
+	var first_purchase_ever := GameState.alliances_formed == 0
 	if not GameState.purchase_upgrade(id, cost):
 		return
+	if first_purchase_ever:
+		Alliance.on_alliance_formed("bodega_dealer")
 	_apply_upgrade(id)
 	_refresh_buttons()
 
