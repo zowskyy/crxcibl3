@@ -41,15 +41,17 @@ class BoardwalkScene extends Phaser.Scene {
   }
 
   preload() {
-    // First real art asset -- everything else still uses generated placeholders below
     this.load.image('hero_enforcer_ghost', 'assets/heroes/hero_enforcer_ghost.png');
+    this.load.image('enemy_grunt_idle', 'assets/enemies/enemy_grunt_idle.png');
   }
 
   create() {
     GameState.reset();
+    GameState.squad = ['enforcer_ghost'];
     this.gameWon = false;
+    this._heatVignette = null;
 
-    this.generatePlaceholderTextures();
+    this.generateTileTextures();
     this.buildMap();
     this.createLevel();
     this.createPlayer();
@@ -58,10 +60,12 @@ class BoardwalkScene extends Phaser.Scene {
     this.setupCamera();
     this.setupInput();
     this.createHUD();
+    Stress.enterCombat();
+    this._unsubStress = Stress.onThresholdChanged((level) => this._onStressThreshold(level));
   }
 
-  // ---- Texture generation (placeholder art) ----
-  generatePlaceholderTextures() {
+  // ---- Procedural tile textures (palette-matched; swap for PNGs in assets/ when ready) ----
+  generateTileTextures() {
     const g = this.add.graphics();
 
     const rect = (key, w, h, drawFn) => {
@@ -108,15 +112,6 @@ class BoardwalkScene extends Phaser.Scene {
       g.fillStyle(PALETTE.ground, 1).fillRect(0, 0, w, h);
       g.fillStyle(PALETTE.palmTrunk, 1).fillRect(w * 0.42, h * 0.35, w * 0.16, h * 0.65);
       g.fillStyle(PALETTE.palmLeaf, 1).fillRect(w * 0.15, h * 0.05, w * 0.7, h * 0.35);
-    });
-
-    // Player texture is now real art (hero_enforcer_ghost.png, loaded in preload())
-    // -- no placeholder generated for it anymore.
-
-    // Enemy -- rival crew grunt placeholder, distinct silhouette/color from player
-    rect('enemy', 12, 16, (g, w, h) => {
-      g.fillStyle(PALETTE.enemyBody, 1).fillRect(0, 0, w, h);
-      g.fillStyle(PALETTE.enemyDark, 1).fillRect(0, h - 3, w, 3);
     });
 
     // Getaway exit tile -- glowing gold
@@ -263,10 +258,10 @@ class BoardwalkScene extends Phaser.Scene {
 
   // ---- Enemy (one chasing rival crew grunt -- Phase 1 combat proof) ----
   createEnemy() {
-    this.enemy = this.physics.add.sprite(25 * TILE, 12 * TILE, 'enemy');
+    this.enemy = this.physics.add.sprite(25 * TILE, 12 * TILE, 'enemy_grunt_idle');
     this.enemy.setCollideWorldBounds(true);
-    this.enemy.body.setSize(12, 10);
-    this.enemy.body.setOffset(0, 6);
+    this.enemy.body.setSize(18, 14);
+    this.enemy.body.setOffset(3, 16);
     this.enemy.speed = 45; // slower than player -- outrunnable
     this.enemy.hp = 2; // dies in 2 player attacks, matching the original design note
 
@@ -277,6 +272,7 @@ class BoardwalkScene extends Phaser.Scene {
   onPlayerHit() {
     if (this.time.now < this.playerInvulnUntil || this.gameWon) return;
     GameState.modifyHeat(15);
+    Stress.onHitTaken();
     this.playerInvulnUntil = this.time.now + 800; // brief invulnerability window
     this.player.setTintFill(0xffffff);
     this.time.delayedCall(100, () => this.player.clearTint());
@@ -291,6 +287,7 @@ class BoardwalkScene extends Phaser.Scene {
 
     if (dist < 20) {
       this.enemy.hp -= 1;
+      Stress.onHitDealt();
       this.enemy.setTintFill(0xffffff);
       this.time.delayedCall(100, () => this.enemy.active && this.enemy.clearTint());
 
@@ -348,13 +345,38 @@ class BoardwalkScene extends Phaser.Scene {
     this.cashText = this.add.text(barX, barY + 12, 'CASH: 0', {
       fontFamily: 'monospace', fontSize: '8px', color: '#E6C200'
     }).setScrollFactor(0).setDepth(20000);
+
+    this.stressText = this.add.text(barX, barY + 22, 'STRESS: 0', {
+      fontFamily: 'monospace', fontSize: '8px', color: '#88AA77'
+    }).setScrollFactor(0).setDepth(20000);
+
+    // Heat vignette overlay — thresholds from visual direction doc (26% / 51%)
+    this._heatVignette = this.add.rectangle(
+      this.cameras.main.width / 2, this.cameras.main.height / 2,
+      this.cameras.main.width, this.cameras.main.height, 0x330000, 0
+    ).setScrollFactor(0).setDepth(19999);
+  }
+
+  _onStressThreshold(level) {
+    if (!this.stressText) return;
+    const colors = { calm: '#88AA77', elevated: '#E6C200', critical: '#FF6600' };
+    this.stressText.setColor(colors[level] || '#88AA77');
+  }
+
+  _updateHeatVignette() {
+    if (!this._heatVignette) return;
+    const level = GameState.getHeatLevel();
+    const alpha = level === 'critical' ? 0.22 : level === 'elevated' ? 0.10 : 0;
+    this._heatVignette.setFillStyle(0x330000, alpha);
   }
 
   updateHUD() {
     const barW = 58;
-    const pct = Phaser.Math.Clamp(GameState.heat / GameState.heatMax, 0, 1);
+    const pct = GameState.getHeatPercent();
     this.heatFillBar.width = Math.max(1, barW * pct);
     this.cashText.setText('CASH: ' + GameState.resources.Cash);
+    this.stressText.setText('STRESS: ' + Math.round(Stress.stress));
+    this._updateHeatVignette();
   }
 
   // ---- Frame update ----
@@ -394,6 +416,7 @@ class BoardwalkScene extends Phaser.Scene {
       this.enemy.setDepth(this.enemy.y);
     }
 
+    Stress.tick(this.game.loop.delta / 1000);
     this.updateHUD();
   }
 }
