@@ -14,3 +14,8 @@ UsersmrscpAppDataLocalTempapk-slice220/
 
 # Generated production ZIP (regenerable from the source .md docs it bundles)
 CRXCIBL3_ANIMATION_VOICEOVER_PRODUCTION_PACKAGE.zip
+__pycache__/
+*.pyc
+.env
+.cursor/gate-logs/
+.cursor/gate-cache/
