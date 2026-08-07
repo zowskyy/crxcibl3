@@ -44,6 +44,11 @@ func _ready() -> void:
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
+	if "--demo" in OS.get_cmdline_args():
+		GameState.reset_for_new_game()
+		GameState.squad = ["enforcer_ghost"]
+		GameState.current_hero_index = 0
+
 	QuestManager.register_quest(SAMPLE_QUEST)
 	QuestManager.start_quest(SAMPLE_QUEST["id"])
 
@@ -62,6 +67,11 @@ func _ready() -> void:
 	_setup_quest_hud()
 	_setup_squad_label()
 	_connect_player_signals()
+
+	if "--demo" in OS.get_cmdline_args():
+		var driver := preload("res://tools/DemoDriver.gd").new()
+		driver.name = "DemoDriver"
+		add_child(driver)
 
 
 func _setup_hideout_zone() -> void:
@@ -112,7 +122,7 @@ func _update_squad_label() -> void:
 		return
 	var hero_id := GameState.get_active_hero()
 	var variant = HeroDefinitions.get_variant(hero_id)
-	var display_name := variant.name if variant else hero_id
+	var display_name: String = variant.name if variant else hero_id
 	_squad_label.text = "Squad: %s" % display_name
 
 
@@ -199,6 +209,8 @@ func _toggle_inventory() -> void:
 
 func _on_rooftop_trigger_entered(body: Node) -> void:
 	if not body.is_in_group("player"):
+		return
+	if "--demo" in OS.get_cmdline_args():
 		return
 	# Only trigger once per run — if the rooftop encounter is already done
 	# (boss fled and GameState recorded it) skip the scene transition.

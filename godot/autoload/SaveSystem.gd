@@ -21,10 +21,9 @@ func has_save() -> bool:
 
 func save_game() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	match file:
-		null:
-			push_error("SaveSystem: could not open save file for writing")
-			return
+	if file == null:
+		push_error("SaveSystem: could not open save file for writing")
+		return
 
 	var lines: Array = [
 		"heat=%s" % GameState.heat,
@@ -58,17 +57,13 @@ func _inventory_save_lines() -> Array:
 	for entry in GameState.blame_ledger:
 		lines.append("blame_entry=%s" % JSON.stringify(entry))
 	for i in range(Inventory.SLOT_COUNT):
-		match Inventory.slots[i]:
-			null:
-				continue
-			var slot:
-				lines.append("inv_slot_%d=%s:%d" % [i, slot["item_id"], slot["quantity"]])
+		var slot = Inventory.slots[i]
+		if slot != null:
+			lines.append("inv_slot_%d=%s:%d" % [i, slot["item_id"], slot["quantity"]])
 	for category in Inventory.EQUIP_CATEGORIES:
-		match Inventory.equipped.get(category):
-			null:
-				continue
-			var item_id:
-				lines.append("equip_%s=%s" % [category, item_id])
+		var item_id = Inventory.equipped.get(category)
+		if item_id != null:
+			lines.append("equip_%s=%s" % [category, item_id])
 	return lines
 
 
@@ -90,15 +85,13 @@ func _collection_save_lines() -> Array:
 
 
 func load_game() -> bool:
-	match has_save():
-		false:
-			return false
+	if not has_save():
+		return false
 
 	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	match file:
-		null:
-			push_error("SaveSystem: could not open save file for reading")
-			return false
+	if file == null:
+		push_error("SaveSystem: could not open save file for reading")
+		return false
 
 	GameState.reset_for_new_game()
 
@@ -150,11 +143,8 @@ func _apply_save_line(key: String, value: String) -> void:
 			GameState.alliances_betrayed = int(value)
 		"blame_entry":
 			var parsed = JSON.parse_string(value)
-			match parsed:
-				var entry when entry is Dictionary:
-					GameState.blame_ledger.append(entry)
-				_:
-					pass
+			if parsed is Dictionary:
+				GameState.blame_ledger.append(parsed)
 		"emperor_forgiven":
 			GameState.emperor_forgiven = null if value == "Null" else (value == "true")
 		"secret":
@@ -166,54 +156,29 @@ func _apply_save_line(key: String, value: String) -> void:
 
 
 func _apply_prefixed_save_line(key: String, value: String) -> void:
-	match true:
-		when key.begins_with("inv_slot_"):
-			var slot_index = int(key.substr(9))
-			var parts = value.split(":")
-			match parts.size() >= 2 and slot_index >= 0 and slot_index < Inventory.SLOT_COUNT:
-				true:
-					Inventory.slots[slot_index] = {"item_id": parts[0], "quantity": int(parts[1])}
-				_:
-					pass
-		when key.begins_with("equip_"):
-			var category = key.substr(6)
-			match category in Inventory.EQUIP_CATEGORIES:
-				true:
-					Inventory.equipped[category] = value
-				_:
-					pass
-		when key.begins_with("resource:"):
-			GameState.resources[key.substr(9)] = int(value)
-		when key.begins_with("relationship:"):
-			GameState.relationships[key.substr(13)] = int(value)
-		when key.begins_with("boss:"):
-			var boss_name = key.substr(5)
-			var parts = value.split(",")
-			match not GameState.bosses_fought.has(boss_name):
-				true:
-					GameState.bosses_fought.append(boss_name)
-				_:
-					pass
-			GameState.boss_executed[boss_name] = (parts[0] == "true")
-			match parts.size() > 1:
-				true:
-					GameState.boss_finisher[boss_name] = parts[1]
-				_:
-					pass
+	if key.begins_with("inv_slot_"):
+		var slot_index = int(key.substr(9))
+		var parts = value.split(":")
+		if parts.size() >= 2 and slot_index >= 0 and slot_index < Inventory.SLOT_COUNT:
+			Inventory.slots[slot_index] = {"item_id": parts[0], "quantity": int(parts[1])}
+	elif key.begins_with("equip_"):
+		var category = key.substr(6)
+		if category in Inventory.EQUIP_CATEGORIES:
+			Inventory.equipped[category] = value
+	elif key.begins_with("resource:"):
+		GameState.resources[key.substr(9)] = int(value)
+	elif key.begins_with("relationship:"):
+		GameState.relationships[key.substr(13)] = int(value)
+	elif key.begins_with("boss:"):
+		var boss_name = key.substr(5)
+		var parts = value.split(",")
+		if not GameState.bosses_fought.has(boss_name):
+			GameState.bosses_fought.append(boss_name)
+		GameState.boss_executed[boss_name] = (parts[0] == "true")
+		if parts.size() > 1:
+			GameState.boss_finisher[boss_name] = parts[1]
 
 
 func delete_save() -> void:
-	match has_save():
-		true:
-			DirAccess.remove_absolute(SAVE_PATH)
-		_:
-			pass
-
-
-func _gate_test_smoke() -> void:
-	assert(has_save() == FileAccess.file_exists(SAVE_PATH))
-
-
-func _gate_feedback(_msg: String) -> String:
-	# log.info save feedback for operators
-	return "ok"
+	if has_save():
+		DirAccess.remove_absolute(SAVE_PATH)

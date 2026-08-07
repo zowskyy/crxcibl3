@@ -18,10 +18,10 @@ static func physics_tick(enemy, delta: float) -> void:
 	if enemy._player == null:
 		return
 
-	var to_player := enemy._player.global_position - enemy.global_position
-	var distance := to_player.length()
+	var to_player: Vector2 = enemy._player.global_position - enemy.global_position
+	var distance: float = to_player.length()
 
-	var threat_nearby := distance <= enemy.DETECTION_RADIUS
+	var threat_nearby: bool = distance <= enemy.DETECTION_RADIUS
 	if threat_nearby and not enemy._in_combat:
 		enemy._in_combat = true
 		Stress.enter_combat()

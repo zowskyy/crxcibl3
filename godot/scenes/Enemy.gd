@@ -13,6 +13,9 @@ const ATTACK_DAMAGE    := 8
 const ATTACK_COOLDOWN  := 1.0
 const MAX_HEALTH       := 40
 const DISSOLVE_TIME    := 0.5
+const ENEMY_MOVEMENT   := preload("res://scenes/EnemyMovement.gd")
+const ENEMY_COVER_AI   := preload("res://scenes/EnemyCoverAI.gd")
+const DISSOLVE_TEX     := preload("res://scenes/DissolveTextures.gd")
 
 ## Hitscan combat stats (wow.txt spec) applied to incoming damage: armor
 ## mitigation uses a WoW-style diminishing-returns curve (each point of
@@ -61,8 +64,8 @@ func _setup_dissolve_shader() -> void:
 		return
 	_dissolve_mat = ShaderMaterial.new()
 	_dissolve_mat.shader = shader
-	_dissolve_mat.set_shader_parameter("noise_texture", DissolveTextures.make_noise_texture())
-	_dissolve_mat.set_shader_parameter("overlay_texture", DissolveTextures.make_overlay_texture())
+	_dissolve_mat.set_shader_parameter("noise_texture", DISSOLVE_TEX.make_noise_texture())
+	_dissolve_mat.set_shader_parameter("overlay_texture", DISSOLVE_TEX.make_overlay_texture())
 	material = _dissolve_mat
 
 
@@ -87,7 +90,7 @@ func _setup_animation() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	EnemyMovement.physics_tick(self, delta)
+	ENEMY_MOVEMENT.physics_tick(self, delta)
 
 
 ## Alerted by a squad mate that spotted or was hurt by the player (see
@@ -103,7 +106,7 @@ func on_squad_alert(threat: Node) -> void:
 
 
 func get_cover_point() -> Node2D:
-	return EnemyCoverAI.get_cover_point(self)
+	return ENEMY_COVER_AI.get_cover_point(self)
 
 
 func _set_anim(state: String) -> void:
@@ -119,7 +122,7 @@ func _try_attack() -> void:
 
 
 func take_damage(amount: int, killer: String = "") -> void:
-	amount = EnemyCoverAI.apply_cover_damage(self, amount)
+	amount = ENEMY_COVER_AI.apply_cover_damage(self, amount)
 
 	if armor > 0:
 		var mitigation := float(armor) / (float(armor) + ARMOR_K)  # diminishing returns, never hits 100%

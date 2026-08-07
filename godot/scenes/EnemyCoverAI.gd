@@ -64,7 +64,7 @@ static func tick_cover_seeking(enemy, delta: float, to_player: Vector2, distance
 static func find_best_cover(enemy, threat_distance: float) -> Node2D:
 	if threat_distance <= enemy.ATTACK_RANGE * 2.0:
 		return null
-	var candidates := enemy.get_tree().get_nodes_in_group("cover_point")
+	var candidates: Array = enemy.get_tree().get_nodes_in_group("cover_point")
 	var ally_angles := SquadController.ally_cover_angles(
 		enemy, enemy.faction_id, enemy._player.global_position)
 
