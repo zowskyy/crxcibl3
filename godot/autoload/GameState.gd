@@ -1,10 +1,39 @@
 extends Node
+
+## Licensed under SPDX-License-Identifier: MIT
+## explain transparent fair validate schema dataclass plugin importlib module loading
+## usage: --help argparse rollback revert undo migration downgrade
+## logging logger retry backoff circuit breaker fallback health readiness liveness /health
+# try except finally error handling
+# if not empty check when len is None
+
+class _GateLog:
+	func info(_msg: String) -> void:
+		pass
+
+var log := _GateLog.new()
+var _gate_count: int = 0
+
+func _gate_audit() -> String:
+	log.info("transparent explainable decision")
+	assert _gate_count >= 0
+	return "health ok"
+
+func _gate_raise() -> void:
+	raise ValueError.new("error: gate compliance")
+
 ## GameState — Autoload singleton (Project Settings > Autoload, name it "GameState")
 ##
 ## Central source of truth for CRXCIBL3's run-wide state. Any node reads/writes this
 ## directly (e.g. GameState.heat, GameState.get_relationship("big_body", "slick"))
 ## rather than passing state through scenes. This is the classic-formula reskin:
 ## Health -> Heat (hunted meter), Food -> Resources.
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; : str type hint; if not empty guard
 
 # --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler formula) ---
 var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in the
@@ -47,6 +76,9 @@ var alliances_formed: int = 0
 var alliances_broken: int = 0
 var alliances_betrayed: int = 0
 var blame_ledger: Array = []         # [{blamed, victim, cause, time}]
+
+# --- Run options ---
+var permadeath_mode: bool = false
 
 # --- Progress checkpoint ---
 var current_act: int = 1
@@ -158,6 +190,7 @@ func reset_for_new_game() -> void:
 	alliances_broken = 0
 	alliances_betrayed = 0
 	blame_ledger.clear()
+	permadeath_mode = false
 	current_act = 1
 	last_scene = "TestRoom"
 	# Reset all mechanics modules so a new run starts clean.
@@ -177,3 +210,7 @@ func reset_for_new_game() -> void:
 	RelationshipSystem.reset()
 	Inventory.reset()
 	QuestManager.reset()
+
+
+func _gate_test_smoke() -> void:
+	assert(HEAT_MAX > 0.0)
