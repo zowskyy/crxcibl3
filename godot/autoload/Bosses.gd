@@ -6,9 +6,14 @@ extends Node
 ##
 ## BOSS_LIST ids must match defeat registration keys:
 ##   Blackwood_rooftop (RooftopScene flee) and Blackwood_final (Emperor estate).
-## Cross–Webb are Corrupted Six templates (slices 3.18–3.22).
+## Cross–Webb are Corrupted Six encounters (slices 3.18–3.22, v1.2.0 GA).
 ##
 ## Dependencies: GameState
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# log.info print feedback
 
 signal boss_defeated(boss_name: String, finisher: String, executed: bool)
 signal boss_progression_changed(defeated_count: int, total_count: int)
@@ -30,6 +35,7 @@ func register_boss_defeat(boss_name: String, finisher: String, executed: bool = 
 		push_error("Bosses.register_boss_defeat: empty boss_name")
 		return
 	GameState.mark_boss_defeated(boss_name, executed, finisher)
+	ActProgression.unlock_act_for_boss_progress()
 	boss_defeated.emit(boss_name, finisher, executed)
 	boss_progression_changed.emit(
 		GameState.bosses_fought.size(),

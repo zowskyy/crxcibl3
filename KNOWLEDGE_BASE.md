@@ -33,17 +33,18 @@ Every hero has a full backstory tied to the Seven Sorrows and a specific Corrupt
 crime — see the lore doc's relationship web table for who's connected to whom (useful later for
 the relationship/synergy system).
 
-## The Corrupted Six (bosses) + finale
-1. **The Fixer — Councilman Victor Cross** (Cross Tower Penthouse) — bodyguards/turrets/political attacks, panic room retreat.
-2. **The Broker — Damian Voss** (Voss Compound Vault) — drones/turrets/data scrambles, personal energy shield.
-3. **The Pusher — Dr. Celeste Moreau** (Moreau Pharmaceuticals Lab) — chemical weapons, self-injects into a "Super Rager" phase.
-4. **The Warden — Leonard "Iron" Hayes** (Beach Boulevard Correctional Facility) — guards/turrets/gas, riot shield + baton.
-5. **The Trader — Marcus Webb** (Webb Industries Data Center) — digital defenses, reveals a mech suit.
-6. **The Priest — Reverend Isaiah Blackwood** (Blackwood Megachurch) — deacons/traps/fake "divine" illusions.
+## The Corrupted Six (bosses) + finale — **implemented (v1.2.0 GA)**
+1. **The Fixer — Councilman Victor Cross** (Cross Tower Penthouse) — bodyguards/turrets/political attacks, panic room retreat. **Playable** via TestRoom trigger or `--boss-cross`.
+2. **The Broker — Damian Voss** (Voss Compound Vault) — drones/turrets/data scrambles, personal energy shield. **Playable** via TestRoom trigger or `--boss-voss`.
+3. **The Pusher — Dr. Celeste Moreau** (Moreau Pharmaceuticals Lab) — chemical weapons, self-injects into a "Super Rager" phase. **Playable** via TestRoom trigger or `--boss-moreau`.
+4. **The Warden — Leonard "Iron" Hayes** (Beach Boulevard Correctional Facility) — guards/turrets/gas, riot shield + baton. **Playable** via TestRoom trigger or `--boss-hayes`.
+5. **The Trader — Marcus Webb** (Webb Industries Data Center) — digital defenses, reveals a mech suit. **Playable** via TestRoom trigger or `--boss-webb`.
+6. **The Priest — Reverend Isaiah Blackwood** (Blackwood Megachurch) — deacons/traps/fake "divine" illusions. **Playable** — rooftop surprise + Emperor estate final stand.
 7. **The Emperor** (final, non-combat reckoning) — dies confessing he traded the Seven Sorrows to save the crew's lives.
 
-Each boss fight already has scripted confrontation/defeat dialogue in the lore doc — useful
-directly for cutscene/dialogue implementation later.
+All five Corrupted Six fights use the **`BossGeneric`** template (`BossEncounter` JSON beats + shared combat phases). Metadata lives in `godot/data/bosses.json`; encounter beats in per-boss JSON files.
+
+Each boss fight has scripted confrontation/defeat dialogue in the lore doc — wired through `CutsceneDirector` caption beats.
 
 ## Config values (implemented, `configs/game_config.json`)
 fps 60, view 320×180, heat_max 100, heat_generation_rate 0.5, heat_reduction_rate 2.0,

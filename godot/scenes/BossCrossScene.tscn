@@ -1,0 +1,102 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/BossCrossScene.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/VirtualJoystick.gd" id="2"]
+[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="3"]
+[ext_resource type="Script" path="res://scenes/HealthBar.gd" id="4"]
+[ext_resource type="Texture2D" path="res://assets/environment/buildings/building_cross_tower.jpg" id="5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(600, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wallside"]
+size = Vector2(20, 320)
+
+[node name="BossCrossScene" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(300, 120)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("5")
+
+[node name="ArenaGround" type="Polygon2D" parent="."]
+color = Color(0.18, 0.16, 0.22, 1)
+polygon = PackedVector2Array(0, 0, 600, 0, 600, 320, 0, 320)
+
+[node name="ArenaEdgeTop" type="StaticBody2D" parent="."]
+position = Vector2(300, -10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaEdgeTop"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="ArenaEdgeBottom" type="StaticBody2D" parent="."]
+position = Vector2(300, 330)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaEdgeBottom"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="ArenaEdgeLeft" type="StaticBody2D" parent="."]
+position = Vector2(-10, 160)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaEdgeLeft"]
+shape = SubResource("RectangleShape2D_wallside")
+
+[node name="ArenaEdgeRight" type="StaticBody2D" parent="."]
+position = Vector2(610, 160)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaEdgeRight"]
+shape = SubResource("RectangleShape2D_wallside")
+
+[node name="BossAnchor" type="Marker2D" parent="."]
+position = Vector2(500, 160)
+
+[node name="FleeMarker" type="Marker2D" parent="."]
+position = Vector2(580, 40)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HeatMeter" type="Control" parent="CanvasLayer"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -134.0
+offset_top = 4.0
+offset_right = -4.0
+offset_bottom = 22.0
+script = ExtResource("3")
+
+[node name="HealthBar" type="Control" parent="CanvasLayer"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 134.0
+offset_bottom = 22.0
+script = ExtResource("4")
+
+[node name="ArrivalLabel" type="Label" parent="CanvasLayer"]
+offset_left = 120.0
+offset_top = 100.0
+offset_right = 480.0
+offset_bottom = 140.0
+text = "CROSS TOWER — The Fixer waits."
+
+[node name="VirtualJoystick" type="Control" parent="CanvasLayer"]
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -68.0
+offset_right = 68.0
+offset_bottom = -12.0
+script = ExtResource("2")
+
+[node name="FireButton" type="Button" parent="CanvasLayer"]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -68.0
+offset_right = -20.0
+offset_bottom = -12.0
+text = "FIRE (Space)"

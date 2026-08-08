@@ -1,0 +1,58 @@
+{
+  "id": "webb",
+  "title": "Marcus Webb — The Trader",
+  "background": "res://assets/environment/buildings/building_webb_data_center.jpg",
+  "next_scene": "res://scenes/TestRoom.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Webb Industries data center. Server hum, blue glow, and your faces looping on every monitor.", "duration": 5.0 },
+    { "type": "gesture", "target": "webb", "name": "ready_stance" },
+    { "type": "line", "speaker": "WEBB", "target": "webb",
+      "text": "Cute infiltration. You're still running my firmware.",
+      "duration": 4.0 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "WEBB", "target": "webb", "gesture": "death_slump",
+      "text": "I sold your faces, your routes, your heartbeats. The Sorrows were just another product launch.",
+      "duration": 5.0 },
+    { "type": "line", "speaker": "WEBB", "target": "webb",
+      "text": "You think revenge is justice? I think it's a bad quarterly.",
+      "duration": 4.5 },
+    { "type": "line", "speaker": "WEBB", "target": "webb",
+      "text": "Spare the genius and I wipe the warrants. Flatten me and every feed in the city loops your kill cam.",
+      "duration": 4.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.35, "duration": 1.5 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Webb's mech suit sparks out. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Webb", "spare"] },
+    { "type": "narrator", "text": "Webb purges the warrants and jack out through a maintenance hatch.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Webb", "execute"] },
+    { "type": "narrator", "text": "The feeds go dark. The Trader's data empire crumbles with him.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 }
+  ]
+}

@@ -7,22 +7,21 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- **Arcane visual pass:** production environment art (`godot/assets/environment/`), `arcane_grade.gdshader`, `ArcaneOverlay` on gameplay scenes
-- **Caption-only cutscenes:** lip flap via `SpeakCapable`; no voiceover playback
-- **Shared getaway mechanic:** `GetawayScene` base class; `CarChaseScene` extends it
-- **RPG synergy bonds:** tiered crew pair buffs (HP, damage, speed, crit, armor, regen) + `SynergyHUD`
-- **Beach Boulevard boardwalk:** `EnvironmentBackdrop` with tiled sand/water, skyline silhouettes, boulevard props
-
-### Changed
-- Retired Phaser 3 web prototype (`js/`, root `index.html`, `run-game.ps1`, `stop-game.ps1`) — Godot is the only shipping client
-- Hayes boss location renamed to Beach Boulevard Correctional Facility
-- Rooftop intro plays `blackwood_scene.json` enter_sequence captions before combat
-
 ### Planned
-- Full encounters for the remaining five Corrupted Six bosses (Cross, Voss, Moreau, Hayes, Webb)
 - Broader 3-act map / level set beyond the boardwalk TestRoom + Blackwood arc
 - Final production art pass
+
+## [1.2.0] - 2026-08-08
+
+### Added
+- **Five Corrupted Six boss encounters** — playable fights for Cross, Voss, Moreau, Hayes, and Webb (slices 3.18–3.22)
+- **`BossGeneric` template system** — shared combat + JSON cutscene pipeline built on `BossEncounter`; per-boss scripts subclass the template and pull metadata from `godot/data/bosses.json`
+- **TestRoom boss triggers** — dedicated trigger zones on the boardwalk jump straight into each Corrupted Six encounter for QA and act-3 progression
+- **`play_boss_demo.gd`** — headless/editor launcher with `--boss-cross` (and sibling flags) to boot any Corrupted Six scene directly
+
+### Changed
+- Act progression: TestRoom boss triggers **or** the full story arc (TestRoom → Blackwood rooftop → car chase → Emperor reckoning → epilogue)
+- Corrupted Six marked **GA scope** — all five bosses are playable, not data-only templates
 
 ## [1.1.0] - 2026-08-08
 

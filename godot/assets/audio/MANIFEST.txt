@@ -14,7 +14,7 @@ Encounter data
 --------------
 - godot/data/emperor_scene.json
 - godot/data/blackwood_scene.json
-- godot/data/_beat_encounter_template.json (future bosses)
+- godot/data/_beat_encounter_template.json (Corrupted Six encounter beats)
 
 Future bosses (Slices 3.18–3.23)
 --------------------------------

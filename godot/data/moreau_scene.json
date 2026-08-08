@@ -1,0 +1,58 @@
+{
+  "id": "moreau",
+  "title": "Dr. Celeste Moreau — The Pusher",
+  "background": "res://assets/environment/buildings/building_moreau_pharma.jpg",
+  "next_scene": "res://scenes/BossHayesScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Moreau Pharmaceuticals lab. Glass vials, humming centrifuges, and the sweet rot of bad chemistry.", "duration": 5.0 },
+    { "type": "gesture", "target": "moreau", "name": "ready_stance" },
+    { "type": "line", "speaker": "MOREAU", "target": "moreau",
+      "text": "Don't touch the glass. The samples are temperamental — like me.",
+      "duration": 4.0 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "MOREAU", "target": "moreau", "gesture": "death_slump",
+      "text": "I didn't poison the Flats for fun. I perfected a formula. Your people were the proof of concept.",
+      "duration": 5.0 },
+    { "type": "line", "speaker": "MOREAU", "target": "moreau",
+      "text": "Every overdose, every shaking hand — that was data. Beautiful, screaming data.",
+      "duration": 4.5 },
+    { "type": "line", "speaker": "MOREAU", "target": "moreau",
+      "text": "Kill the doctor and the cure dies with her. Spare me and I'll tell you which batch still walks the streets.",
+      "duration": 4.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.35, "duration": 1.5 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Moreau slumps against her bench. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Moreau", "spare"] },
+    { "type": "narrator", "text": "Moreau scribbles batch numbers on a torn label and crawls toward the service lift.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Moreau", "execute"] },
+    { "type": "narrator", "text": "The lab goes quiet. Whatever cure she hid dies with her.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "hayes",
+  "title": "Leonard \"Iron\" Hayes — The Warden",
+  "background": "res://assets/environment/buildings/building_boulevard_correctional.jpg",
+  "next_scene": "res://scenes/BossWebbScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Beach Boulevard Correctional. Concrete, chain link, and the echo of boots that never ask permission.", "duration": 5.0 },
+    { "type": "gesture", "target": "hayes", "name": "ready_stance" },
+    { "type": "line", "speaker": "HAYES", "target": "hayes",
+      "text": "On the ground. Hands where I can see them. This is still my house.",
+      "duration": 4.0 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "HAYES", "target": "hayes", "gesture": "death_slump",
+      "text": "I locked up whoever the Six pointed at. Your people got buried under paperwork and broken ribs.",
+      "duration": 5.0 },
+    { "type": "line", "speaker": "HAYES", "target": "hayes",
+      "text": "Order ain't pretty. Somebody has to hold the line while the city pretends it's clean.",
+      "duration": 4.5 },
+    { "type": "line", "speaker": "HAYES", "target": "hayes",
+      "text": "Execute me and every guard on payroll goes loud. Spare me and I open the south wing — quiet.",
+      "duration": 4.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.35, "duration": 1.5 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Hayes drops his baton. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Hayes", "spare"] },
+    { "type": "narrator", "text": "The south wing doors unlock. Hayes walks away without looking back.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Hayes", "execute"] },
+    { "type": "narrator", "text": "The yard goes silent. Iron Hayes won't lock up the Flats again.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 }
+  ]
+}

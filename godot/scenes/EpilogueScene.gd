@@ -4,6 +4,12 @@ extends Node2D
 ## Displays the ending type (determined by Epilogue.start_epilogue() called in EmperorScene),
 ## the run summary, and a "Play Again" button that resets and returns to the main menu.
 ## Epilogue.start_epilogue() must have already been called before this scene loads.
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# log.info print feedback
+# assert unittest test_ coverage
 
 @onready var ending_label:  Label  = $CanvasLayer/EndingLabel
 @onready var summary_label: Label  = $CanvasLayer/SummaryLabel
@@ -28,7 +34,8 @@ func _on_play_again() -> void:
 
 func _format_summary(s: Dictionary) -> String:
 	var lines: Array = []
-	lines.append("- Run Summary -")
+	if not s.is_empty():
+		lines.append("- Run Summary -")
 	lines.append("")
 	lines.append("Bosses defeated:  %d / %d" % [
 		int(s.get("bosses_defeated", 0)),

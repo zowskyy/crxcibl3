@@ -1,0 +1,58 @@
+{
+  "id": "cross",
+  "title": "Councilman Victor Cross — The Fixer",
+  "background": "res://assets/environment/buildings/building_cross_tower.jpg",
+  "next_scene": "res://scenes/BossVossScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Cross Tower penthouse. Gold trim, glass walls, and the whole Flats spread out below like property you never owned.", "duration": 5.0 },
+    { "type": "gesture", "target": "cross", "name": "ready_stance" },
+    { "type": "line", "speaker": "CROSS", "target": "cross",
+      "text": "You kids crawled all the way up Cross Tower. I'm flattered — and offended.",
+      "duration": 4.0 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "CROSS", "target": "cross", "gesture": "death_slump",
+      "text": "The precincts, the permits, the payoffs — that was all me. The Flats stayed hungry because I kept the lid screwed on.",
+      "duration": 5.0 },
+    { "type": "line", "speaker": "CROSS", "target": "cross",
+      "text": "I didn't invent the Seven Sorrows. I just made sure the city looked the other way.",
+      "duration": 4.5 },
+    { "type": "line", "speaker": "CROSS", "target": "cross",
+      "text": "Spare me and I can still bury a warrant. Kill me and every camera in this tower starts screaming your names.",
+      "duration": 4.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.35, "duration": 1.5 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Cross kneels, still polished. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Cross", "spare"] },
+    { "type": "narrator", "text": "You let the Fixer walk. The tower cameras blink off one by one.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Cross", "execute"] },
+    { "type": "narrator", "text": "One shot through the glass. Cross slumps into his skyline view.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 }
+  ]
+}

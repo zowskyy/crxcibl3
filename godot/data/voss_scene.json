@@ -1,0 +1,58 @@
+{
+  "id": "voss",
+  "title": "Damian Voss — The Broker",
+  "background": "res://assets/environment/buildings/building_voss_compound.jpg",
+  "next_scene": "res://scenes/BossMoreauScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Voss Compound vault. Cold light, colder ledgers. Every Sorrow had a price tag.", "duration": 5.0 },
+    { "type": "gesture", "target": "voss", "name": "ready_stance" },
+    { "type": "line", "speaker": "VOSS", "target": "voss",
+      "text": "You're interrupting a closed transaction. That costs extra.",
+      "duration": 4.0 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "VOSS", "target": "voss", "gesture": "death_slump",
+      "text": "I sold the routes, the keys, the silence. Every Sorrow had a ledger line with my signature.",
+      "duration": 5.0 },
+    { "type": "line", "speaker": "VOSS", "target": "voss",
+      "text": "Sentiment is a liability. The crew was inventory — until you stopped being profitable.",
+      "duration": 4.5 },
+    { "type": "line", "speaker": "VOSS", "target": "voss",
+      "text": "Spare the asset and I transfer clearance. Liquidate me and the vault locks for good.",
+      "duration": 4.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.35, "duration": 1.5 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Voss drops his datapad. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Voss", "spare"] },
+    { "type": "narrator", "text": "The Broker transfers clearance codes and vanishes into the compound tunnels.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["Voss", "execute"] },
+    { "type": "narrator", "text": "The vault seals shut. Voss won't broker another betrayal.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 }
+  ]
+}

@@ -35,7 +35,7 @@
       "scene_path": "res://scenes/BossCrossScene.tscn",
       "script_path": "res://scenes/BossCross.gd",
       "sprite_dir": "res://assets/sprites/bosses/cross/",
-      "status": "template"
+      "status": "implemented"
     },
     {
       "id": "Voss",
@@ -72,7 +72,7 @@
       "scene_path": "res://scenes/BossVossScene.tscn",
       "script_path": "res://scenes/BossVoss.gd",
       "sprite_dir": "res://assets/sprites/bosses/voss/",
-      "status": "template"
+      "status": "implemented"
     },
     {
       "id": "Moreau",
@@ -109,7 +109,7 @@
       "scene_path": "res://scenes/BossMoreauScene.tscn",
       "script_path": "res://scenes/BossMoreau.gd",
       "sprite_dir": "res://assets/sprites/bosses/moreau/",
-      "status": "template"
+      "status": "implemented"
     },
     {
       "id": "Hayes",
@@ -146,7 +146,7 @@
       "scene_path": "res://scenes/BossHayesScene.tscn",
       "script_path": "res://scenes/BossHayes.gd",
       "sprite_dir": "res://assets/sprites/bosses/hayes/",
-      "status": "template"
+      "status": "implemented"
     },
     {
       "id": "Webb",
@@ -183,7 +183,7 @@
       "scene_path": "res://scenes/BossWebbScene.tscn",
       "script_path": "res://scenes/BossWebb.gd",
       "sprite_dir": "res://assets/sprites/bosses/webb/",
-      "status": "template"
+      "status": "implemented"
     },
     {
       "id": "Blackwood",

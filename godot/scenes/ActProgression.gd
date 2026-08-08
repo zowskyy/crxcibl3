@@ -2,6 +2,11 @@ class_name ActProgression
 extends RefCounted
 ## Static helpers for Corrupted Six boss order, scene routing, and act unlocks.
 ## Boss defeat registration stays in Bosses/GameState — this only reads progression.
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# log.info print feedback
 
 const CORRUPTED_SIX_IDS := ["Cross", "Voss", "Moreau", "Hayes", "Webb"]
 
@@ -38,7 +43,7 @@ static func is_corrupted_six_complete() -> bool:
 
 
 static func corrupted_six_defeated_count() -> int:
-	var count := 0
+	var count: int = 0
 	for boss_id in CORRUPTED_SIX_IDS:
 		if GameState.bosses_fought.has(boss_id):
 			count += 1
@@ -67,3 +72,21 @@ static func boss_hint_text(boss_id: String) -> String:
 			return "Webb Industries — enter to confront The Trader"
 		_:
 			return ""
+
+
+static func scene_for_trigger(boss_id: String) -> String:
+	if GameState.bosses_fought.has(boss_id):
+		return ""
+	if get_next_boss_id() != boss_id:
+		return ""
+	return get_next_boss_scene()
+
+
+static func apply_qa_cmdline_flags() -> void:
+	var args := OS.get_cmdline_args()
+	if "--boss-all" not in args:
+		return
+	for boss_id in CORRUPTED_SIX_IDS:
+		if not GameState.bosses_fought.has(boss_id):
+			GameState.mark_boss_defeated(boss_id, false, "qa")
+	unlock_act_for_boss_progress()

@@ -1,10 +1,10 @@
 # CRXCIBL3
 
-> **Beach Boulevard — Godot 4.7.1 crew shooter with a JSON-driven cutscene system for the Emperor reckoning, Blackwood arc, and future Corrupted Six bosses.**
+> **Beach Boulevard — Godot 4.7.1 crew shooter with JSON-driven cutscenes, the Blackwood arc, and all five Corrupted Six boss encounters.**
 
 [![Godot 4.7.1](https://img.shields.io/badge/Godot-4.7.1-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-blue.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-lightgrey)](godot/export_presets.cfg)
 
 ---
@@ -23,9 +23,19 @@ python3 scripts/generate_icon.py
 # Optional: structural checks (no Godot editor required)
 python3 scripts/check_tscn.py
 python3 scripts/check_gd.py
+
+# Optional: boot a Corrupted Six boss directly (QA / demo)
+godot --path godot -s res://tools/play_boss_demo.gd -- --boss-cross
+godot --path godot -s res://tools/play_boss_demo.gd -- --boss-voss
+godot --path godot -s res://tools/play_boss_demo.gd -- --boss-moreau
+godot --path godot -s res://tools/play_boss_demo.gd -- --boss-hayes
+godot --path godot -s res://tools/play_boss_demo.gd -- --boss-webb
 ```
 
-**Play the story arc:** TestRoom → rooftop trigger (Building3) → Blackwood fight → car chase → Emperor estate reckoning → epilogue.
+**Play flow (pick one):**
+
+- **Act 3 boss run:** enter the Corrupted Six trigger zones in TestRoom (Cross Tower, Voss compound, Moreau lab, correctional yard, Webb data center).
+- **Full story arc:** TestRoom → rooftop trigger (Building3) → Blackwood fight → car chase → Emperor estate reckoning → epilogue.
 
 ---
 
@@ -35,10 +45,10 @@ python3 scripts/check_gd.py
 |------|--------|
 | **Boardwalk combat** | Heat / stress / HP, enemies, bodega shop, hideout, crack-house generator, squad TAB switch |
 | **Blackwood arc** | Rooftop surprise → car chase → Emperor final stand → JSON reckoning → epilogue |
+| **Corrupted Six bosses** | Cross, Voss, Moreau, Hayes, Webb — playable encounters via `BossGeneric` + JSON beats |
 | **Cutscene system** | `CutsceneDirector` beat sequencer + `DialogueBox` UI + JSON data in `godot/data/` |
 | **25 autoloads** | GameState, Stress, SaveSystem, Bosses, Emperor, Epilogue, … |
 | **12 heroes** | From `configs/game_config.json` via HeroDefinitions / HeroFactory |
-| **5 future bosses** | Cross, Voss, Moreau, Hayes, Webb — data-templated (`bosses.json` + beat template) |
 | **Export** | Android, Web, Windows Desktop, Linux/X11 presets; CI debug APK artifact |
 
 Godot 4.7.1 is the **sole shipping client** — the legacy Phaser web prototype has been retired.
@@ -62,7 +72,7 @@ CutsceneDirector.play("emperor", [
 ])
 ```
 
-Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.json`.
+Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.json`, plus per-boss encounter JSON.
 
 ---
 
@@ -72,12 +82,13 @@ Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.jso
 .
 ├── godot/                      # ← open this in Godot
 │   ├── autoload/               # 25+ singletons incl. CutsceneDirector, GameState
-│   ├── scenes/                 # MainMenu, TestRoom, Blackwood arc, DialogueBox, …
+│   ├── scenes/                 # MainMenu, TestRoom, boss scenes, DialogueBox, …
 │   ├── data/                   # JSON beat sequences + boss metadata
 │   ├── assets/                 # Sprites, shaders, environment art, audio/
 │   ├── configs/game_config.json
 │   ├── export_presets.cfg      # Android / Web / Windows / Linux
-│   └── project.godot           # version 1.0.0, brand icon
+│   ├── tools/                  # play_demo.gd, play_boss_demo.gd, CI helpers
+│   └── project.godot           # version 1.2.0, brand icon
 ├── scripts/                    # generate_icon.py, check_tscn.py, check_gd.py, gates
 ├── CHANGELOG.md
 ├── ATTRIBUTIONS.md
@@ -87,13 +98,13 @@ Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.jso
 
 ---
 
-## Adding a new boss (Slices 3.18–3.23)
+## Adding a new boss
 
-1. Copy `godot/data/_beat_encounter_template.json` → `godot/data/fixer_scene.json` (beat sequences).
+1. Copy `godot/data/_beat_encounter_template.json` → `godot/data/<boss>_scene.json` (beat sequences).
 2. Add combat metadata to `godot/data/bosses.json` (HP, phases, gimmick).
-3. Create `BossX.gd` / scene modeled on `BossBlackwood.gd`.
+3. Subclass `BossGeneric.gd` (or `BossEncounter.gd` for cutscene-only) and wire the scene.
 4. Register id in `Bosses.gd` `BOSS_LIST`.
-5. Wire a level trigger; CI headless-boots every `godot/scenes/*.tscn`.
+5. Add a TestRoom trigger zone; CI headless-boots every `godot/scenes/*.tscn`.
 
 See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 
@@ -118,4 +129,4 @@ See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 | [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md) | Roadmap checklist |
 | [godot/assets/audio/MANIFEST.txt](godot/assets/audio/MANIFEST.txt) | VO WAV filenames |
 
-**Godot:** 4.7.1 · **Project version:** 1.0.0 · **Updated:** 2026-08-08
+**Godot:** 4.7.1 · **Project version:** 1.2.0 · **Updated:** 2026-08-08

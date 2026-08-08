@@ -13,6 +13,11 @@ extends Node2D
 ## Shader integration (Slice 2.16): wave overlay intensity tracks
 ## GameState.heat -- kicks in past the 51 threshold already used by the
 ## vignette/tint in the visual direction doc, maxes out at heat 100.
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# log.info print feedback
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
@@ -42,18 +47,7 @@ const SAMPLE_QUEST := {
 	"rewards": {"runes": 20, "items": ["9mm_extended_mag"]},
 }
 
-# Corrupted Six entry points — triggers spawned in code at these world anchors.
-const BOSS_TRIGGER_SPECS := [
-	{"boss_id": "Cross", "anchor": "Building1", "offset": Vector2(0, 50)},
-	{"boss_id": "Voss", "anchor": "Building2", "offset": Vector2(0, 50)},
-	{"boss_id": "Moreau", "anchor": "Building3", "offset": Vector2(0, 50)},
-	{"boss_id": "Hayes", "anchor": "CrackHouse1", "offset": Vector2(0, -20)},
-	{"boss_id": "Webb", "anchor": "Fence1", "offset": Vector2(0, -30)},
-]
-
-var _boss_triggers: Dictionary = {}  # boss_id -> Area2D
-var _boss_hint_label: Label = null
-var _active_boss_hint_id := ""
+var _boss_access: TestRoomBossAccess
 
 
 func _ready() -> void:
@@ -61,12 +55,13 @@ func _ready() -> void:
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
-	_apply_qa_cmdline_flags()
+	ActProgression.apply_qa_cmdline_flags()
 	ActProgression.unlock_act_for_boss_progress()
-	_setup_boss_triggers()
-	_setup_boss_hint_label()
-	if not Bosses.boss_defeated.is_connected(_on_boss_progress_changed):
-		Bosses.boss_defeated.connect(_on_boss_progress_changed)
+	_boss_access = TestRoomBossAccess.new()
+	_boss_access.name = "BossAccess"
+	add_child(_boss_access)
+	_boss_access.setup(self, canvas_layer, Callable(self, "_get_player"))
+	_boss_access.queue_boss_cross_load()
 
 	if "--demo" in OS.get_cmdline_args():
 		GameState.reset_for_new_game()
@@ -98,64 +93,9 @@ func _ready() -> void:
 		driver.name = "DemoDriver"
 		add_child(driver)
 
-	if "--boss-cross" in OS.get_cmdline_args():
-		call_deferred("_load_boss_scene", "res://scenes/BossCrossScene.tscn")
 
-
-func _apply_qa_cmdline_flags() -> void:
-	var args := OS.get_cmdline_args()
-	if "--boss-all" in args:
-		for boss_id in ActProgression.CORRUPTED_SIX_IDS:
-			if not GameState.bosses_fought.has(boss_id):
-				GameState.mark_boss_defeated(boss_id, false, "qa")
-		ActProgression.unlock_act_for_boss_progress()
-
-
-func _setup_boss_triggers() -> void:
-	for spec in BOSS_TRIGGER_SPECS:
-		var boss_id: String = spec["boss_id"]
-		var anchor_name: String = spec["anchor"]
-		var anchor := get_node_or_null(anchor_name) as Node2D
-		if anchor == null:
-			push_warning("TestRoom: missing boss trigger anchor %s" % anchor_name)
-			continue
-
-		var zone := Area2D.new()
-		zone.name = "%sBossTrigger" % boss_id
-		zone.position = anchor.position + spec["offset"]
-		zone.monitorable = false
-		zone.monitoring = true
-
-		var col := CollisionShape2D.new()
-		var shape := RectangleShape2D.new()
-		shape.size = Vector2(80, 80)
-		col.shape = shape
-		zone.add_child(col)
-
-		zone.body_entered.connect(_on_boss_trigger_entered.bind(boss_id))
-		add_child(zone)
-		_boss_triggers[boss_id] = zone
-
-
-func _setup_boss_hint_label() -> void:
-	_boss_hint_label = Label.new()
-	_boss_hint_label.name = "BossHintLabel"
-	_boss_hint_label.anchor_left = 0.5
-	_boss_hint_label.anchor_right = 0.5
-	_boss_hint_label.anchor_top = 1.0
-	_boss_hint_label.anchor_bottom = 1.0
-	_boss_hint_label.offset_left = -220.0
-	_boss_hint_label.offset_top = -88.0
-	_boss_hint_label.offset_right = 220.0
-	_boss_hint_label.offset_bottom = -64.0
-	_boss_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_boss_hint_label.visible = false
-	canvas_layer.add_child(_boss_hint_label)
-
-
-func _on_boss_progress_changed(_boss_name: String, _finisher: String, _executed: bool) -> void:
-	ActProgression.unlock_act_for_boss_progress()
-	_refresh_boss_hint()
+func _get_player() -> CharacterBody2D:
+	return player
 
 
 func _setup_environment() -> void:
@@ -236,7 +176,8 @@ func _update_squad_label() -> void:
 
 
 func _process(delta: float) -> void:
-	_update_boss_hint_proximity()
+	if _boss_access:
+		_boss_access.tick_hint()
 
 	# Slice 2.13: nothing else in the scene owns a per-frame tick, and
 	# Stress.tick() is what applies its out-of-combat decay -- without
@@ -316,61 +257,6 @@ func _toggle_inventory() -> void:
 	_inventory_ui = CanvasLayer.new()
 	_inventory_ui.set_script(INVENTORY_UI_SCRIPT)
 	add_child(_inventory_ui)
-
-
-func _on_boss_trigger_entered(body: Node, boss_id: String) -> void:
-	if not body.is_in_group("player"):
-		return
-	if "--demo" in OS.get_cmdline_args():
-		return
-	if GameState.bosses_fought.has(boss_id):
-		return
-	var next_id := ActProgression.get_next_boss_id()
-	if next_id != boss_id:
-		return
-	var scene_path := ActProgression.get_next_boss_scene()
-	if scene_path == "":
-		return
-	_load_boss_scene(scene_path)
-
-
-func _load_boss_scene(scene_path: String) -> void:
-	if not ResourceLoader.exists(scene_path):
-		push_warning("TestRoom: boss scene not found yet: %s" % scene_path)
-		return
-	get_tree().change_scene_to_file(scene_path)
-
-
-func _update_boss_hint_proximity() -> void:
-	if _boss_hint_label == null:
-		return
-	var next_id := ActProgression.get_next_boss_id()
-	if next_id == "" or player == null or not is_instance_valid(player):
-		_boss_hint_label.visible = false
-		_active_boss_hint_id = ""
-		return
-
-	var zone: Area2D = _boss_triggers.get(next_id)
-	if zone == null:
-		_boss_hint_label.visible = false
-		return
-
-	var hint_radius := 120.0
-	var near := player.global_position.distance_to(zone.global_position) <= hint_radius
-	if near:
-		if _active_boss_hint_id != next_id:
-			_active_boss_hint_id = next_id
-			_boss_hint_label.text = ActProgression.boss_hint_text(next_id)
-		_boss_hint_label.visible = true
-	else:
-		_boss_hint_label.visible = false
-		_active_boss_hint_id = ""
-
-
-func _refresh_boss_hint() -> void:
-	_active_boss_hint_id = ""
-	if _boss_hint_label:
-		_boss_hint_label.visible = false
 
 
 func _on_rooftop_trigger_entered(body: Node) -> void:
