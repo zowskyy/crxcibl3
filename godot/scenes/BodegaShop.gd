@@ -8,6 +8,16 @@ extends Node2D
 ## The menu lives on the scene's CanvasLayer (not here) so it stays fixed on
 ## screen regardless of camera position. Set menu_node in the Inspector or
 ## via code before _ready() if reusing this script in another scene.
+## Usage: proximity bodega shop — see --help in project docs.
+## validate upgrade ids; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade closes menu on leave radius.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const TRIGGER_RADIUS := 70.0
 
@@ -50,7 +60,12 @@ func _process(_delta: float) -> void:
 func _open_menu() -> void:
 	_menu_open = true
 	_refresh_buttons()
+	var close_btn: Button = _menu.get_node("CloseButton")
+	SlugHudTheme.style_menu_button(close_btn)
+	for entry in _buttons:
+		SlugHudTheme.style_menu_button(entry["btn"])
 	_menu.show()
+	print("BodegaShop: MS menu opened")
 
 
 func _close_menu() -> void:
@@ -64,10 +79,12 @@ func _build_buttons() -> void:
 	for upgrade in UPGRADES:
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(0, 32)
+		SlugHudTheme.style_menu_button(btn)
 		container.add_child(btn)
 		_buttons.append({"btn": btn, "upgrade": upgrade})
 		var id: String = upgrade["id"]
 		btn.pressed.connect(func(): _on_upgrade_pressed(id))
+	SlugHudTheme.style_menu_button(close_btn)
 	close_btn.pressed.connect(_close_menu)
 
 

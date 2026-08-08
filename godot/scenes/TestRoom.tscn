@@ -9,7 +9,7 @@
 ; type: str int float bool list dict Optional Union
 ; slug_hud anchor_left anchor_top naming convention
 
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -26,6 +26,7 @@
 [ext_resource type="Script" path="res://scenes/SpawnGenerator.gd" id="14"]
 [ext_resource type="Script" path="res://scenes/NPC.gd" id="16"]
 [ext_resource type="Script" path="res://scenes/CoverPoint.gd" id="17"]
+[ext_resource type="Script" path="res://scenes/ui/BodegaMenuChrome.gd" id="18"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_generator"]
 size = Vector2(40, 40)
@@ -164,13 +165,14 @@ offset_left = -120.0
 offset_top = -105.0
 offset_right = 120.0
 offset_bottom = 105.0
+script = ExtResource("18")
 
 [node name="PromptLabel" type="Label" parent="CanvasLayer/BodegaMenu"]
 offset_left = 8.0
 offset_top = 6.0
 offset_right = 232.0
 offset_bottom = 24.0
-text = "BODEGA — spend Runes"
+text = "KOOS CAFE — RUNES"
 
 [node name="Buttons" type="VBoxContainer" parent="CanvasLayer/BodegaMenu"]
 offset_left = 8.0

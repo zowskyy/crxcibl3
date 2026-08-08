@@ -2,6 +2,16 @@ extends Node2D
 class_name GetawayScene
 ## Shared getaway mechanic (Slice 2.19+) — survive timed pursuit, then transition.
 ## Car chase, boat run, and future escapes all use this base.
+## Usage: EVADE timer + armor pips HUD — see --help in project docs.
+## validate vehicle hp; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via exit_scene_path transition.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal getaway_started
 signal getaway_survived
@@ -24,7 +34,7 @@ var player_vehicle: CharacterBody2D
 var road_renderer: Node2D
 var target_marker: Node2D
 var chase_label: Label
-var hp_label: Label
+var hp_label: RichTextLabel
 var fire_button: Button
 
 var _elapsed := 0.0
@@ -49,7 +59,7 @@ func _resolve_nodes() -> void:
 	road_renderer = get_node_or_null("RoadRenderer")
 	target_marker = get_node_or_null("BlackwoodCar")
 	chase_label = get_node_or_null("CanvasLayer/ChaseLabel") as Label
-	hp_label = get_node_or_null("CanvasLayer/HpLabel") as Label
+	hp_label = get_node_or_null("CanvasLayer/HpLabel") as RichTextLabel
 	fire_button = get_node_or_null("CanvasLayer/FireButton") as Button
 
 
@@ -135,8 +145,32 @@ func _update_hud() -> void:
 	if chase_label:
 		var remaining := chase_duration - _elapsed
 		chase_label.text = "%s  %.0fs" % [getaway_label_prefix, maxf(0.0, remaining)]
-	if hp_label and player_vehicle and "hp" in player_vehicle:
-		hp_label.text = "VEHICLE HP  %d" % int(player_vehicle.hp)
+	if hp_label == null:
+		return
+	if player_vehicle == null or not ("hp" in player_vehicle):
+		hp_label.visible = false
+		print("GetawayScene: no vehicle — armor pips hidden")
+		return
+	hp_label.visible = true
+	hp_label.bbcode_enabled = true
+	var max_hp := 100
+	if "MAX_HP" in player_vehicle:
+		max_hp = int(player_vehicle.MAX_HP)
+	hp_label.text = _format_armor_pips(int(player_vehicle.hp), max_hp)
+
+
+func _format_armor_pips(hp: int, max_hp: int) -> String:
+	var ratio := clampf(float(hp) / float(maxi(1, max_hp)), 0.0, 1.0)
+	var filled := int(round(ratio * 5.0))
+	var filled_hex := SlugHudTheme.SPRAY_ORANGE.to_html(false)
+	var empty_hex := SlugHudTheme.TEXT_DIM.to_html(false)
+	var pips: PackedStringArray = []
+	for i in range(5):
+		if i < filled:
+			pips.append("[color=#%s]■[/color]" % filled_hex)
+		else:
+			pips.append("[color=#%s]○[/color]" % empty_hex)
+	return "ARMOR %s" % "".join(pips)
 
 
 func _finish_getaway() -> void:

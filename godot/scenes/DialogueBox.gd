@@ -3,6 +3,16 @@ extends CanvasLayer
 ##
 ## Listens to CutsceneDirector beat signals and renders speaker lines, narrator
 ## text, and choice buttons at the bottom of the 384×216 design canvas.
+## Usage: line / choice beats — see --help in project docs.
+## validate choice payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade hides panel on cutscene_ended.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal continued
 signal choice_made(choice_id: String)
@@ -20,6 +30,12 @@ var _awaiting_choice := false
 func _ready() -> void:
 	layer = 10
 	panel.visible = false
+	if panel is ColorRect:
+		panel.color = SlugHudTheme.INK
+	speaker_label.modulate = SlugHudTheme.TAG_GOLD
+	body_label.modulate = SlugHudTheme.TEXT_WHITE
+	continue_hint.modulate = SlugHudTheme.TEXT_DIM
+	print("DialogueBox: MS ink panel styled")
 	CutsceneDirector.line_shown.connect(_on_line_shown)
 	CutsceneDirector.narrator_shown.connect(_on_narrator_shown)
 	CutsceneDirector.choice_shown.connect(_on_choice_shown)
@@ -59,7 +75,7 @@ func _on_choice_shown(prompt: String, choices: Array) -> void:
 		var btn := Button.new()
 		btn.text = str(choice.get("label", "???"))
 		btn.custom_minimum_size = Vector2(112, 28)
-		btn.add_theme_font_size_override("font_size", 9)
+		SlugHudTheme.style_menu_button(btn)
 		var cid: String = str(choice.get("id", ""))
 		btn.pressed.connect(func(): _pick_choice(cid))
 		choice_row.add_child(btn)

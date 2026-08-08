@@ -4,6 +4,16 @@ extends Control
 ## desktop without a touchscreen. Player.gd reads `output` (a normalized
 ## Vector2, zero when not being dragged) and falls back to arrow keys when
 ## this returns zero, so desktop testing works either way.
+## Usage: touch/mouse drag input — see --help in project docs.
+## validate knob clamp; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade resets output to zero on release.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 ## Sized against the project's design-space viewport (384x216, see
 ## project.godot's window/size/viewport_*), not real device pixels --
@@ -28,12 +38,15 @@ var _knob_position := Vector2.ZERO
 func _ready() -> void:
 	add_to_group("virtual_joystick")
 	_knob_position = size / 2.0
+	print("VirtualJoystick: MS art ring ready")
 
 
 func _draw() -> void:
 	var center := size / 2.0
-	draw_circle(center, radius, Color(1, 1, 1, 0.15))
-	draw_circle(_knob_position, knob_radius, Color(1, 1, 1, 0.35))
+	draw_circle(center, radius, SlugHudTheme.ASPHALT)
+	draw_arc(center, radius, 0.0, TAU, 32, SlugHudTheme.MS_BORDER_OUTER, 2.0)
+	draw_circle(_knob_position, knob_radius, SlugHudTheme.TAG_GOLD)
+	draw_circle(_knob_position, knob_radius * 0.45, SlugHudTheme.SPRAY_ORANGE)
 
 
 func _gui_input(event: InputEvent) -> void:

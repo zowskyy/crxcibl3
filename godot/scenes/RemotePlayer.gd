@@ -88,7 +88,6 @@ func _update_facing_visual() -> void:
 
 func _draw() -> void:
 	if _portrait != null and _portrait.visible:
-		_draw_health_bar(Vector2(-18, -28))
 		return
 	var body := Rect2(-8, -18, 16, 22)
 	draw_rect(body, SILHOUETTE_COLOR)
@@ -96,15 +95,3 @@ func _draw() -> void:
 	var head_center := Vector2(0, -22)
 	draw_circle(head_center, 5.0, SILHOUETTE_COLOR)
 	draw_arc(head_center, 5.0, 0.0, TAU, 16, SILHOUETTE_OUTLINE, 1.5)
-	_draw_health_bar(Vector2(-18, -34))
-
-
-func _draw_health_bar(origin: Vector2) -> void:
-	var bar_w := 36.0
-	var bar_h := 4.0
-	var fill := 0.0
-	if _max_health > 0:
-		fill = clampf(float(_health) / float(_max_health), 0.0, 1.0)
-	draw_rect(Rect2(origin, Vector2(bar_w, bar_h)), Color(0.08, 0.08, 0.1, 0.85))
-	var fill_col := Color(0.85, 0.15, 0.15) if _health <= 0 else Color(0.35, 0.75, 0.95)
-	draw_rect(Rect2(origin, Vector2(bar_w * fill, bar_h)), fill_col)

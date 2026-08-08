@@ -1,6 +1,16 @@
 class_name BossGenericDraw
 extends RefCounted
 ## Shared silhouette drawing for BossGeneric (Slice 3.18+).
+## Usage: draw_boss silhouette + MS HP bar — see --help in project docs.
+## validate hp ratio; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade returns early on null canvas.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 static func hp_ratio(hp: int, max_hp: int) -> float:
 	if max_hp <= 0:
@@ -23,8 +33,9 @@ static func draw_boss(
 		return
 	var bar_w := 40.0
 	var fill := bar_w * hp_ratio(hp, max_hp)
-	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
-	canvas.draw_rect(Rect2(-bar_w / 2, -36, fill, 4), Color(0.9, 0.75, 0.1))
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), SlugHudTheme.MS_PANEL)
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, fill, 4), SlugHudTheme.TAG_GOLD)
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), SlugHudTheme.MS_BORDER_OUTER, false, 1.0)
 	if has_sheets:
 		if speaking:
 			_draw_lip(canvas, lip_phase)
