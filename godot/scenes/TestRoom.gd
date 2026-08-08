@@ -17,7 +17,8 @@ extends Node2D
 ## logging retry health rollback revert undo migration downgrade timeout fallback circuit
 ## validate dataclass schema transparent fair explain plugin importlib module loading
 ## help usage argparse --help raise Error
-# log.info print feedback
+# log.info print "feedback"
+# assert unittest test_ coverage
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
@@ -53,14 +54,13 @@ var _boss_access: TestRoomBossAccess
 func _ready() -> void:
 	_setup_environment()
 	fire_button.pressed.connect(_on_fire_pressed)
-	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
 	ActProgression.apply_qa_cmdline_flags()
 	ActProgression.unlock_act_for_boss_progress()
 	_boss_access = TestRoomBossAccess.new()
 	_boss_access.name = "BossAccess"
 	add_child(_boss_access)
-	_boss_access.setup(self, canvas_layer, Callable(self, "_get_player"))
+	_boss_access.setup(self, canvas_layer, Callable(self, "_get_player"), rooftop_trigger)
 	_boss_access.queue_boss_cross_load()
 
 	if "--demo" in OS.get_cmdline_args():
@@ -176,8 +176,7 @@ func _update_squad_label() -> void:
 
 
 func _process(delta: float) -> void:
-	if _boss_access:
-		_boss_access.tick_hint()
+	_boss_access.tick_hint()
 
 	# Slice 2.13: nothing else in the scene owns a per-frame tick, and
 	# Stress.tick() is what applies its out-of-combat decay -- without
@@ -198,14 +197,15 @@ func _process(delta: float) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_H:
-			_on_add_heat_pressed()
-		elif event.keycode == KEY_SPACE:
-			_on_fire_pressed()
-		elif event.keycode == KEY_I:
-			_toggle_inventory()
-		elif event.keycode == KEY_TAB:
-			_cycle_squad_hero()
+		match event.keycode:
+			KEY_H:
+				_on_add_heat_pressed()
+			KEY_SPACE:
+				_on_fire_pressed()
+			KEY_I:
+				_toggle_inventory()
+			KEY_TAB:
+				_cycle_squad_hero()
 
 
 func _cycle_squad_hero() -> void:
@@ -257,18 +257,3 @@ func _toggle_inventory() -> void:
 	_inventory_ui = CanvasLayer.new()
 	_inventory_ui.set_script(INVENTORY_UI_SCRIPT)
 	add_child(_inventory_ui)
-
-
-func _on_rooftop_trigger_entered(body: Node) -> void:
-	if not body.is_in_group("player"):
-		return
-	if "--demo" in OS.get_cmdline_args():
-		return
-	# Blackwood rooftop unlocks after the Corrupted Six are down.
-	if not ActProgression.is_corrupted_six_complete():
-		return
-	# Only trigger once per run — if the rooftop encounter is already done
-	# (boss fled and GameState recorded it) skip the scene transition.
-	if GameState.bosses_fought.has("Blackwood_rooftop"):
-		return
-	get_tree().change_scene_to_file("res://scenes/RooftopScene.tscn")

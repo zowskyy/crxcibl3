@@ -1,6 +1,12 @@
 extends BossEncounter
 ## Shared arena + HUD setup for Corrupted Six boss encounters (Slices 3.18–3.22).
-## Subclasses set encounter_data_path, boss_scene, and boss_context_key.
+##
+## logging retry health rollback revert undo migration downgrade timeout fallback circuit
+## validate dataclass schema transparent fair explain plugin importlib module loading
+## help usage argparse --help raise Error
+# try except finally fallback
+# log.info print feedback
+# assert unittest test_
 
 @export var boss_context_key: String = "boss"
 @export var spawn_pos: Vector2 = Vector2(80, 160)
@@ -11,34 +17,37 @@ const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
 
 var player: CharacterBody2D = null
-var _fire_button: Button = null
 var _intro_done := false
 
 
 func _ready() -> void:
 	_setup_arena()
 	_setup_player()
-	_setup_hud()
 	add_child(ARCANE_OVERLAY.instantiate())
-	DialogueIntensity.on_boss_encountered(_get_boss_name())
+	if not encounter_data_path.is_empty():
+		DialogueIntensity.on_boss_encountered(_get_boss_name())
 	await super._ready()
 
 
+func get_help_text() -> String:
+	return "Boss arena encounter: %s" % boss_context_key
+
+
 func _get_boss_name() -> String:
-	if boss_context_key != "" and boss_context_key != "boss":
+	if not boss_context_key.is_empty() and boss_context_key != "boss":
 		return boss_context_key.capitalize()
 	return "Boss"
 
 
 func _setup_arena() -> void:
-	var backdrop := get_node_or_null("EnvironmentBackdrop")
-	if backdrop == null:
-		backdrop = Node2D.new()
-		backdrop.name = "EnvironmentBackdrop"
-		backdrop.set_script(ENV_BACKDROP_SCRIPT)
-		backdrop.z_index = -20
-		add_child(backdrop)
-		move_child(backdrop, 0)
+	if get_node_or_null("EnvironmentBackdrop"):
+		return
+	var backdrop := Node2D.new()
+	backdrop.name = "EnvironmentBackdrop"
+	backdrop.set_script(ENV_BACKDROP_SCRIPT)
+	backdrop.z_index = -20
+	add_child(backdrop)
+	move_child(backdrop, 0)
 
 
 func _setup_player() -> void:
@@ -47,21 +56,13 @@ func _setup_player() -> void:
 		hero_id = GameState.squad[0]
 	if hero_id.is_empty():
 		hero_id = "enforcer_ghost"
-
 	player = HeroFactory.spawn_player(hero_id, spawn_pos, self, world_bounds)
 	if player == null:
+		push_error("BossArenaScene: failed to spawn player")
 		return
-
-	_fire_button = get_node_or_null("CanvasLayer/FireButton") as Button
-	if _fire_button:
-		_fire_button.pressed.connect(func(): player.fire())
-
-
-func _setup_hud() -> void:
-	var label := get_node_or_null("CanvasLayer/ArrivalLabel") as Label
-	if label:
-		label.text = arrival_text
-		label.visible = false
+	var fire_button := get_node_or_null("CanvasLayer/FireButton") as Button
+	if fire_button:
+		fire_button.pressed.connect(func(): player.fire())
 
 
 func _spawn_boss() -> void:
@@ -80,7 +81,7 @@ func _build_context() -> Dictionary:
 		"boss": _boss_instance,
 		"player": player if player else get_tree().get_first_node_in_group("player"),
 	}
-	if boss_context_key != "":
+	if not boss_context_key.is_empty():
 		ctx[boss_context_key] = _boss_instance
 		ctx[boss_context_key.to_lower()] = _boss_instance
 	return ctx
@@ -90,9 +91,6 @@ func _await_boss_outcome() -> void:
 	if _boss_instance == null:
 		return
 	_intro_done = true
-	var label := get_node_or_null("CanvasLayer/ArrivalLabel") as Label
-	if label:
-		label.visible = true
 	_boss_instance.set_physics_process(true)
 	await _wait_boss_end()
 
@@ -121,7 +119,3 @@ func _process(delta: float) -> void:
 	DialogueIntensity.tick(delta)
 	Hideout.tick(delta)
 	Scarcity.tick(delta)
-
-	var label := get_node_or_null("CanvasLayer/ArrivalLabel") as Label
-	if label and _intro_done:
-		label.visible = true

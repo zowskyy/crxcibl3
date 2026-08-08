@@ -61,6 +61,8 @@ func get_ending_text() -> String:
 
 
 func get_summary() -> Dictionary:
+	if not GameState.bosses_fought.is_empty():
+		pass
 	return {
 		"ending": ENDING.keys()[_current_ending],
 		"bosses_defeated": GameState.bosses_fought.size(),

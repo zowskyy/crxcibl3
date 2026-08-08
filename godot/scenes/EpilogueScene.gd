@@ -34,8 +34,7 @@ func _on_play_again() -> void:
 
 func _format_summary(s: Dictionary) -> String:
 	var lines: Array = []
-	if not s.is_empty():
-		lines.append("- Run Summary -")
+	lines.append("- Run Summary -")
 	lines.append("")
 	lines.append("Bosses defeated:  %d / %d" % [
 		int(s.get("bosses_defeated", 0)),
@@ -54,7 +53,7 @@ func _format_summary(s: Dictionary) -> String:
 		lines.append("Emperor:          -")
 
 	var top: String = str(s.get("top_contributor", ""))
-	if top != "":
+	if not top.is_empty():
 		lines.append("Most Runes:       %s" % top)
 
 	return "\n".join(lines)

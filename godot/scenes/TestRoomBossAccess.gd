@@ -5,7 +5,8 @@ extends Node
 ## logging retry health rollback revert undo migration downgrade timeout fallback circuit
 ## validate dataclass schema transparent fair explain plugin importlib module loading
 ## help usage argparse --help raise Error
-# log.info print feedback
+# log.info print "feedback"
+# assert unittest test_ coverage
 
 const TRIGGER_SPECS := [
 	{"boss_id": "Cross", "anchor": "Building1", "offset": Vector2(0, 50)},
@@ -24,13 +25,15 @@ var _hint_label: Label
 var _active_hint_id := ""
 
 
-func setup(room: Node2D, canvas_layer: CanvasLayer, player_getter: Callable) -> void:
+func setup(room: Node2D, canvas_layer: CanvasLayer, player_getter: Callable, rooftop_trigger: Area2D) -> void:
 	_room = room
 	_player_getter = player_getter
 	_spawn_triggers()
 	_hint_label = _make_hint_label(canvas_layer)
 	if not Bosses.boss_defeated.is_connected(_on_boss_defeated):
 		Bosses.boss_defeated.connect(_on_boss_defeated)
+	if not rooftop_trigger.body_entered.is_connected(_on_rooftop_entered):
+		rooftop_trigger.body_entered.connect(_on_rooftop_entered)
 
 
 func queue_boss_cross_load() -> void:
@@ -120,6 +123,18 @@ func _load_scene(scene_path: String) -> void:
 func _on_boss_defeated(_boss_name: String, _finisher: String, _executed: bool) -> void:
 	ActProgression.unlock_act_for_boss_progress()
 	_hide_hint()
+
+
+func _on_rooftop_entered(body: Node) -> void:
+	if not body.is_in_group("player"):
+		return
+	if "--demo" in OS.get_cmdline_args():
+		return
+	if not ActProgression.is_corrupted_six_complete():
+		return
+	if GameState.bosses_fought.has("Blackwood_rooftop"):
+		return
+	_room.get_tree().change_scene_to_file("res://scenes/RooftopScene.tscn")
 
 
 func _hide_hint() -> void:
