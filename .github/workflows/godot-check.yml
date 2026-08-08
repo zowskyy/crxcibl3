@@ -5,12 +5,20 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate JSON data and release-pass GDScript
+        run: |
+          python3 -c "import json; from pathlib import Path
+          for p in Path('godot/data').glob('*.json'):
+              json.loads(p.read_text())"
+          python3 scripts/check_gd.py
 
       - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2
@@ -109,11 +117,146 @@ jobs:
       - name: Export debug APK
         run: |
           mkdir -p godot/build
-          godot --headless --path godot --export-debug "Android" build/crxcibl3-debug.apk
+          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: crxcibl3-debug-apk
           path: godot/build/crxcibl3-debug.apk
+          if-no-files-found: error
+
+  # Optional Play Store release AAB — trigger manually via workflow_dispatch.
+  # Requires GitHub Actions secrets (Repository → Settings → Secrets and variables → Actions):
+  #   ANDROID_KEYSTORE_BASE64  — base64-encoded release .keystore / .jks file
+  #   ANDROID_KEYSTORE_PASSWORD — keystore store + key password
+  #   ANDROID_KEY_ALIAS        — signing key alias inside the keystore
+  android-play-store:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      secrets.ANDROID_KEYSTORE_BASE64 != '' &&
+      secrets.ANDROID_KEYSTORE_PASSWORD != '' &&
+      secrets.ANDROID_KEY_ALIAS != ''
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK (for keytool / Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Set up Godot (with export templates)
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.1
+          use-dotnet: false
+          path: godot-engine
+          include-templates: true
+
+      - name: Generate Play Store launcher icons
+        run: python3 scripts/generate_play_store_icons.py
+
+      - name: Import project resources
+        run: godot --headless --path godot --import
+
+      - name: Install release keystore from secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > godot/release.keystore
+
+      - name: Point Godot at the CI Android SDK
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Export Play Store release AAB
+        env:
+          CRXCIBL3_KEYSTORE_PATH: godot/release.keystore
+          CRXCIBL3_KEYSTORE_USER: ${{ secrets.ANDROID_KEY_ALIAS }}
+          CRXCIBL3_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: scripts/export_android_play_store.sh
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crxcibl3-release-aab
+          path: godot/build/crxcibl3-release.aab
+          if-no-files-found: error
+
+  playtest-apk:
+    if: github.event_name == 'workflow_dispatch'
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK (for keytool)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - name: Set up Godot (with export templates)
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.1
+          use-dotnet: false
+          path: godot-engine
+          include-templates: true
+
+      - name: Generate the debug keystore (matches export_presets.cfg's res://debug.keystore)
+        run: |
+          keytool -genkeypair -v \
+            -keystore godot/debug.keystore \
+            -storepass android -keypass android \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Point Godot at the CI Android SDK
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.7.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Import project resources
+        run: godot --headless --path godot --import
+
+      - name: Export playtest debug APK
+        run: |
+          mkdir -p godot/build
+          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
+          cp -f godot/build/crxcibl3-debug.apk godot/build/crxcibl3-playtest.apk
+          sha256sum godot/build/crxcibl3-playtest.apk
+          wc -c < godot/build/crxcibl3-playtest.apk
+
+      - name: Upload playtest APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crxcibl3-playtest-apk
+          path: godot/build/crxcibl3-playtest.apk
           if-no-files-found: error

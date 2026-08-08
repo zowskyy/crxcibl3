@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Cursor Gate Contributors
+Copyright (c) 2026 zowskyy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+ADDITIONAL TERMS — NARRATIVE INTELLECTUAL PROPERTY
+-------------------------------------------------------------------------------
+
+The MIT License above applies to the source code, engine integration, tooling,
+and non-narrative project files in this repository.
+
+The following are NOT licensed under the MIT License and remain the exclusive
+property of the original author (zowskyy / project owner), with all rights
+reserved:
+
+  - Story, plot, and scenario structure
+  - Characters, names, and characterizations
+  - Dialogue and voiceover scripts
+  - Lore, worldbuilding, and narrative content
+  - Related narrative packages and design bibles (including, without limitation,
+    CRXCIBL3_COMPLETE_NARRATIVE_PACKAGE.md and equivalent lore documents)
+
+You may reuse and modify the code and Godot integration under MIT terms, but
+you may NOT copy, adapt, publish, or redistribute the narrative IP above
+without separate written permission from the original author.

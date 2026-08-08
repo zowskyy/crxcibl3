@@ -13,6 +13,20 @@ extends Node2D
 ## Shader integration (Slice 2.16): wave overlay intensity tracks
 ## GameState.heat -- kicks in past the 51 threshold already used by the
 ## vignette/tint in the visual direction doc, maxes out at heat 100.
+##
+## Co-op (Slice 4.x): TestRoomCoopSync handles remote avatars + host heat when
+## CoopNetwork.is_online(); solo path unchanged when offline.
+##
+## Usage: solo or co-op TestRoom — see --help in project docs.
+## validate player spawn; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via CoopNetwork.stop_session().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
@@ -24,6 +38,9 @@ var player: CharacterBody2D  # Spawned dynamically by HeroFactory
 const INVENTORY_UI_SCRIPT := preload("res://scenes/InventoryUI.gd")
 const QUEST_HUD_SCRIPT := preload("res://scenes/QuestHUD.gd")
 const HIDEOUT_ZONE_SCRIPT := preload("res://scenes/HideoutZone.gd")
+const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
+const SYNERGY_HUD_SCRIPT := preload("res://scenes/SynergyHUD.gd")
 
 var _inventory_ui: CanvasLayer = null
 var _quest_hud: Control = null
@@ -39,10 +56,26 @@ const SAMPLE_QUEST := {
 	"rewards": {"runes": 20, "items": ["9mm_extended_mag"]},
 }
 
+var _boss_access: TestRoomBossAccess
+var _coop_sync: TestRoomCoopSync
+
 
 func _ready() -> void:
+	_setup_environment()
 	fire_button.pressed.connect(_on_fire_pressed)
-	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
+
+	ActProgression.apply_qa_cmdline_flags()
+	ActProgression.unlock_act_for_boss_progress()
+	_boss_access = TestRoomBossAccess.new()
+	_boss_access.name = "BossAccess"
+	add_child(_boss_access)
+	_boss_access.setup(self, canvas_layer, Callable(self, "_get_player"), rooftop_trigger)
+	_boss_access.queue_boss_cross_load()
+
+	_coop_sync = TestRoomCoopSync.new()
+	_coop_sync.name = "CoopSync"
+	add_child(_coop_sync)
+	_coop_sync.setup(self, canvas_layer)
 
 	if "--demo" in OS.get_cmdline_args():
 		GameState.reset_for_new_game()
@@ -52,26 +85,60 @@ func _ready() -> void:
 	QuestManager.register_quest(SAMPLE_QUEST)
 	QuestManager.start_quest(SAMPLE_QUEST["id"])
 
-	# Spawn active hero via HeroFactory (Slice 3.5)
-	var hero_id = GameState.get_active_hero()
-	if hero_id.is_empty() and not GameState.squad.is_empty():
-		hero_id = GameState.squad[0]
-
-	if not hero_id.is_empty():
-		player = HeroFactory.spawn_player(hero_id, Vector2(550, 300), self, _world_bounds)
-	else:
-		# Fallback: no squad selected (shouldn't happen in normal flow, but debug fallback)
-		player = HeroFactory.spawn_player("enforcer_ghost", Vector2(550, 300), self, _world_bounds)
+	_spawn_local_player()
+	_connect_player_signals()
+	print("TestRoom: player spawned for %s run" % ("co-op" if CoopNetwork.is_online() else "solo"))
 
 	_setup_hideout_zone()
 	_setup_quest_hud()
 	_setup_squad_label()
-	_connect_player_signals()
+	_setup_synergy_hud()
 
 	if "--demo" in OS.get_cmdline_args():
 		var driver := preload("res://tools/DemoDriver.gd").new()
 		driver.name = "DemoDriver"
 		add_child(driver)
+
+
+func _get_player() -> CharacterBody2D:
+	return player
+
+
+func _spawn_local_player() -> void:
+	var spawn_pos := Vector2(550, 300) + _coop_sync.spawn_offset()
+	var hero_id := GameState.get_active_hero()
+	if hero_id.is_empty() and not GameState.squad.is_empty():
+		hero_id = GameState.squad[0]
+
+	if not hero_id.is_empty():
+		player = HeroFactory.spawn_player(hero_id, spawn_pos, self, _world_bounds)
+	else:
+		player = HeroFactory.spawn_player("enforcer_ghost", spawn_pos, self, _world_bounds)
+
+
+func _setup_environment() -> void:
+	var ground := get_node_or_null("Ground")
+	if ground:
+		ground.visible = false
+
+	var backdrop := Node2D.new()
+	backdrop.name = "EnvironmentBackdrop"
+	backdrop.set_script(ENV_BACKDROP_SCRIPT)
+	backdrop.z_index = -20
+	add_child(backdrop)
+	move_child(backdrop, 0)
+
+	add_child(ARCANE_OVERLAY.instantiate())
+
+
+func _setup_synergy_hud() -> void:
+	var synergy := Control.new()
+	synergy.name = "SynergyHUD"
+	synergy.set_script(SYNERGY_HUD_SCRIPT)
+	var bond_label := Label.new()
+	bond_label.name = "BondLabel"
+	synergy.add_child(bond_label)
+	canvas_layer.add_child(synergy)
 
 
 func _setup_hideout_zone() -> void:
@@ -127,9 +194,9 @@ func _update_squad_label() -> void:
 
 
 func _process(delta: float) -> void:
-	# Slice 2.13: nothing else in the scene owns a per-frame tick, and
-	# Stress.tick() is what applies its out-of-combat decay -- without
-	# this it would climb from Enemy.gd's hooks but never come back down.
+	_boss_access.tick_hint()
+	_coop_sync.tick(delta, player)
+
 	Stress.tick(delta)
 	Morale.tick(delta)
 	Injury.tick(delta)
@@ -137,7 +204,6 @@ func _process(delta: float) -> void:
 	Hideout.tick(delta)
 	Scarcity.tick(delta)
 
-	# Wave intensity: 0 below heat 51, ramps to 1.0 at heat 100.
 	var heat_t := clampf((GameState.heat - 51.0) / 49.0, 0.0, 1.0)
 	var mat := wave_rect.material as ShaderMaterial
 	if mat:
@@ -146,14 +212,15 @@ func _process(delta: float) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_H:
-			_on_add_heat_pressed()
-		elif event.keycode == KEY_SPACE:
-			_on_fire_pressed()
-		elif event.keycode == KEY_I:
-			_toggle_inventory()
-		elif event.keycode == KEY_TAB:
-			_cycle_squad_hero()
+		match event.keycode:
+			KEY_H:
+				_on_add_heat_pressed()
+			KEY_SPACE:
+				_on_fire_pressed()
+			KEY_I:
+				_toggle_inventory()
+			KEY_TAB:
+				_cycle_squad_hero()
 
 
 func _cycle_squad_hero() -> void:
@@ -189,6 +256,8 @@ func _auto_switch_after_permadeath() -> void:
 
 
 func _on_add_heat_pressed() -> void:
+	if not _coop_sync.can_modify_heat():
+		return
 	GameState.modify_heat(10.0)
 
 
@@ -205,15 +274,3 @@ func _toggle_inventory() -> void:
 	_inventory_ui = CanvasLayer.new()
 	_inventory_ui.set_script(INVENTORY_UI_SCRIPT)
 	add_child(_inventory_ui)
-
-
-func _on_rooftop_trigger_entered(body: Node) -> void:
-	if not body.is_in_group("player"):
-		return
-	if "--demo" in OS.get_cmdline_args():
-		return
-	# Only trigger once per run — if the rooftop encounter is already done
-	# (boss fled and GameState recorded it) skip the scene transition.
-	if GameState.bosses_fought.has("Blackwood_rooftop"):
-		return
-	get_tree().change_scene_to_file("res://scenes/RooftopScene.tscn")

@@ -1,7 +1,7 @@
-﻿{
+{
   "game": {
     "name": "CRXCIBL3",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "fps": 60,
     "view_width": 320,
     "view_height": 180

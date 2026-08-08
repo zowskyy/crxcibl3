@@ -1,0 +1,22 @@
+CRXCIBL3 — Caption delivery manifest (no voiceover)
+====================================================
+
+All story beats use on-screen captions with SpeakCapable lip flap.
+CutsceneDirector line beats honor the JSON `duration` field; `audio` keys
+in encounter JSON are ignored at runtime.
+
+Optional SFX only
+-----------------
+Place ambient / combat SFX under res://assets/audio/sfx/ if desired.
+Cutscene `sfx` beats reference streams by path when present.
+
+Encounter data
+--------------
+- godot/data/emperor_scene.json
+- godot/data/blackwood_scene.json
+- godot/data/_beat_encounter_template.json (Corrupted Six encounter beats)
+
+Future bosses (Slices 3.18–3.23)
+--------------------------------
+Copy `godot/data/_beat_encounter_template.json` and author caption beats
+with `duration` per line — no WAV delivery required.

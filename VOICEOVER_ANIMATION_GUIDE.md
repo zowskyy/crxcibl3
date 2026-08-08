@@ -324,7 +324,7 @@ VOICEOVER: Scientist tone, unhinged. Proud of her work even dying.
 ---
 
 ### BOSS 4: THE WARDEN — Leonard "Iron" Hayes
-**Location:** San Espada Correctional Facility
+**Location:** Beach Boulevard Correctional Facility
 **Combat Duration:** 2–3 minutes
 **Dialogue Lines (Defeat):** TBD from lore doc
 

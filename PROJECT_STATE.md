@@ -575,10 +575,30 @@ Release-ready code pass using the quarterback/worker delegation pattern from
 - `ci_autoload_check.gd` — verifies all 25 autoloads
 - `EpilogueScene` — calls `Epilogue.on_game_complete()` for final save
 
-**Still content-blocked (not code):** final art, voiceover, remaining 5 bosses, 3-act map.
+**Still content-blocked (not code):** final art, voiceover, broader 3-act map beyond TestRoom triggers.
+
+## Release 1.2.0 — GA scope (Corrupted Six bosses) — DONE
+
+**v1.2.0 ships all five Corrupted Six encounters as playable content:**
+
+| Boss | Slice | Scene | TestRoom trigger |
+|------|-------|-------|------------------|
+| Cross (The Fixer) | 3.18 | `BossCrossScene.tscn` | Cross Tower zone |
+| Voss (The Broker) | 3.19 | `BossVossScene.tscn` | Voss compound zone |
+| Moreau (The Pusher) | 3.20 | `BossMoreauScene.tscn` | Moreau lab zone |
+| Hayes (The Warden) | 3.21 | `BossHayesScene.tscn` | Correctional yard zone |
+| Webb (The Trader) | 3.22 | `BossWebbScene.tscn` | Webb data-center zone |
+
+**Architecture:**
+- `BossGeneric.gd` — shared combat template; subclasses set boss id + pull HP/phases/gimmick from `bosses.json`.
+- `BossEncounter.gd` — JSON-driven enter/defeat/choice beat sequences via `EncounterData` + `CutsceneDirector`.
+- Per-boss scripts (`BossCross.gd`, …) wire gimmicks and phase transitions.
+- `godot/tools/play_boss_demo.gd` — `--boss-cross` (and sibling flags) for direct QA boot.
+
+**Act progression:** TestRoom boss triggers for act-3 hunts **or** the full Blackwood arc (TestRoom → rooftop → chase → Emperor → epilogue).
 
 ## Blocking / needs Architect input
-- Still open: does the Phaser web build stay alive as a reference, or is it fully retired
+- **Resolved:** Phaser web build fully retired — Godot 4.7.1 is the sole shipping client.
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
 - Getaway sequence design — shared mechanic across levels, or unique per level?

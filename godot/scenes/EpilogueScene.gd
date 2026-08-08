@@ -10,9 +10,11 @@ extends Node2D
 @onready var play_again:    Button = $CanvasLayer/PlayAgainButton
 
 const TITLE_COLOR := Color(1.0, 0.4, 0.0)  # Heat orange — same as the rest of the HUD
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 
 
 func _ready() -> void:
+	add_child(ARCANE_OVERLAY.instantiate())
 	ending_label.text = Epilogue.get_ending_text()
 	summary_label.text = _format_summary(Epilogue.get_summary())
 	play_again.pressed.connect(_on_play_again)
@@ -28,7 +30,10 @@ func _format_summary(s: Dictionary) -> String:
 	var lines: Array = []
 	lines.append("- Run Summary -")
 	lines.append("")
-	lines.append("Bosses defeated:  %d / 7" % int(s.get("bosses_defeated", 0)))
+	lines.append("Bosses defeated:  %d / %d" % [
+		int(s.get("bosses_defeated", 0)),
+		int(s.get("bosses_total", Bosses.BOSS_LIST.size())),
+	])
 	lines.append("Crew lost:        %d"     % int(s.get("crew_lost",       0)))
 	lines.append("Final heat:       %.0f"  % float(s.get("heat_final",    0.0)))
 	lines.append("Final morale:     %d"    % int(s.get("morale_final",    0)))
@@ -42,7 +47,7 @@ func _format_summary(s: Dictionary) -> String:
 		lines.append("Emperor:          -")
 
 	var top: String = str(s.get("top_contributor", ""))
-	if top != "":
+	if not top.is_empty():
 		lines.append("Most Runes:       %s" % top)
 
 	return "\n".join(lines)

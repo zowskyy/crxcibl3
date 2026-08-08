@@ -1,0 +1,58 @@
+{
+  "id": "blackwood",
+  "title": "Reverend Isaiah Blackwood — The Priest",
+  "background": "res://assets/buildings/apartment_tower.png",
+  "next_scene": "res://scenes/CarChaseScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Rooftop edge. The sun bleeds into the ocean. A figure in priest's robes steps out of the stairwell.", "duration": 5.0 },
+    { "type": "gesture", "target": "blackwood", "name": "ready_stance" },
+    { "type": "line", "speaker": "BLACKWOOD", "target": "blackwood",
+      "text": "You shouldn't have come up here, child.",
+      "audio": "res://assets/audio/blackwood/BLACKWOOD_PRE_01.wav", "duration": 3.5 },
+    { "type": "wait", "duration": 0.4 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "BLACKWOOD", "target": "blackwood", "gesture": "death_slump",
+      "text": "The Emperor… he sold us all. Even me.",
+      "audio": "res://assets/audio/blackwood/BLACKWOOD_DEFEAT_01.wav", "duration": 4.0 },
+    { "type": "line", "speaker": "BLACKWOOD", "target": "blackwood",
+      "text": "Go. He's at the estate. Finish it.",
+      "audio": "res://assets/audio/blackwood/BLACKWOOD_DEFEAT_02.wav", "duration": 3.5 },
+    { "type": "fade_shader", "target": "BossBlackwood",
+      "from": 1.0, "to": 0.0, "duration": 2.0 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "Blackwood kneels, broken. What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["blackwood", "spare"] },
+    { "type": "narrator", "text": "You lower your weapon. Blackwood closes his eyes.", "duration": 4.0 },
+    { "type": "line", "speaker": "BLACKWOOD", "text": "Thank you. Go. I won't be far behind.", "audio": "res://assets/audio/blackwood/BLACKWOOD_SPARE_01.wav", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/CarChaseScene.tscn" }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["blackwood", "execute"] },
+    { "type": "narrator", "text": "One shot. He slumps forward. The rooftop is silent.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/CarChaseScene.tscn" }
+  ]
+}

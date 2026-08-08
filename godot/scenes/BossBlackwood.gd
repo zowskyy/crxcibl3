@@ -55,6 +55,8 @@ var _flashbang_node: ColorRect = null
 
 var _anim: AnimatedSprite2D = null
 var _has_sheets := false
+var speaking := false
+var _lip_phase := 0.0
 
 
 func _ready() -> void:
@@ -96,11 +98,32 @@ func set_flee_target(pos: Vector2) -> void:
 	_flee_target = pos
 
 
+func set_speaking(active: bool) -> void:
+	speaking = active
+	if not speaking:
+		_lip_phase = 0.0
+	queue_redraw()
+
+
+func play_gesture(name: String) -> void:
+	match name:
+		"ready_stance", "talk":
+			_set_boss_anim("idle")
+		"death_slump", "slump_final":
+			_set_boss_anim("idle")
+			modulate = Color(0.75, 0.75, 0.8, 1.0)
+	set_speaking(name in ["ready_stance", "talk", "death_slump"])
+	queue_redraw()
+
+
 func set_flashbang_node(node: ColorRect) -> void:
 	_flashbang_node = node
 
 
 func _physics_process(delta: float) -> void:
+	if speaking:
+		_lip_phase += delta * 14.0
+		queue_redraw()
 	match _phase:
 		Phase.SURPRISED:
 			_tick_surprised(delta)
@@ -301,6 +324,10 @@ func _draw() -> void:
 		var fill  := bar_w * (float(hp) / float(MAX_HP))
 		draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
 		draw_rect(Rect2(-bar_w / 2, -36, fill,  4), Color(0.9, 0.75, 0.1))
+		if speaking:
+			var open := absf(sin(_lip_phase)) > 0.35
+			var mouth_h := 3.0 if open else 1.0
+			draw_rect(Rect2(-3, -10, 6, mouth_h), Color(0.15, 0.08, 0.08))
 		return
 	# Placeholder: white robe + gold cross + HP bar
 	draw_rect(Rect2(-12, -20, 24, 40), Color(0.95, 0.95, 0.9))
@@ -310,3 +337,7 @@ func _draw() -> void:
 	var fill  := bar_w * (float(hp) / float(MAX_HP))
 	draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
 	draw_rect(Rect2(-bar_w / 2, -36, fill,  4), Color(0.9, 0.75, 0.1))
+	if speaking:
+		var open := absf(sin(_lip_phase)) > 0.35
+		var mouth_h := 3.0 if open else 1.0
+		draw_rect(Rect2(-3, -10, 6, mouth_h), Color(0.15, 0.08, 0.08))

@@ -177,8 +177,13 @@ abstract after 2-3 concrete cases exist, not before).
 - The 12 mechanics modules `Stress.gd` was written as a template for (Scarcity, Injury,
   Hideout, Morale, Reputation, Alliance, DialogueIntensity, PermanentDeath, Blame, Bosses,
   Emperor, Epilogue) — build one at a time, wire each into a scene before starting the next.
-- The Corrupted Six boss fights (6 unique bosses + The Emperor finale) — each has a defined
-  location, fight gimmick, and defeat scene already written in the lore bible.
+- [x] **3.18** — **Cross (The Fixer)** — `BossCrossScene.tscn` + `BossCross.gd` on `BossGeneric` template. Cross Tower Penthouse; bodyguards, turrets, political smear attacks, panic-room retreat. TestRoom trigger zone + `--boss-cross` demo flag.
+- [x] **3.19** — **Voss (The Broker)** — `BossVossScene.tscn` + `BossVoss.gd`. Voss Compound Vault; drones, turrets, data scrambles, personal energy shield. TestRoom trigger + `--boss-voss`.
+- [x] **3.20** — **Moreau (The Pusher)** — `BossMoreauScene.tscn` + `BossMoreau.gd`. Moreau Pharmaceuticals Lab; chemical weapons, toxin clouds, Super Rager final phase. TestRoom trigger + `--boss-moreau`.
+- [x] **3.21** — **Hayes (The Warden)** — `BossHayesScene.tscn` + `BossHayes.gd`. Beach Boulevard Correctional Facility; guards, turrets, gas waves, riot shield + baton. TestRoom trigger + `--boss-hayes`.
+- [x] **3.22** — **Webb (The Trader)** — `BossWebbScene.tscn` + `BossWebb.gd`. Webb Industries Data Center; digital defenses, firewall drones, mech-suit reveal. TestRoom trigger + `--boss-webb`.
+- [x] **3.23** — **`BossGeneric` template system** — shared combat + JSON cutscene pipeline on `BossEncounter`; metadata in `bosses.json`, beats in per-boss JSON. **GA scope for v1.2.0.**
+- The Corrupted Six boss fights (6 unique bosses + The Emperor finale) — **implemented in v1.2.0**; Blackwood + Emperor shipped in Phase 2.
 - 3-act structure (The Fall / The Gathering / The Reckoning) mapped to actual mission order —
   `Recap.gd` already keys its summary text off `GameState.current_act` (1/2/3), so the act
   numbering convention is already decided.
@@ -209,8 +214,7 @@ abstract after 2-3 concrete cases exist, not before).
 - 8-bit visual/audio direction: exact palette, sprite scale, resolution constraints for
   mobile (replaces the old 320×180 desktop-zoom assumption — needs a mobile-appropriate
   equivalent).
-- "San Espada" vs. "Beach Boulevard" naming — lore doc flags these as needing reconciliation.
-- Whether the Phaser web build gets fully retired now that Godot is the confirmed target, or
-  kept as a lightweight reference/demo build.
+- **Resolved:** Beach Boulevard is the canonical setting name (San Espada retired).
+- **Resolved:** Phaser web build fully retired — Godot 4.7.1 is the shipping target.
 - The other 11 mechanics modules `Stress.gd` templates for — build order/priority not yet
   decided.

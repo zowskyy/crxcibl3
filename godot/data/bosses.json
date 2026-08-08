@@ -1,0 +1,264 @@
+{
+  "bosses": [
+    {
+      "id": "Cross",
+      "title": "The Fixer",
+      "real_name": "Councilman Victor Cross",
+      "slice": "3.18",
+      "location": "Cross Tower Penthouse",
+      "act": 3,
+      "combat": {
+        "max_hp": 220,
+        "phases": ["bodyguards", "turrets", "political_attacks", "panic_room"],
+        "gimmick": "Bodyguards, turrets, and political smear attacks; retreats into a panic room when pressed.",
+        "flee_threshold": 40,
+        "final_stand": false
+      },
+      "dialogue": {
+        "approach": [
+          "You kids crawled all the way up Cross Tower. I'm flattered — and offended."
+        ],
+        "revelation": [
+          "The precincts, the permits, the payoffs — that was all me. The Flats stayed hungry because I kept the lid screwed on.",
+          "I didn't invent the Seven Sorrows. I just made sure the city looked the other way."
+        ],
+        "final_word": [
+          "Spare me and I can still bury a warrant. Kill me and every camera in this tower starts screaming your names."
+        ]
+      },
+      "voice_direction": "Smooth, urbane, convincing — politician cadence with a velvet threat underneath.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 15,
+        "heat_on_spare": -5
+      },
+      "scene_path": "res://scenes/BossCrossScene.tscn",
+      "script_path": "res://scenes/BossCross.gd",
+      "sprite_dir": "res://assets/sprites/bosses/cross/",
+      "status": "implemented"
+    },
+    {
+      "id": "Voss",
+      "title": "The Broker",
+      "real_name": "Damian Voss",
+      "slice": "3.19",
+      "location": "Voss Compound Vault",
+      "act": 3,
+      "combat": {
+        "max_hp": 200,
+        "phases": ["drones", "turrets", "data_scrambles", "energy_shield"],
+        "gimmick": "Drones, turrets, and data scrambles behind a personal energy shield.",
+        "flee_threshold": 35,
+        "final_stand": false
+      },
+      "dialogue": {
+        "approach": [
+          "You're interrupting a closed transaction. That costs extra."
+        ],
+        "revelation": [
+          "I sold the routes, the keys, the silence. Every Sorrow had a ledger line with my signature.",
+          "Sentiment is a liability. The crew was inventory — until you stopped being profitable."
+        ],
+        "final_word": [
+          "Spare the asset and I transfer clearance. Liquidate me and the vault locks for good."
+        ]
+      },
+      "voice_direction": "Colder, transactional, calculating — every line sounds like a term sheet.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 15,
+        "heat_on_spare": -5
+      },
+      "scene_path": "res://scenes/BossVossScene.tscn",
+      "script_path": "res://scenes/BossVoss.gd",
+      "sprite_dir": "res://assets/sprites/bosses/voss/",
+      "status": "implemented"
+    },
+    {
+      "id": "Moreau",
+      "title": "The Pusher",
+      "real_name": "Dr. Celeste Moreau",
+      "slice": "3.20",
+      "location": "Moreau Pharmaceuticals Lab",
+      "act": 3,
+      "combat": {
+        "max_hp": 240,
+        "phases": ["chemical_weapons", "toxin_clouds", "super_rager"],
+        "gimmick": "Chemical weapons and toxin clouds; self-injects into a Super Rager phase.",
+        "flee_threshold": null,
+        "final_stand": true
+      },
+      "dialogue": {
+        "approach": [
+          "Don't touch the glass. The samples are temperamental — like me."
+        ],
+        "revelation": [
+          "I didn't poison the Flats for fun. I perfected a formula. Your people were the proof of concept.",
+          "Every overdose, every shaking hand — that was data. Beautiful, screaming data."
+        ],
+        "final_word": [
+          "Kill the doctor and the cure dies with her. Spare me and I'll tell you which batch still walks the streets."
+        ]
+      },
+      "voice_direction": "Unhinged, self-convinced, proud — scientist ecstasy tipping into mania.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 15,
+        "heat_on_spare": -5
+      },
+      "scene_path": "res://scenes/BossMoreauScene.tscn",
+      "script_path": "res://scenes/BossMoreau.gd",
+      "sprite_dir": "res://assets/sprites/bosses/moreau/",
+      "status": "implemented"
+    },
+    {
+      "id": "Hayes",
+      "title": "The Warden",
+      "real_name": "Leonard \"Iron\" Hayes",
+      "slice": "3.21",
+      "location": "Beach Boulevard Correctional Facility",
+      "act": 3,
+      "combat": {
+        "max_hp": 260,
+        "phases": ["guards", "turrets", "gas", "riot_shield"],
+        "gimmick": "Guards, turrets, and gas waves; closes distance with riot shield and baton.",
+        "flee_threshold": 30,
+        "final_stand": false
+      },
+      "dialogue": {
+        "approach": [
+          "On the ground. Hands where I can see them. This is still my house."
+        ],
+        "revelation": [
+          "I locked up whoever the Six pointed at. Your people got buried under paperwork and broken ribs.",
+          "Order ain't pretty. Somebody has to hold the line while the city pretends it's clean."
+        ],
+        "final_word": [
+          "Execute me and every guard on payroll goes loud. Spare me and I open the south wing — quiet."
+        ]
+      },
+      "voice_direction": "Gravelly, military, commanding — bark-first authority that never asks twice.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 15,
+        "heat_on_spare": -5
+      },
+      "scene_path": "res://scenes/BossHayesScene.tscn",
+      "script_path": "res://scenes/BossHayes.gd",
+      "sprite_dir": "res://assets/sprites/bosses/hayes/",
+      "status": "implemented"
+    },
+    {
+      "id": "Webb",
+      "title": "The Trader",
+      "real_name": "Marcus Webb",
+      "slice": "3.22",
+      "location": "Webb Industries Data Center",
+      "act": 3,
+      "combat": {
+        "max_hp": 210,
+        "phases": ["digital_defenses", "firewall_drones", "mech_suit"],
+        "gimmick": "Digital defenses and firewall drones; reveals a mech suit for the last phase.",
+        "flee_threshold": 25,
+        "final_stand": false
+      },
+      "dialogue": {
+        "approach": [
+          "Cute infiltration. You're still running my firmware."
+        ],
+        "revelation": [
+          "I sold your faces, your routes, your heartbeats. The Sorrows were just another product launch.",
+          "You think revenge is justice? I think it's a bad quarterly."
+        ],
+        "final_word": [
+          "Spare the genius and I wipe the warrants. Flatten me and every feed in the city loops your kill cam."
+        ]
+      },
+      "voice_direction": "Young, arrogant, dismissive — tech-bro swagger with a cruel laugh.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 15,
+        "heat_on_spare": -5
+      },
+      "scene_path": "res://scenes/BossWebbScene.tscn",
+      "script_path": "res://scenes/BossWebb.gd",
+      "sprite_dir": "res://assets/sprites/bosses/webb/",
+      "status": "implemented"
+    },
+    {
+      "id": "Blackwood",
+      "title": "The Priest",
+      "real_name": "Reverend Isaiah Blackwood",
+      "slice": "2.18",
+      "location": "Blackwood Megachurch / Rooftop → Emperor Estate",
+      "act": 2,
+      "combat": {
+        "max_hp": 200,
+        "phases": ["surprised", "fight", "flee", "final_stand"],
+        "gimmick": "Deacons, traps, and fake divine illusions; rooftop flee into car chase, then final stand at the estate.",
+        "flee_threshold": 33,
+        "final_stand": true
+      },
+      "dialogue": {
+        "approach": [
+          "Well, well. Look who finally found their way up here.",
+          "I've been expecting the Emperor's dogs. Didn't think you'd make it this far."
+        ],
+        "revelation": [
+          "You're tougher than I expected. But you ain't gonna stop what's coming."
+        ],
+        "final_word": [
+          "See you in the Hills."
+        ]
+      },
+      "voice_direction": "Deep, measured, priest-like cadence — casual menace that cracks when the flee hits.",
+      "defeat_choices": {
+        "forgive_or_execute": false,
+        "heat_on_execute": 15,
+        "heat_on_spare": 0
+      },
+      "scene_path": "RooftopScene/EmperorScene",
+      "script_path": "res://scenes/BossBlackwood.gd",
+      "sprite_dir": "res://assets/sprites/bosses/blackwood/",
+      "status": "implemented"
+    },
+    {
+      "id": "Emperor",
+      "title": "The Emperor",
+      "real_name": "The Emperor",
+      "slice": "2.20",
+      "location": "Emperor Estate — The Hills",
+      "act": 3,
+      "combat": {
+        "enabled": false,
+        "max_hp": 0,
+        "phases": [],
+        "gimmick": "Non-combat reckoning. Dies confessing he traded the Seven Sorrows to save the crew.",
+        "flee_threshold": null,
+        "final_stand": false
+      },
+      "dialogue": {
+        "approach": [
+          "I didn't betray you."
+        ],
+        "revelation": [
+          "I made a deal with The Corrupted Six to save your lives.",
+          "I thought if I gave them the jobs, they'd let you walk. I was wrong."
+        ],
+        "final_word": [
+          "The Flats ain't about who's right — it's about who's still standing."
+        ]
+      },
+      "voice_direction": "Elder statesman in defeat — gravitas and vulnerability; confession, not a plea.",
+      "defeat_choices": {
+        "forgive_or_execute": true,
+        "heat_on_execute": 10,
+        "heat_on_spare": -50
+      },
+      "scene_path": "EmperorScene",
+      "script_path": "res://scenes/EmperorScene.gd",
+      "sprite_dir": "res://assets/sprites/bosses/emperor/",
+      "status": "implemented"
+    }
+  ]
+}

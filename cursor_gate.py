@@ -95,7 +95,7 @@ def _apply_gate_config_key(config_key: str, value: str) -> None:
 def _apply_env_line(key: str, value: str) -> None:
     if key.startswith("GATE_"):
         _apply_gate_config_key(key[5:].lower(), value)
-    elif key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "LITELLM_API_KEY"):
+    elif key in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         os.environ.setdefault(key, value)
 
 
@@ -582,27 +582,34 @@ def call_llm(prompt: str, model: str = "gpt-4o-mini", max_retries: int = 3) -> s
         except Exception as exc:
             audit_log("local_llm_unavailable", error=str(exc))
 
-    for attempt in range(max_retries):
-        try:
-            os.environ.setdefault("LITELLM_LOG", "ERROR")
-            import litellm
-            from litellm import completion
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    if api_key:
+        import requests
 
-            litellm.set_verbose = False
-            response = completion(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=500,
-                temperature=0.3,
-            )
-            return response.choices[0].message.content
-        except ImportError:
-            break
-        except Exception:
-            if attempt < max_retries - 1:
-                time.sleep(2**attempt)
-            else:
-                audit_log("llm_failure", error=traceback.format_exc())
+        for attempt in range(max_retries):
+            try:
+                resp = requests.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 500,
+                        "temperature": 0.3,
+                    },
+                    timeout=CONFIG["timeout_sec"],
+                )
+                resp.raise_for_status()
+                payload = resp.json()
+                return payload["choices"][0]["message"]["content"]
+            except Exception:
+                if attempt < max_retries - 1:
+                    time.sleep(2**attempt)
+                else:
+                    audit_log("llm_failure", error=traceback.format_exc())
 
     return local_rules_engine(prompt)
 

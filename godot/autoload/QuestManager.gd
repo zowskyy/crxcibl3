@@ -112,6 +112,7 @@ func _check_complete(id: String) -> void:
 	_grant_rewards(id)
 	if not GameState.quests_completed.has(id):
 		GameState.quests_completed.append(id)
+	RelationshipSystem.on_quest_completed()
 	quest_completed.emit(id)
 
 

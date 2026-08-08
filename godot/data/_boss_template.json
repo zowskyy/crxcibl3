@@ -1,0 +1,30 @@
+{
+  "id": "",
+  "title": "",
+  "real_name": "",
+  "slice": "3.18",
+  "location": "",
+  "act": 3,
+  "combat": {
+    "max_hp": 200,
+    "phases": [],
+    "gimmick": "",
+    "flee_threshold": null,
+    "final_stand": false
+  },
+  "dialogue": {
+    "approach": [],
+    "revelation": [],
+    "final_word": []
+  },
+  "voice_direction": "",
+  "defeat_choices": {
+    "forgive_or_execute": true,
+    "heat_on_execute": 15,
+    "heat_on_spare": -5
+  },
+  "scene_path": "res://scenes/BossScene.tscn",
+  "script_path": "res://scenes/Boss.gd",
+  "sprite_dir": "res://assets/sprites/bosses/",
+  "status": "template"
+}

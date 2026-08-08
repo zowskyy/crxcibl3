@@ -1,41 +1,34 @@
 extends Node
-## RelationshipSystem — Autoload singleton (Slice 3.6)
+## RelationshipSystem — RPG synergy bonds on Beach Boulevard crew pairs.
 ##
-## Wires GameState's pairwise relationships (-10..+10) into real gameplay effects.
-## Two categories:
-##   1. Synergy bonuses — active when two heroes with relationship ≥ 5 are in the same
-##      squad. Applied per-frame via get_active_bonuses() queried by Player.gd.
-##   2. Event triggers — modify relationships when crew events happen (boss killed,
-##      friendly fire, crew downed, quest completed). Feeds into Morale via
-##      Morale.on_relationship_changed() which already scales ±20 per ±10 delta.
-##
-## Lore pairings (from KNOWLEDGE_BASE.md relationship web):
-##   enforcer_big_body  ↔ enforcer_ghost      (oldest + operator)
-##   enforcer_ghost     ↔ street_rat_slink     (operator + scout, blood relation)
-##   wheelman_slick     ↔ wheelman_grinder     (driver + mechanic, best duo)
-##   hacker_byte        ↔ hacker_hacktivist    (coder + activist, shared politics)
+## Relationship tiers (KNOWLEDGE_BASE lore pairs):
+##   Strained (≤ -3): debuffs
+##   Ally (≥ 5): base bond bonuses
+##   Bonded (≥ 7): +15% bonus scaling
+##   Soulbound (≥ 9): +30% bonus scaling
 
 signal relationship_changed(hero_a: String, hero_b: String, new_value: int)
+signal synergy_updated(hero_name: String, bonuses: Dictionary)
 
-# Known synergy pairs — [hero_a, hero_b, description, speed_mult_bonus, damage_bonus]
+const TIER_STRAINED := -3
+const TIER_ALLY := 5
+const TIER_BONDED := 7
+const TIER_SOULBOUND := 9
+
+# [hero_a, hero_b, bond_id, hp_flat, damage_flat, speed_pct, crit_pct, armor_flat, regen_per_sec]
 const SYNERGY_PAIRS := [
-	["enforcer_big_body",  "enforcer_ghost",    "big_body_ghost",    0.0,  3],
-	["enforcer_ghost",     "street_rat_slink",  "ghost_slink",       0.05, 0],
-	["wheelman_slick",     "wheelman_grinder",  "slick_grinder",     0.0,  0],
-	["hacker_byte",        "hacker_hacktivist", "byte_hacktivist",   0.0,  5],
+	["enforcer_big_body", "enforcer_ghost", "guardian_bond", 15, 3, 0.0, 0.02, 2, 0.0],
+	["enforcer_ghost", "street_rat_slink", "blood_kin", 0, 0, 0.08, 0.03, 0, 0.15],
+	["wheelman_slick", "wheelman_grinder", "pit_crew", 5, 2, 0.05, 0.05, 1, 0.0],
+	["hacker_byte", "hacker_hacktivist", "cell_link", 0, 5, 0.0, 0.04, 0, 0.0],
 ]
-
-# Minimum relationship to activate a synergy
-const SYNERGY_THRESHOLD := 5
 
 
 func _ready() -> void:
-	# Seed lore-canon starting relationships if not already set
-	# These are warm defaults — the crew trusts each other going in.
-	_seed_if_unset("enforcer_big_body",  "enforcer_ghost",    6)
-	_seed_if_unset("enforcer_ghost",     "street_rat_slink",  7)
-	_seed_if_unset("wheelman_slick",     "wheelman_grinder",  5)
-	_seed_if_unset("hacker_byte",        "hacker_hacktivist", 4)
+	_seed_if_unset("enforcer_big_body", "enforcer_ghost", 6)
+	_seed_if_unset("enforcer_ghost", "street_rat_slink", 7)
+	_seed_if_unset("wheelman_slick", "wheelman_grinder", 6)
+	_seed_if_unset("hacker_byte", "hacker_hacktivist", 5)
 
 
 func _seed_if_unset(a: String, b: String, value: int) -> void:
@@ -44,56 +37,104 @@ func _seed_if_unset(a: String, b: String, value: int) -> void:
 		GameState.relationships[key] = value
 
 
-## Returns the combined damage bonus for a given hero based on active synergies
-## with other squad members. Called by Player.gd when computing bullet damage.
+func get_rpg_bonuses(hero_name: String) -> Dictionary:
+	var out := {
+		"hp_flat": 0,
+		"damage_flat": 0,
+		"speed_pct": 0.0,
+		"crit_pct": 0.0,
+		"armor_flat": 0,
+		"regen_per_sec": 0.0,
+		"debuff_speed_pct": 0.0,
+		"active_bonds": [] as Array,
+	}
+	for pair in SYNERGY_PAIRS:
+		var other := _pair_partner(pair, hero_name)
+		if other == "" or not GameState.squad.has(other):
+			continue
+		var rel := GameState.get_relationship(hero_name, other)
+		var scale := _tier_scale(rel)
+		if scale <= 0.0:
+			if rel <= TIER_STRAINED:
+				out["debuff_speed_pct"] += 0.05
+			continue
+		out["hp_flat"] += int(pair[3] * scale)
+		out["damage_flat"] += int(pair[4] * scale)
+		out["speed_pct"] += pair[5] * scale
+		out["crit_pct"] += pair[6] * scale
+		out["armor_flat"] += int(pair[7] * scale)
+		out["regen_per_sec"] += pair[8] * scale
+		out["active_bonds"].append({
+			"id": pair[2],
+			"partner": other,
+			"tier": _tier_name(rel),
+			"relationship": rel,
+		})
+	synergy_updated.emit(hero_name, out)
+	return out
+
+
+func _tier_scale(relationship: int) -> float:
+	if relationship >= TIER_SOULBOUND:
+		return 1.30
+	if relationship >= TIER_BONDED:
+		return 1.15
+	if relationship >= TIER_ALLY:
+		return 1.0
+	return 0.0
+
+
+func _tier_name(relationship: int) -> String:
+	if relationship >= TIER_SOULBOUND:
+		return "Soulbound"
+	if relationship >= TIER_BONDED:
+		return "Bonded"
+	if relationship >= TIER_ALLY:
+		return "Ally"
+	if relationship <= TIER_STRAINED:
+		return "Strained"
+	return "Neutral"
+
+
+func _pair_partner(pair: Array, hero_name: String) -> String:
+	if pair[0] == hero_name:
+		return pair[1]
+	if pair[1] == hero_name:
+		return pair[0]
+	return ""
+
+
 func get_damage_bonus(hero_name: String) -> int:
-	var bonus := 0
-	for pair in SYNERGY_PAIRS:
-		if pair[4] <= 0:
-			continue
-		var other := ""
-		if pair[0] == hero_name:
-			other = pair[1]
-		elif pair[1] == hero_name:
-			other = pair[0]
-		else:
-			continue
-		if GameState.squad.has(other):
-			if GameState.get_relationship(hero_name, other) >= SYNERGY_THRESHOLD:
-				bonus += pair[4]
-	return bonus
+	return int(get_rpg_bonuses(hero_name)["damage_flat"])
 
 
-## Returns the combined speed multiplier bonus for a given hero based on active synergies.
-## Additive on top of the base 1.0 multiplier (e.g. 0.05 → 1.05× speed).
 func get_speed_bonus(hero_name: String) -> float:
-	var bonus := 0.0
-	for pair in SYNERGY_PAIRS:
-		if pair[3] <= 0.0:
-			continue
-		var other := ""
-		if pair[0] == hero_name:
-			other = pair[1]
-		elif pair[1] == hero_name:
-			other = pair[0]
-		else:
-			continue
-		if GameState.squad.has(other):
-			if GameState.get_relationship(hero_name, other) >= SYNERGY_THRESHOLD:
-				bonus += pair[3]
-	return bonus
+	var b: Dictionary = get_rpg_bonuses(hero_name)
+	return b["speed_pct"] - b["debuff_speed_pct"]
 
 
-## Call when any hero in the squad kills an enemy — small trust boost between
-## crew members who fought together.
+func get_crit_bonus(hero_name: String) -> float:
+	return float(get_rpg_bonuses(hero_name)["crit_pct"])
+
+
+func get_hp_bonus(hero_name: String) -> int:
+	return int(get_rpg_bonuses(hero_name)["hp_flat"])
+
+
+func get_armor_bonus(hero_name: String) -> int:
+	return int(get_rpg_bonuses(hero_name)["armor_flat"])
+
+
+func get_regen_bonus(hero_name: String) -> float:
+	return float(get_rpg_bonuses(hero_name)["regen_per_sec"])
+
+
 func on_kill_together(killer: String) -> void:
 	for other in GameState.squad:
-		if other == killer:
-			continue
-		_modify(killer, other, 1)
+		if other != killer:
+			_modify(killer, other, 1)
 
 
-## Call when a boss is defeated — larger boost; shared victory.
 func on_boss_defeated_together() -> void:
 	var squad := GameState.squad
 	for i in range(squad.size()):
@@ -101,12 +142,21 @@ func on_boss_defeated_together() -> void:
 			_modify(squad[i], squad[j], 2)
 
 
-## Call when a hero is downed — crew feels the loss; small bond boost.
 func on_hero_downed(hero_name: String) -> void:
 	for other in GameState.squad:
-		if other == hero_name:
-			continue
-		_modify(hero_name, other, 1)
+		if other != hero_name:
+			_modify(hero_name, other, 1)
+
+
+func on_friendly_fire(shooter: String, victim: String) -> void:
+	_modify(shooter, victim, -2)
+
+
+func on_quest_completed() -> void:
+	var squad := GameState.squad
+	for i in range(squad.size()):
+		for j in range(i + 1, squad.size()):
+			_modify(squad[i], squad[j], 1)
 
 
 func _modify(a: String, b: String, delta: int) -> void:
@@ -119,4 +169,4 @@ func _modify(a: String, b: String, delta: int) -> void:
 
 
 func reset() -> void:
-	pass  # Relationship values live in GameState.relationships — reset_for_new_game clears them.
+	pass

@@ -33,17 +33,18 @@ Every hero has a full backstory tied to the Seven Sorrows and a specific Corrupt
 crime — see the lore doc's relationship web table for who's connected to whom (useful later for
 the relationship/synergy system).
 
-## The Corrupted Six (bosses) + finale
-1. **The Fixer — Councilman Victor Cross** (Cross Tower Penthouse) — bodyguards/turrets/political attacks, panic room retreat.
-2. **The Broker — Damian Voss** (Voss Compound Vault) — drones/turrets/data scrambles, personal energy shield.
-3. **The Pusher — Dr. Celeste Moreau** (Moreau Pharmaceuticals Lab) — chemical weapons, self-injects into a "Super Rager" phase.
-4. **The Warden — Leonard "Iron" Hayes** (San Espada Correctional Facility) — guards/turrets/gas, riot shield + baton.
-5. **The Trader — Marcus Webb** (Webb Industries Data Center) — digital defenses, reveals a mech suit.
-6. **The Priest — Reverend Isaiah Blackwood** (Blackwood Megachurch) — deacons/traps/fake "divine" illusions.
+## The Corrupted Six (bosses) + finale — **implemented (v1.2.0 GA)**
+1. **The Fixer — Councilman Victor Cross** (Cross Tower Penthouse) — bodyguards/turrets/political attacks, panic room retreat. **Playable** via TestRoom trigger or `--boss-cross`.
+2. **The Broker — Damian Voss** (Voss Compound Vault) — drones/turrets/data scrambles, personal energy shield. **Playable** via TestRoom trigger or `--boss-voss`.
+3. **The Pusher — Dr. Celeste Moreau** (Moreau Pharmaceuticals Lab) — chemical weapons, self-injects into a "Super Rager" phase. **Playable** via TestRoom trigger or `--boss-moreau`.
+4. **The Warden — Leonard "Iron" Hayes** (Beach Boulevard Correctional Facility) — guards/turrets/gas, riot shield + baton. **Playable** via TestRoom trigger or `--boss-hayes`.
+5. **The Trader — Marcus Webb** (Webb Industries Data Center) — digital defenses, reveals a mech suit. **Playable** via TestRoom trigger or `--boss-webb`.
+6. **The Priest — Reverend Isaiah Blackwood** (Blackwood Megachurch) — deacons/traps/fake "divine" illusions. **Playable** — rooftop surprise + Emperor estate final stand.
 7. **The Emperor** (final, non-combat reckoning) — dies confessing he traded the Seven Sorrows to save the crew's lives.
 
-Each boss fight already has scripted confrontation/defeat dialogue in the lore doc — useful
-directly for cutscene/dialogue implementation later.
+All five Corrupted Six fights use the **`BossGeneric`** template (`BossEncounter` JSON beats + shared combat phases). Metadata lives in `godot/data/bosses.json`; encounter beats in per-boss JSON files.
+
+Each boss fight has scripted confrontation/defeat dialogue in the lore doc — wired through `CutsceneDirector` caption beats.
 
 ## Config values (implemented, `configs/game_config.json`)
 fps 60, view 320×180, heat_max 100, heat_generation_rate 0.5, heat_reduction_rate 2.0,
@@ -57,9 +58,7 @@ resources_starting 100, enemy_wave_interval 30, per-hero health/damage for the 4
   ghost_count (permanently lost crew), alliance formed/broken/betrayed counters, blame ledger,
   act/scene checkpoint. Not yet registered as an Autoload in the actual Godot project settings
   — that's Slice 2.3.
-- **Reference only, not ported forward:** `js/GameState.js` (Phaser build) — a minimal subset
-  (heat + resources only), written before the full `.gd` version was rediscovered. Superseded
-  by the real GameState.gd; keep for comparison but don't build on it further.
+- **Retired:** Phaser 3 web prototype — Godot 4.7.1 is the shipping client.
 
 ## Godot autoload modules (all in `godot/autoload/`, none wired into a scene yet)
 - **`GameState.gd`** — see above. Load first; everything else depends on it.
@@ -91,16 +90,27 @@ pass, before this session rediscovered it). The installed editor is 4.7.1 — op
 project will likely auto-upgrade the version tag once, expected and safe for a project this
 small (no scenes to break yet, only scripts).
 
-## Mobile/Android build requirements (not yet done)
-Target is a **sideload APK for friends**, not a Play Store release — no Play Console, store
-listing, or compliance scope needed. Still required regardless:
+## Mobile/Android build requirements
+Two distribution paths:
+
+### Friends sideload (debug APK)
+- CI builds a **debug-signed APK** on every `main` push — download `crxcibl3-debug-apk` from GitHub Actions.
+- Uses `godot/debug.keystore` (regenerated locally/CI; gitignored).
+- No Play Console account needed.
+
+### Google Play Store (release AAB)
+Full checklist: **[docs/PLAY_STORE.md](docs/PLAY_STORE.md)** · Privacy policy: **[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md)**
+
+- **Play Console** — one-time $25 developer registration.
+- **Release keystore** — generate once with `keytool`; never commit; required for store updates.
+- **Export** — `./scripts/export_android_play_store.sh` (release AAB) after setting `CRXCIBL3_RELEASE_*` env vars.
+- **Version policy** — increment `version/code` in `godot/export_presets.cfg` before every upload.
+- **Compliance** — store listing copy, IARC content rating (mature satire: violence + language), data safety (offline, local `user://` save only, no analytics/ads), hosted privacy policy URL.
+
+Shared requirements (both paths):
 - Android SDK + NDK + JDK, referenced from Godot's Editor Settings → Export → Android.
-- Godot's Android export templates (free, downloadable in-editor or via CLI).
-- A signing keystore (`keytool`, standard/free, fully scriptable).
-- Touch controls — nothing exists yet; the Phaser prototype assumed WASD/arrow keys, which
-  doesn't carry over.
-- A scaling/safe-area strategy for varying phone/tablet aspect ratios — the Phaser build's
-  fixed 320×180 @ 3x zoom assumption was desktop-only.
+- Godot 4.7.1 Android export templates (download in-editor or via CLI).
+- Touch controls — VirtualJoystick in TestRoom; keyboard fallback for desktop.
 
 ## Art pipeline (full detail: `Downloads/CRXCIBL3-art-prompt-sheet.md`)
 Leonardo.ai (Pixel Art model, primary) or Bing Image Creator (backup) → Pixel It (snap to

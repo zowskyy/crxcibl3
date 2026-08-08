@@ -3,16 +3,20 @@ extends Node
 ##
 ## Central source of truth for CRXCIBL3's run-wide state. Any node reads/writes this
 ## directly (e.g. GameState.heat, GameState.get_relationship("big_body", "slick"))
-## rather than passing state through scenes. This is the classic-formula reskin:
+## rather than passing state through scenes. This is the classic reskin pattern:
 ## Health -> Heat (hunted meter), Food -> Resources.
 ##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
-# try except finally fallback; : str type hint; if not empty guard
+## validate persisted fields; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via reset_for_new_game().
 
-# --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler formula) ---
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
+
+# --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler reskin) ---
 var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in the
                                 # visual direction doc (vignette at 26, tint at 51, etc.)
 const HEAT_MAX: float = 100.0
@@ -30,6 +34,7 @@ var quests_completed: Array = []
 var bosses_fought: Array = []        # e.g. ["Cross", "Voss"]
 var boss_executed: Dictionary = {}   # boss name -> true/false (spared)
 var boss_finisher: Dictionary = {}   # boss name -> hero name who landed the finishing blow
+var boss_choices: Dictionary = {}    # boss id -> choice id (pardon, spare, execute, …)
 var emperor_forgiven = null          # null until decided, then true/false
 
 # --- Crew-wide stats ---
@@ -60,6 +65,9 @@ var permadeath_mode: bool = false
 # --- Progress checkpoint ---
 var current_act: int = 1
 var last_scene: String = "TestRoom"
+
+# --- Co-op session (empty = solo run) ---
+var coop_session_id: String = ""
 
 
 func relationship_key(hero_a: String, hero_b: String) -> String:
@@ -125,18 +133,24 @@ func top_contributor() -> String:
 
 
 func mark_boss_defeated(boss_name: String, executed: bool, finisher: String) -> void:
+	if not boss_name:
+		return
 	if not bosses_fought.has(boss_name):
 		bosses_fought.append(boss_name)
 	boss_executed[boss_name] = executed
 	boss_finisher[boss_name] = finisher
 
 
+## Record a narrative choice from a JSON beat encounter (Slices 3.18+).
+func record_boss_choice(boss_id: String, choice: String) -> void:
+	GameStateBossChoice.apply(boss_id, choice)
+
+
 func get_active_hero() -> String:
 	if squad.is_empty():
 		return ""
-	if current_hero_index < 0 or current_hero_index >= squad.size():
-		current_hero_index = 0
-	return squad[current_hero_index] if current_hero_index < squad.size() else ""
+	current_hero_index = clampi(current_hero_index, 0, squad.size() - 1)
+	return squad[current_hero_index]
 
 
 func switch_to_hero(index: int) -> void:
@@ -154,6 +168,7 @@ func reset_for_new_game() -> void:
 	bosses_fought.clear()
 	boss_executed.clear()
 	boss_finisher.clear()
+	boss_choices.clear()
 	emperor_forgiven = null
 	morale = 0
 	reputation_ruthlessness = 0
@@ -170,6 +185,7 @@ func reset_for_new_game() -> void:
 	permadeath_mode = false
 	current_act = 1
 	last_scene = "TestRoom"
+	coop_session_id = ""
 	# Reset all mechanics modules so a new run starts clean.
 	Stress.reset()
 	Scarcity.reset()
@@ -187,3 +203,4 @@ func reset_for_new_game() -> void:
 	RelationshipSystem.reset()
 	Inventory.reset()
 	QuestManager.reset()
+	print("GameState: reset_for_new_game complete")
