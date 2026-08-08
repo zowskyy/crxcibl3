@@ -21,7 +21,6 @@ extends Control
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 
 const HERO_BUTTON_SCENE := preload("res://scenes/HeroSelectionButton.tscn")
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const MAX_SQUAD_SIZE := 4
 const MIN_SQUAD_SIZE := 1
 
@@ -29,7 +28,11 @@ var _selected_variant_ids: Array = []
 
 
 func _ready() -> void:
-	_setup_arcane_presentation()
+	title_label.text = "PICK YOUR CREW"
+	SlugHudTheme.apply_menu_chrome(self, title_label, null)
+	SlugHudTheme.style_menu_button(start_button)
+	squad_label.modulate = SlugHudTheme.TEXT_WHITE
+	hint_label.modulate = SlugHudTheme.TEXT_DIM
 	start_button.disabled = true
 	_populate_hero_grid()
 	start_button.pressed.connect(_on_start_pressed)
@@ -41,20 +44,6 @@ func _ready() -> void:
 	else:
 		hint_label.text = "Select 1–4 heroes, then tap Start Mission."
 	_update_squad_display()
-
-
-func _setup_arcane_presentation() -> void:
-	var bg := ColorRect.new()
-	bg.name = "ArcaneBG"
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.04, 0.03, 0.09, 1.0)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(bg)
-	move_child(bg, 0)
-	add_child(ARCANE_OVERLAY.instantiate())
-	title_label.modulate = Color(0.96, 0.74, 0.38, 1.0)
-	squad_label.modulate = Color(0.88, 0.86, 0.92, 1.0)
-	hint_label.modulate = Color(0.72, 0.68, 0.78, 1.0)
 
 
 func _is_coop_active() -> bool:
@@ -81,6 +70,7 @@ func _populate_hero_grid() -> void:
 		button.custom_minimum_size = Vector2(64, 64)
 		button.add_to_group(variant_id)
 		button.toggled.connect(func(pressed: bool): _on_hero_toggled(variant_id, pressed))
+		SlugHudTheme.style_menu_button(button)
 
 		var portrait_path := "res://assets/heroes/portraits/%s.png" % variant_id
 		if ResourceLoader.exists(portrait_path):

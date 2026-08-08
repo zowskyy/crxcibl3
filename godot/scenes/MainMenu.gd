@@ -27,17 +27,25 @@ extends Control
 @onready var close_recap_btn:Button    = $RecapPanel/CloseButton
 
 const TITLE_TEXT := "CRXCIBL3"
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 
 
 func _ready() -> void:
-	_setup_arcane_presentation()
+	SlugHudTheme.apply_menu_chrome(self, title_label, $VBox/SubLabel)
+	SlugHudTheme.style_menu_button(continue_btn)
+	SlugHudTheme.style_menu_button(new_game_btn)
+	SlugHudTheme.style_menu_button(coop_btn)
+	_style_recap_panel()
 	recap_panel.visible = false
 	continue_btn.visible = SaveSystem.has_save()
 	continue_btn.pressed.connect(_on_continue)
 	new_game_btn.pressed.connect(_on_new_game)
 	coop_btn.pressed.connect(_on_coop)
 	close_recap_btn.pressed.connect(_on_close_recap)
+
+
+func _style_recap_panel() -> void:
+	recap_label.modulate = SlugHudTheme.TAG_GOLD
+	SlugHudTheme.style_menu_button(close_recap_btn)
 
 
 func _on_continue() -> void:
@@ -78,16 +86,3 @@ func _go_to_selection() -> void:
 	if not is_inside_tree():
 		return
 	get_tree().change_scene_to_file("res://scenes/HeroSelectionUI.tscn")
-
-
-func _setup_arcane_presentation() -> void:
-	var bg := ColorRect.new()
-	bg.name = "ArcaneBG"
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.04, 0.03, 0.09, 1.0)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(bg)
-	move_child(bg, 0)
-	add_child(ARCANE_OVERLAY.instantiate())
-	title_label.modulate = Color(0.96, 0.74, 0.38, 1.0)
-	$VBox/SubLabel.modulate = Color(0.62, 0.58, 0.72, 1.0)

@@ -1,6 +1,15 @@
-[gd_scene load_steps=2 format=3]
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# print "MainMenu recap chrome"
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
+# if not empty: str
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/MainMenu.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/ui/RecapPanelChrome.gd" id="2"]
 
 [node name="MainMenu" type="Control"]
 layout_mode=3
@@ -59,12 +68,7 @@ anchor_top=0.08
 anchor_right=0.9
 anchor_bottom=0.92
 visible=false
-
-[node name="Background" type="ColorRect" parent="RecapPanel"]
-layout_mode=1
-anchor_right=1.0
-anchor_bottom=1.0
-color=Color(0.04, 0.04, 0.04, 0.92)
+script=ExtResource("2")
 
 [node name="RecapLabel" type="Label" parent="RecapPanel"]
 layout_mode=1

@@ -24,11 +24,14 @@ extends Control
 
 var _discovered: Dictionary = {}
 
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
-
 
 func _ready() -> void:
-	_setup_arcane_presentation()
+	SlugHudTheme.apply_menu_chrome(self, $VBox/TitleLabel, null)
+	SlugHudTheme.style_menu_button(host_button)
+	SlugHudTheme.style_menu_button(find_button)
+	SlugHudTheme.style_menu_button(scan_button)
+	SlugHudTheme.style_menu_button(join_button)
+	SlugHudTheme.style_menu_button(back_button)
 	M2MResilienceCore.start()
 	host_button.pressed.connect(_on_host_pressed)
 	find_button.pressed.connect(_on_find_friends_pressed)
@@ -190,15 +193,3 @@ func _on_self_recognized(_recognized: bool) -> void:
 
 func _on_recognition_confidence_changed(_confidence: float) -> void:
 	_refresh_machine_identity()
-
-
-func _setup_arcane_presentation() -> void:
-	var bg := ColorRect.new()
-	bg.name = "ArcaneBG"
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.04, 0.03, 0.09, 1.0)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(bg)
-	move_child(bg, 0)
-	add_child(ARCANE_OVERLAY.instantiate())
-	$VBox/TitleLabel.modulate = Color(0.96, 0.74, 0.38, 1.0)
