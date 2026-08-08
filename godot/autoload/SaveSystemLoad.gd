@@ -90,7 +90,8 @@ static func _apply_save_line(key: String, value: String) -> void:
 		"quest":
 			GameState.quests_completed.append(value)
 		_:
-			_apply_prefixed_save_line(key, value)
+			if not SaveSystemCoopHook.apply_loaded_line(key, value):
+				_apply_prefixed_save_line(key, value)
 
 static func _apply_prefixed_save_line(key: String, value: String) -> void:
 	if key.begins_with("inv_slot_"):

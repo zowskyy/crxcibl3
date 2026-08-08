@@ -51,7 +51,7 @@ static func try_apply_peer_bullet_hit(
 	var state: Dictionary = network._authority.authoritative_state.get(peer_id, {})
 	var hero_id := str(state.get("hero_id", ""))
 	var final_dmg := mitigated_damage_for_hero(hero_id, damage)
-	if not attacker.is_empty() and attacker != hero_id:
+	if not attacker.is_empty() and attacker != hero_id and not is_host_validated_damage(attacker):
 		final_dmg = int(round(float(final_dmg) * 0.5))
 		Blame.on_friendly_fire(attacker, hero_id)
 		RelationshipSystem.on_friendly_fire(attacker, hero_id)

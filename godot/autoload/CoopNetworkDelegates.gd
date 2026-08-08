@@ -15,6 +15,7 @@ const CoopNetworkTransportScript := preload("res://autoload/CoopNetworkTransport
 const CoopHostAuthorityScript := preload("res://autoload/CoopHostAuthority.gd")
 const CoopNetworkAuthorityRelayScript := preload("res://autoload/CoopNetworkAuthorityRelay.gd")
 const CoopNetworkJoinScript := preload("res://autoload/CoopNetworkJoin.gd")
+const CoopNetworkReconnectScript := preload("res://autoload/CoopNetworkReconnect.gd")
 
 
 static func send_player_input(network, move: Vector2, facing: Vector2, fire_pressed: bool, hero_id: String) -> void:
@@ -102,18 +103,20 @@ static func on_m2m_sessions_updated(network, sessions: Array) -> void:
 static func on_peer_connected(network, id: int) -> void:
 	network.peer_joined.emit(id)
 	if network.is_host():
-		network._authority.init_peer(
-			id,
-			GameState.get_active_hero(),
-			CoopHostAuthorityScript.DEFAULT_SPAWN + network._authority.spawn_offset_for_peer(id),
-		)
+		if id == network.multiplayer.get_unique_id():
+			network._authority.init_peer(
+				id,
+				GameState.get_active_hero(),
+				CoopHostAuthorityScript.DEFAULT_SPAWN + network._authority.spawn_offset_for_peer(id),
+			)
 		send_beacon(network)
 
 
 static func on_peer_disconnected(network, id: int) -> void:
+	if network.is_host():
+		CoopNetworkReconnectScript.hold_peer_on_disconnect(network, id)
 	network._remote_player_states.erase(id)
 	network._authority.peer_input.erase(id)
-	network._authority.authoritative_state.erase(id)
 	network.peer_left.emit(id)
 	if network.is_host():
 		send_beacon(network)

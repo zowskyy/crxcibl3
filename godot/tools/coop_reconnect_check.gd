@@ -13,15 +13,17 @@ extends SceneTree
 # def test_gate_smoke assert unittest
 
 const COOP_NETWORK_PATH := "res://autoload/CoopNetwork.gd"
-const M2M_RESILIENCE_PATH := "res://autoload/M2MResilienceCore.gd"
+const PEER_HOLD_PATH := "res://autoload/M2MResiliencePeerHold.gd"
 const COOP_RECONNECT_PATH := "res://autoload/CoopNetworkReconnect.gd"
+const SESSION_SYNC_PATH := "res://autoload/CoopSessionSync.gd"
 
 
 func _initialize() -> void:
 	var issues: Array = []
 	issues.append_array(_check_file(COOP_NETWORK_PATH, _coop_network_checks))
-	issues.append_array(_check_file(M2M_RESILIENCE_PATH, _m2m_resilience_checks))
+	issues.append_array(_check_file(PEER_HOLD_PATH, _peer_hold_checks))
 	issues.append_array(_check_file(COOP_RECONNECT_PATH, _coop_reconnect_checks))
+	issues.append_array(_check_file(SESSION_SYNC_PATH, _session_sync_checks))
 	if issues.is_empty():
 		print("Coop reconnect check: OK")
 		quit(0)
@@ -57,18 +59,18 @@ func _coop_network_checks(text: String) -> Array:
 	return issues
 
 
-func _m2m_resilience_checks(text: String) -> Array:
+func _peer_hold_checks(text: String) -> Array:
 	var issues: Array = []
 	if "func hold_disconnected_peer" not in text:
-		issues.append("M2MResilienceCore missing hold_disconnected_peer")
+		issues.append("M2MResiliencePeerHold missing hold_disconnected_peer")
 	if "func take_held_peer" not in text:
-		issues.append("M2MResilienceCore missing take_held_peer")
+		issues.append("M2MResiliencePeerHold missing take_held_peer")
 	if "PEER_HOLD_GRACE_SEC" not in text:
-		issues.append("M2MResilienceCore missing PEER_HOLD_GRACE_SEC")
+		issues.append("M2MResiliencePeerHold missing PEER_HOLD_GRACE_SEC")
 	if "func save_host_session_sync" not in text:
-		issues.append("M2MResilienceCore missing save_host_session_sync")
+		issues.append("M2MResiliencePeerHold missing save_host_session_sync")
 	if "func get_host_session_sync" not in text:
-		issues.append("M2MResilienceCore missing get_host_session_sync")
+		issues.append("M2MResiliencePeerHold missing get_host_session_sync")
 	return issues
 
 
@@ -78,8 +80,17 @@ func _coop_reconnect_checks(text: String) -> Array:
 		issues.append("CoopNetworkReconnect missing hold_peer_on_disconnect")
 	if "func on_machine_announced" not in text:
 		issues.append("CoopNetworkReconnect missing on_machine_announced")
-	if "func build_session_sync_payload" not in text:
-		issues.append("CoopNetworkReconnect missing build_session_sync_payload")
+	if "func persist_host_session_state" not in text:
+		issues.append("CoopNetworkReconnect missing persist_host_session_state")
 	if "func apply_session_sync" not in text:
 		issues.append("CoopNetworkReconnect missing apply_session_sync")
+	return issues
+
+
+func _session_sync_checks(text: String) -> Array:
+	var issues: Array = []
+	if "func build_payload" not in text:
+		issues.append("CoopSessionSync missing build_payload")
+	if "func apply" not in text:
+		issues.append("CoopSessionSync missing apply")
 	return issues
