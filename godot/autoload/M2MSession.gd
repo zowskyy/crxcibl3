@@ -48,6 +48,7 @@ func _ready() -> void:
 
 func catch_mobile_ip() -> void:
 	if not mobile_ip.is_empty():
+		_register_local_addresses()
 		mobile_ip_caught.emit(mobile_ip)
 		return
 	_http.request(IPIFY_URL)
