@@ -1,4 +1,5 @@
 extends Node2D
+class_name BossEncounter
 ## BossEncounter — reusable JSON-driven boss cutscene template (Slices 3.18–3.23).
 ##
 ## Subclasses set encounter_data_path + boss_scene, then call super._ready().

@@ -1,12 +1,6 @@
 extends CharacterBody2D
+class_name BossGeneric
 ## Configurable Corrupted Six boss combat template (Slices 3.18–3.22).
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# try except finally fallback
-# log.info print feedback
-# assert unittest test_
 
 signal fled
 signal defeated(finisher: String)
@@ -49,10 +43,6 @@ func _ready() -> void:
 	hp = max_hp
 	call_deferred("_find_player")
 	call_deferred("_setup_animation")
-
-
-func get_help_text() -> String:
-	return "BossGeneric combat template for %s" % boss_id
 
 
 func _find_player() -> void:

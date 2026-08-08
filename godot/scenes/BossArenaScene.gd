@@ -1,12 +1,6 @@
 extends BossEncounter
+class_name BossArenaScene
 ## Shared arena + HUD setup for Corrupted Six boss encounters (Slices 3.18–3.22).
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# try except finally fallback
-# log.info print feedback
-# assert unittest test_
 
 @export var boss_context_key: String = "boss"
 @export var spawn_pos: Vector2 = Vector2(80, 160)
@@ -27,10 +21,6 @@ func _ready() -> void:
 	if not encounter_data_path.is_empty():
 		DialogueIntensity.on_boss_encountered(_get_boss_name())
 	await super._ready()
-
-
-func get_help_text() -> String:
-	return "Boss arena encounter: %s" % boss_context_key
 
 
 func _get_boss_name() -> String:
