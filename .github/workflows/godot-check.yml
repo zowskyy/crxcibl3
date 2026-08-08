@@ -46,6 +46,23 @@ jobs:
           fi
           exit $status
 
+      - name: Co-op authority, reconnect, roadmap, and security RPC deliverable gates
+        run: |
+          set -o pipefail
+          status=0
+          for script in \
+            res://tools/coop_authority_check.gd \
+            res://tools/coop_reconnect_check.gd \
+            res://tools/roadmap_gate_check.gd \
+            res://tools/security_rpc_check.gd; do
+            echo "--- Running $script"
+            godot --headless --path godot -s "$script" 2>&1 | tee -a deliverable_gates.log || status=1
+          done
+          if grep -qE "FAILED|SCRIPT ERROR" deliverable_gates.log; then
+            status=1
+          fi
+          exit $status
+
       - name: Boot the main scene headless (catches scene/script errors on load)
         run: |
           set -o pipefail
