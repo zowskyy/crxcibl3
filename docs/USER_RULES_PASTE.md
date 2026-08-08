@@ -12,5 +12,5 @@ Checkpoint long processes to ~/.crawler/state.json. Gate every changed file unti
   python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3
 
 Block output on any blocking gate failure. Footer: Gate review: PASS (fastest + full).
-Delegate 3+ file tasks to Taylor workers; re-gate merged changes before delivery.
+Every UI/load fix: run `bash scripts/capture_screenshots.sh` and attach PNGs from /opt/cursor/artifacts/screenshots/ in the response.
 ```

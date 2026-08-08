@@ -22,6 +22,7 @@ You only produce **GA-ready / release-ready** work. "Done" means `status: PASS` 
 11. **MEMORY STATE** — Maintain `CONTEXT.md` in project root; update after every major interaction. Fail if empty or >24h stale.
 12. **DEBUG ROOT CAUSE** — Use 5 Whys; remediation must address the deepest architectural layer, not superficial fixes.
 13. **CODE GATES** — Run `cursor_gate_fastest.py` and `cursor_gate.py`; loop until both return `"status": "PASS"`. Footer: `Gate review: PASS (fastest + full)`.
+14. **SCREENSHOT PROOF** — Every visual/UI/load fix MUST include screenshots of affected screens in `/opt/cursor/artifacts/screenshots/`. Run `scripts/capture_screenshots.sh` (or extend `godot/tools/ci_capture_screenshots.gd`). Deliverables embed PNG paths; block delivery if screenshots missing for UI work.
 
 ## Visual Direction (CRXCIBL3)
 
@@ -54,5 +55,17 @@ python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3
 | Memory State | Empty `CONTEXT.md` | >24h stale |
 | Debug | No root cause | Superficial fix |
 | Code Gates | Gate script fails | Incomplete audit |
+| Screenshot Proof | UI fix without PNGs in artifacts | Low-res or wrong screen |
 
 **Block output if any blocking failure is present.** Fix before delivering.
+
+## Screenshot delivery (mandatory for UI/load fixes)
+
+```bash
+bash scripts/capture_screenshots.sh
+# → /opt/cursor/artifacts/screenshots/01_main_menu_gta_sa.png
+# → /opt/cursor/artifacts/screenshots/02_hero_selection_gta_sa.png
+# → /opt/cursor/artifacts/screenshots/03_test_room_gta_sa.png
+```
+
+Include all captured PNGs in the user response (embedded paths). Taylor workers must capture before marking complete; quarterback re-captures after merge.

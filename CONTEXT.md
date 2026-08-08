@@ -29,4 +29,5 @@ godot --headless -s res://tools/ci_autoload_check.gd      # 32 autoloads incl Mi
 godot --headless -s res://tools/ci_slug_hud_smoke.gd      # GtaSaTheme
 godot --headless -s res://tools/ci_m2m_checkpoint_smoke.gd
 godot --headless -s res://tools/ci_scene_flow_smoke.gd    # MissionLaunch → TestRoom
+bash scripts/capture_screenshots.sh                         # UI proof PNGs (required for visual fixes)
 ```

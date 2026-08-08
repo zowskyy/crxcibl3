@@ -8,7 +8,8 @@ All prior policies (ship-finished-work, quarterback-worker, gate-only `.cursorru
 
 - Memory: `CONTEXT.md` (project root, update every major interaction)
 - Checkpoint: `~/.crawler/state.json` via M2M modules
-- Verification: `godot/tools/ci_autoload_check.gd`, `godot/tools/ci_slug_hud_smoke.gd`, `godot/tools/ci_scene_flow_smoke.gd`
+- Verification: `godot/tools/ci_autoload_check.gd`, `ci_slug_hud_smoke.gd`, `ci_scene_flow_smoke.gd`, `scripts/capture_screenshots.sh`
+- **Screenshot rule:** every UI/load fix → PNGs in `/opt/cursor/artifacts/screenshots/`
 - Gates: `python3 ~/.cursor/cursor_gate_fastest.py` + `python3 ~/.cursor/cursor_gate.py` on every changed file
 
 ## Taylor workers
