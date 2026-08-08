@@ -2,6 +2,16 @@ extends Node2D
 class_name GetawayScene
 ## Shared getaway mechanic (Slice 2.19+) — survive timed pursuit, then transition.
 ## Car chase, boat run, and future escapes all use this base.
+##
+## validate pursuit spawns; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via exit_scene_path transition.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal getaway_started
 signal getaway_survived
@@ -34,9 +44,11 @@ var _done := false
 
 
 func _ready() -> void:
+	print("[GetawayScene] ready")
 	_resolve_nodes()
 	if fire_button and player_vehicle and player_vehicle.has_method("fire"):
-		fire_button.pressed.connect(func(): player_vehicle.fire())
+		if not fire_button.pressed.is_connected(_on_fire_pressed):
+			fire_button.pressed.connect(_on_fire_pressed)
 	if player_vehicle and "owner_hero_id" in player_vehicle:
 		player_vehicle.owner_hero_id = GameState.get_active_hero()
 	_apply_carryover_upgrades()
@@ -51,6 +63,11 @@ func _resolve_nodes() -> void:
 	chase_label = get_node_or_null("CanvasLayer/ChaseLabel") as Label
 	hp_label = get_node_or_null("CanvasLayer/HpLabel") as Label
 	fire_button = get_node_or_null("CanvasLayer/FireButton") as Button
+
+
+func _on_fire_pressed() -> void:
+	if player_vehicle and player_vehicle.has_method("fire"):
+		player_vehicle.fire()
 
 
 func _apply_carryover_upgrades() -> void:

@@ -1,0 +1,4 @@
+// CRXCIBL3 Android Gradle overrides — synced with export_presets.cfg
+ext.versions.minSdk = 24
+ext.versions.targetSdk = 34
+ext.versions.compileSdk = 34

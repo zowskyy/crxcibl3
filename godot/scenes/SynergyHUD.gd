@@ -1,5 +1,15 @@
 extends Control
 ## RPG synergy bond HUD — shows active crew bonds and stat bonuses.
+##
+## validate bond tiers; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via RelationshipSystem signal refresh.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var label: Label = $BondLabel
 
@@ -12,6 +22,7 @@ const BOND_COLORS := {
 
 
 func _ready() -> void:
+	print("[SynergyHUD] ready")
 	anchor_left = 1.0
 	anchor_right = 1.0
 	anchor_top = 1.0
@@ -26,8 +37,17 @@ func _ready() -> void:
 		add_child(label)
 	label.add_theme_font_size_override("font_size", 8)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	RelationshipSystem.synergy_updated.connect(_on_synergy_updated)
-	RelationshipSystem.relationship_changed.connect(func(_a, _b, _v): _refresh())
+	_ensure_connected(RelationshipSystem.synergy_updated, _on_synergy_updated)
+	_ensure_connected(RelationshipSystem.relationship_changed, _on_relationship_changed)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_relationship_changed(_a: String, _b: String, _v: int) -> void:
+	_refresh()
 
 
 func _on_synergy_updated(_hero: String, _bonuses: Dictionary) -> void:

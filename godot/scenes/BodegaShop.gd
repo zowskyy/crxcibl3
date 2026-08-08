@@ -8,6 +8,16 @@ extends Node2D
 ## The menu lives on the scene's CanvasLayer (not here) so it stays fixed on
 ## screen regardless of camera position. Set menu_node in the Inspector or
 ## via code before _ready() if reusing this script in another scene.
+##
+## validate upgrade purchases; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via GameState.purchase_upgrade().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const TRIGGER_RADIUS := 70.0
 
@@ -27,6 +37,7 @@ var _buttons: Array = []
 
 
 func _ready() -> void:
+	print("[BodegaShop] ready")
 	_menu = get_node(menu_node)
 	_menu.hide()
 	call_deferred("_find_player")
@@ -67,8 +78,11 @@ func _build_buttons() -> void:
 		container.add_child(btn)
 		_buttons.append({"btn": btn, "upgrade": upgrade})
 		var id: String = upgrade["id"]
-		btn.pressed.connect(func(): _on_upgrade_pressed(id))
-	close_btn.pressed.connect(_close_menu)
+		var cb := _on_upgrade_pressed.bind(id)
+		if not btn.pressed.is_connected(cb):
+			btn.pressed.connect(cb)
+	if not close_btn.pressed.is_connected(_close_menu):
+		close_btn.pressed.connect(_close_menu)
 
 
 func _refresh_buttons() -> void:

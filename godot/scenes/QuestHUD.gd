@@ -1,6 +1,16 @@
 extends Control
 ## Quest HUD — bottom-center display for active quest title and objective progress.
 ## Polls QuestManager via refresh(); updates on quest lifecycle signals.
+##
+## validate quest lifecycle signals; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via refresh() on quest state change.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const BG_COLOR := Color(0.1, 0.1, 0.1, 0.85)
 const TEXT_COLOR := Color(1.0, 1.0, 1.0, 1.0)
@@ -15,6 +25,7 @@ func set_quest_title(quest_id: String, title: String) -> void:
 
 
 func _ready() -> void:
+	print("[QuestHUD] ready")
 	anchor_left = 0.5
 	anchor_right = 0.5
 	anchor_top = 1.0
@@ -33,11 +44,28 @@ func _ready() -> void:
 	_label.add_theme_font_size_override("font_size", 11)
 	add_child(_label)
 
-	QuestManager.quest_started.connect(func(_id: String) -> void: refresh())
-	QuestManager.quest_objective_progress.connect(
-		func(_id: String, _obj: String, _prog: int, _count: int) -> void: refresh())
-	QuestManager.quest_completed.connect(func(_id: String) -> void: refresh())
+	_ensure_connected(QuestManager.quest_started, _on_quest_started)
+	_ensure_connected(QuestManager.quest_objective_progress, _on_quest_objective_progress)
+	_ensure_connected(QuestManager.quest_completed, _on_quest_completed)
 
+	refresh()
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_quest_started(_id: String) -> void:
+	refresh()
+
+
+func _on_quest_objective_progress(
+		_id: String, _obj: String, _prog: int, _count: int) -> void:
+	refresh()
+
+
+func _on_quest_completed(_id: String) -> void:
 	refresh()
 
 

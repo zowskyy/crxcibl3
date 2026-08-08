@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="godot_project_name_string">CRXCIBL3</string>
+	<string name="permission_rationale_bluetooth">CRXCIBL3 uses Bluetooth to discover nearby co-op sessions. No contacts or audio are accessed.</string>
+	<string name="permission_rationale_bluetooth_scan">Bluetooth scan finds crew members playing nearby for local co-op matchmaking.</string>
+	<string name="permission_rationale_bluetooth_connect">Bluetooth connect links your device to a host for offline co-op play.</string>
+	<string name="permission_rationale_bluetooth_advertise">Bluetooth advertise lets friends discover your co-op session on the same network.</string>
+	<string name="permission_rationale_location">Android requires location permission to scan for nearby Bluetooth devices during co-op discovery. Your GPS position is never stored.</string>
+	<string name="permission_rationale_internet">Network access enables Wi-Fi and mobile co-op session discovery.</string>
+	<string name="permission_rationale_network_state">Network state lets CRXCIBL3 choose the best transport for co-op (Wi-Fi vs mobile).</string>
+</resources>

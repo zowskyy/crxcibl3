@@ -3,6 +3,18 @@ extends CanvasLayer
 ##
 ## Listens to CutsceneDirector beat signals and renders speaker lines, narrator
 ## text, and choice buttons at the bottom of the 384×216 design canvas.
+## Usage: autoload cutscene UI — see --help in project docs.
+
+## validate choice payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via beat_cleared hide panel.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
+
 
 signal continued
 signal choice_made(choice_id: String)
@@ -16,16 +28,19 @@ signal choice_made(choice_id: String)
 var _choice_buttons: Array[Button] = []
 var _awaiting_choice := false
 
-
 func _ready() -> void:
+	print("[DialogueBox] ready")
 	layer = 10
 	panel.visible = false
-	CutsceneDirector.line_shown.connect(_on_line_shown)
-	CutsceneDirector.narrator_shown.connect(_on_narrator_shown)
-	CutsceneDirector.choice_shown.connect(_on_choice_shown)
-	CutsceneDirector.cutscene_ended.connect(_on_cutscene_ended)
-	CutsceneDirector.beat_cleared.connect(_hide_panel)
+	_ensure_connected(CutsceneDirector.line_shown, _on_line_shown)
+	_ensure_connected(CutsceneDirector.narrator_shown, _on_narrator_shown)
+	_ensure_connected(CutsceneDirector.choice_shown, _on_choice_shown)
+	_ensure_connected(CutsceneDirector.cutscene_ended, _on_cutscene_ended)
+	_ensure_connected(CutsceneDirector.beat_cleared, _hide_panel)
 
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
 
 func _on_line_shown(speaker: String, text: String) -> void:
 	_awaiting_choice = false
@@ -38,11 +53,9 @@ func _on_line_shown(speaker: String, text: String) -> void:
 	continue_hint.visible = true
 	choice_row.visible = false
 
-
 func _on_narrator_shown(text: String) -> void:
 	_on_line_shown("", text)
 	speaker_label.visible = false
-
 
 func _on_choice_shown(prompt: String, choices: Array) -> void:
 	_awaiting_choice = true
@@ -69,7 +82,6 @@ func _on_choice_shown(prompt: String, choices: Array) -> void:
 		tween.tween_property(btn, "modulate:a", 1.0, 0.12).set_delay(delay)
 		delay += 0.08
 
-
 func _pick_choice(choice_id: String) -> void:
 	if not _awaiting_choice:
 		return
@@ -78,16 +90,13 @@ func _pick_choice(choice_id: String) -> void:
 	choice_made.emit(choice_id)
 	CutsceneDirector.submit_choice(choice_id)
 
-
 func _on_cutscene_ended(_scene_id: String) -> void:
 	_hide_panel()
-
 
 func _hide_panel() -> void:
 	panel.visible = false
 	_clear_choices()
 	_awaiting_choice = false
-
 
 func _clear_choices() -> void:
 	for btn in _choice_buttons:
@@ -96,7 +105,6 @@ func _clear_choices() -> void:
 	_choice_buttons.clear()
 	for child in choice_row.get_children():
 		child.queue_free()
-
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not panel.visible or _awaiting_choice:

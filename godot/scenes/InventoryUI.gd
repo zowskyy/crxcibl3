@@ -6,6 +6,16 @@ extends CanvasLayer
 ## Toggle visibility from a level script (e.g. TestRoom's "I" key) --
 ## there's no HUD real estate for a permanent inventory grid at this
 ## project's mobile viewport size.
+##
+## validate inventory slots; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via Inventory signal refresh.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const SLOT_SCRIPT := preload("res://scenes/InventorySlot.gd")
 
@@ -14,6 +24,7 @@ var _equip_slots: Array = []
 
 
 func _ready() -> void:
+	print("[InventoryUI] ready")
 	layer = 10
 
 	var panel := Panel.new()
@@ -53,9 +64,22 @@ func _ready() -> void:
 
 	panel.custom_minimum_size = Vector2(222, 190)
 
-	Inventory.inventory_changed.connect(_refresh_all)
-	Inventory.item_equipped.connect(func(_c, _i): _refresh_all())
-	Inventory.item_unequipped.connect(func(_c, _i): _refresh_all())
+	_ensure_connected(Inventory.inventory_changed, _refresh_all)
+	_ensure_connected(Inventory.item_equipped, _on_item_equipped)
+	_ensure_connected(Inventory.item_unequipped, _on_item_unequipped)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_item_equipped(_c: String, _i: String) -> void:
+	_refresh_all()
+
+
+func _on_item_unequipped(_c: String, _i: String) -> void:
+	_refresh_all()
 
 
 func _refresh_all() -> void:

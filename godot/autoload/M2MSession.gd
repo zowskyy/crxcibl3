@@ -4,6 +4,7 @@ extends Node
 ## This is the pivotal co-op entry: one scan finds friends across M2M mesh policy,
 ## Wi-Fi LAN, Bluetooth proximity, and mobile-data IP fallbacks.
 ## Usage: catch_mobile_ip(), run_m2m_scan() — see docs/COOP_MULTIPLAYER.md --help.
+
 ## validate session payloads; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via stop_m2m_watch().
 
@@ -13,6 +14,7 @@ extends Node
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
+
 
 signal mobile_ip_caught(ip: String)
 signal m2m_sessions_updated(sessions: Array)
@@ -32,19 +34,21 @@ var _watch_timer: Timer = null
 var _merged_sessions: Dictionary = {}
 var _latency_cache: Dictionary = {}
 
-
 func _ready() -> void:
 	_http = HTTPRequest.new()
 	add_child(_http)
-	_http.request_completed.connect(_on_ipify_completed)
+	_ensure_connected(_http.request_completed, _on_ipify_completed)
 	_watch_timer = Timer.new()
 	_watch_timer.wait_time = SCAN_INTERVAL
-	_watch_timer.timeout.connect(_run_m2m_scan)
+	_ensure_connected(_watch_timer.timeout, _run_m2m_scan)
 	add_child(_watch_timer)
 	lan_ip = CoopLanUtil.primary_local_ip()
 	if CoopBluetooth != null and CoopBluetooth.is_available():
 		bluetooth_address = CoopBluetooth.get_local_address()
 
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
 
 func catch_mobile_ip() -> void:
 	if not mobile_ip.is_empty():
@@ -52,7 +56,6 @@ func catch_mobile_ip() -> void:
 		mobile_ip_caught.emit(mobile_ip)
 		return
 	_http.request(IPIFY_URL)
-
 
 func start_m2m_watch() -> void:
 	if _watching:
@@ -63,12 +66,10 @@ func start_m2m_watch() -> void:
 	_watch_timer.start()
 	_run_m2m_scan()
 
-
 func stop_m2m_watch() -> void:
 	_watching = false
 	_watch_timer.stop()
 	_merged_sessions.clear()
-
 
 func get_caught_addresses() -> Dictionary:
 	return {
@@ -76,7 +77,6 @@ func get_caught_addresses() -> Dictionary:
 		"mobile": effective_mobile_ip(),
 		"bluetooth": bluetooth_address,
 	}
-
 
 func build_host_beacon(session_id: String, host_alias: String, player_count: int, port: int) -> Dictionary:
 	lan_ip = CoopLanUtil.primary_local_ip()
@@ -96,7 +96,6 @@ func build_host_beacon(session_id: String, host_alias: String, player_count: int
 		"m2m": true,
 	}
 
-
 func get_ranked_sessions() -> Array:
 	var sessions: Array = []
 	for sid in _merged_sessions.keys():
@@ -105,7 +104,6 @@ func get_ranked_sessions() -> Array:
 		return float(a.get("proximity_score", 0.0)) > float(b.get("proximity_score", 0.0))
 	)
 	return sessions
-
 
 func pick_join_address(session: Dictionary) -> Dictionary:
 	var transport: String = str(session.get("recommended_transport", TransportPolicy.TRANSPORT_WIFI))
@@ -120,7 +118,6 @@ func pick_join_address(session: Dictionary) -> Dictionary:
 	if address.is_empty():
 		address = str(session.get("address", ""))
 	return {"address": address, "transport": transport}
-
 
 func probe_latency_ms(address: String, port: int = PROBE_PORT) -> float:
 	if address.is_empty():
@@ -144,10 +141,8 @@ func probe_latency_ms(address: String, port: int = PROBE_PORT) -> float:
 	_latency_cache[key] = ms
 	return ms
 
-
 func run_m2m_scan() -> void:
 	await _run_m2m_scan()
-
 
 func _run_m2m_scan() -> void:
 	lan_ip = CoopLanUtil.primary_local_ip()
@@ -162,15 +157,12 @@ func _run_m2m_scan() -> void:
 	m2m_sessions_updated.emit(get_ranked_sessions())
 	_emit_best_proximity()
 
-
 func _merge_udp_sessions() -> void:
 	for s in CoopNetwork.get_nearby_sessions():
 		_register_session(s)
 
-
 func register_external_session(session: Dictionary) -> void:
 	_register_session(session)
-
 
 func _register_session(raw: Dictionary) -> void:
 	var session := raw.duplicate(true)
@@ -191,7 +183,6 @@ func _register_session(raw: Dictionary) -> void:
 	session["proximity_score"] = TransportPolicy.proximity_score(session, probes)
 	_merged_sessions[sid] = session
 
-
 func _emit_best_proximity() -> void:
 	var ranked := get_ranked_sessions()
 	if ranked.is_empty():
@@ -200,12 +191,10 @@ func _emit_best_proximity() -> void:
 	if float(best.get("proximity_score", 0.0)) >= 0.45:
 		proximity_match.emit(best)
 
-
 func effective_mobile_ip() -> String:
 	if not mobile_ip.is_empty():
 		return mobile_ip
 	return M2MResilienceCore.get_cached_mobile_ip()
-
 
 func _register_local_addresses() -> void:
 	M2MMachineIdentity.register_address("lan", lan_ip)
@@ -214,7 +203,6 @@ func _register_local_addresses() -> void:
 		M2MMachineIdentity.register_address("mobile", mobile)
 	if not bluetooth_address.is_empty():
 		M2MMachineIdentity.register_address("bluetooth", bluetooth_address)
-
 
 func _on_ipify_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	if response_code != 200:

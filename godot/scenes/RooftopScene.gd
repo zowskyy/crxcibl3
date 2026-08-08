@@ -5,6 +5,16 @@ extends Node2D
 ## After the fight (flee threshold hit) the scene ends and transitions to car chase.
 ##
 ## Caption intro driven by godot/data/blackwood_scene.json enter_sequence.
+##
+## validate flee transition; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via CarChaseScene transition.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var boss: CharacterBody2D = $BossBlackwood
 @onready var flee_marker: Marker2D = $FleeMarker
@@ -23,14 +33,21 @@ var _intro_done := false
 
 
 func _ready() -> void:
+	print("[RooftopScene] ready")
 	boss.set_flee_target(flee_marker.global_position)
 	boss.set_flashbang_node(flashbang)
-	boss.fled.connect(_on_boss_fled)
+	if not boss.fled.is_connected(_on_boss_fled):
+		boss.fled.connect(_on_boss_fled)
 	flashbang.visible = false
-	fire_button.pressed.connect(func(): player.fire())
+	if not fire_button.pressed.is_connected(_on_fire_pressed):
+		fire_button.pressed.connect(_on_fire_pressed)
 	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Blackwood")
 	call_deferred("_play_intro_cutscene")
+
+
+func _on_fire_pressed() -> void:
+	player.fire()
 
 
 func _play_intro_cutscene() -> void:

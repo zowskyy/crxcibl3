@@ -41,20 +41,28 @@ func _ready() -> void:
 	M2MResilienceCore.start()
 	_beacon_timer = Timer.new()
 	_beacon_timer.wait_time = BEACON_INTERVAL_SEC
-	_beacon_timer.timeout.connect(_send_beacon)
 	add_child(_beacon_timer)
-
-	multiplayer.peer_connected.connect(_on_peer_connected)
-	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-	multiplayer.connected_to_server.connect(_on_connected_to_server)
-	multiplayer.connection_failed.connect(_on_connection_failed)
-	multiplayer.server_disconnected.connect(_on_server_disconnected)
-
-	M2MSession.mobile_ip_caught.connect(_on_mobile_ip_caught)
-	M2MSession.m2m_sessions_updated.connect(_on_m2m_sessions_updated)
-	M2MSession.proximity_match.connect(_on_proximity_match)
+	_connect_signal_pairs([
+		[_beacon_timer.timeout, _send_beacon],
+		[multiplayer.peer_connected, _on_peer_connected],
+		[multiplayer.peer_disconnected, _on_peer_disconnected],
+		[multiplayer.connected_to_server, _on_connected_to_server],
+		[multiplayer.connection_failed, _on_connection_failed],
+		[multiplayer.server_disconnected, _on_server_disconnected],
+		[M2MSession.mobile_ip_caught, _on_mobile_ip_caught],
+		[M2MSession.m2m_sessions_updated, _on_m2m_sessions_updated],
+		[M2MSession.proximity_match, _on_proximity_match],
+	])
 	if CoopBluetooth != null:
-		CoopBluetooth.session_discovered.connect(_on_bluetooth_session)
+		_connect_signal_pairs([[CoopBluetooth.session_discovered, _on_bluetooth_session]])
+
+
+func _connect_signal_pairs(pairs: Array) -> void:
+	for pair in pairs:
+		var sig: Signal = pair[0]
+		var callable: Callable = pair[1]
+		if not sig.is_connected(callable):
+			sig.connect(callable)
 
 
 func _process(_delta: float) -> void:
@@ -168,11 +176,11 @@ func is_online() -> bool:
 
 
 func get_peer_count() -> int:
-	return 0 if not is_online() else maxi(0, multiplayer.get_peers().size())
+	return int(is_online()) * maxi(0, multiplayer.get_peers().size())
 
 
 func get_local_peer_id() -> int:
-	return 1 if not is_online() else multiplayer.get_unique_id()
+	return 1 + int(is_online()) * (multiplayer.get_unique_id() - 1)
 
 
 func get_peer_ids() -> Array:
