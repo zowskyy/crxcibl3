@@ -28,11 +28,16 @@ func _run_smoke() -> void:
 	if not await _change_and_wait(HERO_SELECTION):
 		return
 
-	_prepare_solo_squad()
-
-	if not await _change_and_wait(TEST_ROOM, 3):
+	var ml: Node = get_root().get_node("MissionLaunch")
+	if ml == null:
+		push_error("[ci_scene_flow] MissionLaunch autoload missing")
+		quit(1)
 		return
-
+	ml.call("start_solo", ["enforcer_ghost"])
+	await process_frame
+	await process_frame
+	await process_frame
+	await process_frame
 	if not _verify_test_room():
 		push_error("[ci_scene_flow] TestRoom verification failed")
 		quit(1)

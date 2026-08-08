@@ -26,6 +26,7 @@ const AUTOLOADS := [
 	"CoopBluetooth",
 	"M2MSession",
 	"CoopNetwork",
+	"MissionLaunch",
 	"HeroDefinitions",
 	"HeroFactory",
 	"Stress",

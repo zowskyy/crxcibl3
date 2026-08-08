@@ -1,36 +1,32 @@
 # CRXCIBL3 — Agent Context Memory
 
-**Last updated:** 2026-08-08T03:35:00Z  
+**Last updated:** 2026-08-08T03:45:00Z  
 **Branch:** `cursor/godot-export-release-audit-c071`  
-**Version:** 1.3.3  
+**Version:** 1.3.4  
 **Policy:** GA-READY ONLY — `.cursor/rules/ga-system-prompt.mdc`
+
+## Visual Direction — GTA San Andreas (mandatory)
+
+All UI/HUD on every screen must match **GTA SA**:
+- **Top-right:** green `$` money (runes), wanted stars, weapon line
+- **Bottom-left:** radar circle, red HP bar, blue armor bar
+- **Menus:** dark olive/black wash, green button text, `LOS SANTOS · GROVE · SA`
+- **Never:** Metal Slug, Arcane overlay, or generic placeholder boxes
+
+Theme: `godot/scenes/ui/GtaSaTheme.gd` · HUD: `godot/scenes/ui/SlugHud.gd` (GtaSaHud)
 
 ## Current State
 
-- **UI:** GtaSaHud / GtaSaTheme — GTA San Andreas HUD on every screen (green money, wanted stars, radar, HP/armor bars, olive panels)
-- **M2M:** Checkpoint → `~/.crawler/state.json`; co-op stable
-- **Release:** [v1.3.3-playtest](https://github.com/zowskyy/crxcibl3/releases/tag/v1.3.3-playtest)
+- **Load fix:** `MissionLaunch` autoload — deferred TestRoom load, `stop_session()` on solo
+- **M2M:** Checkpoint + co-op stable
+- **Release:** v1.3.4-gta-sa (pending publish)
 
-## Verification (run before delivery)
+## Verification
 
 ```bash
 cd godot
-godot --headless -s res://tools/ci_autoload_check.gd
-godot --headless -s res://tools/ci_slug_hud_smoke.gd
+godot --headless -s res://tools/ci_autoload_check.gd      # 32 autoloads incl MissionLaunch
+godot --headless -s res://tools/ci_slug_hud_smoke.gd      # GtaSaTheme
 godot --headless -s res://tools/ci_m2m_checkpoint_smoke.gd
-godot --headless -s res://tools/ci_scene_flow_smoke.gd   # MainMenu → HeroSelection → TestRoom
+godot --headless -s res://tools/ci_scene_flow_smoke.gd    # MissionLaunch → TestRoom
 ```
-
-## GA Status
-
-| Gate | Status |
-|------|--------|
-| Placeholders | ✅ No bare `pass` in godot/**/*.gd |
-| Verification | ✅ 4 CI smoke scripts (all PASS) |
-| Checkpoint | ✅ M2MCheckpoint |
-| Scene E2E | ✅ TestRoom load + player spawn verify |
-| Code gates | ✅ Re-gate on every changed `.gd` |
-
-## Taylor Workers
-
-Main agent delegates 3+ file tasks; workers implement + gate; main agent re-gates and delivers.

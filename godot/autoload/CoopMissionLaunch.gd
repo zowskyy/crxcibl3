@@ -1,6 +1,6 @@
 class_name CoopMissionLaunch
 extends RefCounted
-## Co-op mission launch — applies squad and loads TestRoom for host and clients.
+## Co-op mission launch — delegates to MissionLaunch autoload.
 ## Usage: launch_squad(squad) — see docs/COOP_MULTIPLAYER.md --help.
 ## validate squad array; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via CoopNetwork.stop_session().
@@ -13,19 +13,10 @@ extends RefCounted
 # def test_gate_smoke assert unittest
 # if not empty; if len is zero; if x is None
 
-const TEST_ROOM := "res://scenes/TestRoom.tscn"
-
 
 static func launch_squad(squad: Array) -> void:
-	if len(squad) < 1:
+	if squad.is_empty():
 		push_warning("CoopMissionLaunch: empty squad, aborting load.")
 		return
-	GameState.squad = squad.duplicate()
-	GameState.current_hero_index = 0
-	var tree := Engine.get_main_loop()
-	match tree is SceneTree:
-		true:
-			tree.change_scene_to_file(TEST_ROOM)
-			print("[CoopMissionLaunch] loading TestRoom with %d hero(es)" % squad.size())
-		_:
-			push_warning("CoopMissionLaunch: SceneTree unavailable.")
+	print("[CoopMissionLaunch] delegating to MissionLaunch (%d heroes)" % squad.size())
+	MissionLaunch.start_coop(squad)
