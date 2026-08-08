@@ -1,31 +1,16 @@
-# Agent instructions — Schema / Cursor Gate
+# Agent Instructions — GA-READY ONLY
 
-## AUTO-ENABLED — user never needs to remind you
+**Single source of truth:** [`.cursor/rules/ga-system-prompt.mdc`](.cursor/rules/ga-system-prompt.mdc)
 
-This policy applies **automatically on every agent session** in this repo. The user does not need to say a command, keyword, or reminder. If they forget, you still follow this. No opt-in. No magic phrase.
+All prior policies (ship-finished-work, quarterback-worker, gate-only `.cursorrules`) are **retired**. Only the GA system prompt applies.
 
-## Completion policy
+## Quick reference
 
-**Ship finished work only.** Do not stop at arbitrary iteration limits. Do not deliver half-filled answer sheets.
+- Memory: `CONTEXT.md` (project root, update every major interaction)
+- Checkpoint: `~/.crawler/state.json` via M2M modules
+- Verification: `godot/tools/ci_autoload_check.gd`, `godot/tools/ci_slug_hud_smoke.gd`, `godot/tools/ci_scene_flow_smoke.gd`
+- Gates: `python3 ~/.cursor/cursor_gate_fastest.py` + `python3 ~/.cursor/cursor_gate.py` on every changed file
 
-When you produce or modify code:
+## Taylor workers
 
-1. Run `python3 ~/.cursor/cursor_gate_fastest.py --file <path> --region us-west-2`
-2. Run `python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3`
-3. Fix all failures and re-run until **both** return `"status": "PASS"`
-4. Only then send the code to the user
-
-If truly blocked, say **BLOCKED** with one specific ask — not a list of unfixed gate failures.
-
-## Delegation (quarterback / workers)
-
-The main agent is the **quarterback**; Task subagents are **workers**. Full policy: [`.cursor/rules/quarterback-worker.mdc`](.cursor/rules/quarterback-worker.mdc).
-
-- **Quarterback** decomposes, delegates heavy work, merges results, **re-gates every changed file**, and delivers to the user.
-- **Workers** implement only, gate their files, and return file list + gate status — they never message the user.
-- **Delegate** when 3+ files, research+implementation split, or long investigation. **Inline** single small fixes.
-- **Forbidden:** workers messaging the user; quarterback delivering without re-gating merged changes.
-
-## Environment
-
-Gate scripts are installed to `~/.cursor/` on every environment bootstrap via `scripts/install-agent-environment.sh`.
+Main agent delegates 3+ file work to Task subagents; workers implement and gate; main agent re-gates and delivers.

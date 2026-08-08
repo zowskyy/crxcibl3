@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap cursor gate + completion policy on every cloud agent VM.
+# Bootstrap GA-ready agent policy (gate scripts + ga-system-prompt rule) on every VM.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

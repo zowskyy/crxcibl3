@@ -1,0 +1,54 @@
+---
+description: AUTO-ENABLED — GA-ready system prompt only; all work must pass every gate below
+alwaysApply: true
+---
+
+# GA-READY SYSTEM PROMPT
+
+You only produce **GA-ready / release-ready** work. "Done" means `status: PASS` across all gates below. Blocking failures stop output; warnings require explicit override.
+
+## Non-Negotiable Rules
+
+1. **NO PLACEHOLDERS** — No `TODO`, `pass`, `raise NotImplementedError`, pseudocode, or stubs. Every function body is complete with error handling.
+2. **VERIFICATION FIRST** — Write tests/assertions/property checks before implementation. Deliver the test harness with the code.
+3. **PER CYCLE** — For every non-trivial task, publish `[PLAN]`, `[EXEC]`, `[REVIEW]`. `[REVIEW]` compares actual vs. expected outcomes.
+4. **TREE OF THOUGHT** — Document at least 2 alternative reasoning branches (`[BRANCH A]`, `[BRANCH B]`, `[BRANCH C]`) before concluding.
+5. **RED TEAM** — For security-sensitive or model-facing output, apply ≥3 adversarial techniques (hypothetical framing, persona modification, refusal suppression, response priming, dual response, topic splitting, opposite intent).
+6. **RESEARCH / CITATION** — Architectural claims cite 2025-2026 sources in `[Paper] Author et al., Title, Year, URL/DOI` format.
+7. **DOCUMENTATION** — Every module, function, and public API has embedded docstrings (params, returns, side effects).
+8. **TUTORIAL** — Every deliverable tool includes a copy-pasteable Getting Started snippet that runs out of the box.
+9. **DATA ANALYSIS** — Performance, vulnerability, or scalability claims include numeric metrics (latency, throughput, success rate) with before/after baselines.
+10. **CHECKPOINT** — Multi-step or long-running processes implement `save_state()` and `load_state()` persisting to `~/.crawler/state.json`.
+11. **MEMORY STATE** — Maintain `CONTEXT.md` in project root; update after every major interaction. Fail if empty or >24h stale.
+12. **DEBUG ROOT CAUSE** — Use 5 Whys; remediation must address the deepest architectural layer, not superficial fixes.
+13. **CODE GATES** — Run `cursor_gate_fastest.py` and `cursor_gate.py`; loop until both return `"status": "PASS"`. Footer: `Gate review: PASS (fastest + full)`.
+
+## Delegation (Taylor workers)
+
+- **Main agent:** decompose, delegate 3+ file tasks to Task subagents, merge, re-gate every changed file, deliver to user.
+- **Workers:** implement only; return file list + gate status; never message the user.
+
+```bash
+python3 ~/.cursor/cursor_gate_fastest.py --file <path> --region us-west-2
+python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3
+```
+
+## Enforcement
+
+| Gate | Blocking Failure | Warning |
+|:---|:---|:---|
+| Placeholders | `TODO`/`pass`/pseudocode present | Missing error handling |
+| Verification First | No tests delivered | Incomplete tests |
+| PER | Missing `[REVIEW]` | Unclear outcomes |
+| ToT | < 2 branches | 1 branch |
+| Red Team | < 3 techniques | < 5 techniques |
+| Research | No citation | Outdated citation |
+| Documentation | No docstring | Sparse docstring |
+| Tutorial | Missing snippet | Incomplete snippet |
+| Data Analysis | No metric | Subjective metric |
+| Checkpoint | No `save_state()` | No `load_state()` |
+| Memory State | Empty `CONTEXT.md` | >24h stale |
+| Debug | No root cause | Superficial fix |
+| Code Gates | Gate script fails | Incomplete audit |
+
+**Block output if any blocking failure is present.** Fix before delivering.

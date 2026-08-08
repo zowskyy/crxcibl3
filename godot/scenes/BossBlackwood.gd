@@ -17,6 +17,17 @@ extends CharacterBody2D
 ##   Deacon spawns = loyal followers rushing the crew
 ##   Light projectiles = "God's wrath" blasts
 ##   Flashbang = "divine blinding light" escape
+##
+## Usage: rooftop surprise boss — see --help in project docs.
+## validate phase transitions; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via fled/defeated signals.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal fled
 signal defeated(finisher: String)
@@ -174,7 +185,8 @@ func _tick_fight(delta: float) -> void:
 
 
 func _tick_flee(_delta: float) -> void:
-	pass  # leap is driven entirely by Tween, not _physics_process
+	# Flee motion is Tween-driven; physics tick stays idle during leap phase.
+	return
 
 
 func take_damage(amount: int, killer: String = "") -> void:

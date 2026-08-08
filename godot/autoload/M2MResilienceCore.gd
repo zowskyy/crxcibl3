@@ -22,6 +22,7 @@ const MAX_MOBILE_LOOKUP_FAILURES := 5
 const MOBILE_LOOKUP_BACKOFF_SEC := 30.0
 const RECOGNITION_THRESHOLD := 0.35
 const ADDRESS_WEIGHTS := {"lan": 0.25, "mobile": 0.25, "bluetooth": 0.2}
+const CHECKPOINT_INTERVAL_USEC := 10_000_000
 
 var _watchdog_timer: Timer = null
 var _http: HTTPRequest = null
@@ -34,12 +35,14 @@ var _circuit_open := false
 var _circuit_retry_at_usec := 0
 var _mobile_lookup_busy := false
 var _last_watchdog_usec := 0
+var _last_checkpoint_usec := 0
 var _prior_score := -1.0
 var _was_recognized := false
 
 
 func _ready() -> void:
 	_load_registry()
+	_restore_checkpoint_mobile_ip()
 	_http = HTTPRequest.new()
 	add_child(_http)
 	_http.request_completed.connect(_on_mobile_lookup_done)
@@ -114,6 +117,10 @@ func _watchdog_pass() -> void:
 	_refresh_mobile_ip()
 	_update_confidence()
 	watchdog_tick.emit(get_health())
+	var now_usec := Time.get_ticks_usec()
+	if now_usec - _last_checkpoint_usec >= CHECKPOINT_INTERVAL_USEC:
+		_last_checkpoint_usec = now_usec
+		_save_m2m_checkpoint()
 
 
 func _reconcile_self_addresses() -> void:
@@ -206,6 +213,44 @@ func _load_registry() -> void:
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(REGISTRY_PATH))
 	_registry = parsed if parsed is Dictionary else _registry
+
+
+func _restore_checkpoint_mobile_ip() -> void:
+	if not str(_registry.get("last_known_mobile_ip", "")).is_empty():
+		return
+	var m2m := M2MCheckpoint.load_m2m_snapshot()
+	if m2m.is_empty():
+		return
+	var cached := str(m2m.get("last_known_mobile_ip", ""))
+	if cached.is_empty():
+		cached = str(m2m.get("health", {}).get("addresses", {}).get("mobile", ""))
+	if cached.is_empty():
+		cached = str(m2m.get("identity", {}).get("addresses", {}).get("mobile", ""))
+	if cached.is_empty() and m2m.has("session"):
+		var session: Dictionary = m2m.get("session", {})
+		cached = str(session.get("mobile_ip", session.get("addresses", {}).get("mobile", "")))
+	if cached.is_empty():
+		return
+	_registry["last_known_mobile_ip"] = cached
+	_save_registry()
+	M2MMachineIdentity.register_address("mobile", cached)
+
+
+func _save_m2m_checkpoint() -> void:
+	var snapshot := {
+		"identity": M2MMachineIdentity.get_profile(),
+		"health": get_health(),
+		"last_known_mobile_ip": get_cached_mobile_ip(),
+		"captured_at_usec": Time.get_ticks_usec(),
+	}
+	if M2MSession != null:
+		snapshot["session"] = {
+			"mobile_ip": M2MSession.mobile_ip,
+			"lan_ip": M2MSession.lan_ip,
+			"bluetooth_address": M2MSession.bluetooth_address,
+			"addresses": M2MSession.get_caught_addresses(),
+		}
+	M2MCheckpoint.save_state({"m2m": snapshot})
 
 
 func _save_registry() -> void:
