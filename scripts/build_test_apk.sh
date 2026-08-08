@@ -211,7 +211,9 @@ export_playtest_apk() {
   godot --headless --path "$GODOT_DIR" --import
 
   log "Exporting debug APK (${PRESET_NAME})"
-  godot --headless --path "$GODOT_DIR" --export-debug "$PRESET_NAME" "build/crxcibl3-debug.apk"
+  # --install-android-build-template writes version metadata Godot requires for Gradle export.
+  godot --headless --path "$GODOT_DIR" --install-android-build-template \
+    --export-debug "$PRESET_NAME" "build/crxcibl3-debug.apk"
 
   if [[ ! -f "$DEBUG_APK" ]]; then
     echo "Export failed — expected output missing: ${DEBUG_APK}" >&2
