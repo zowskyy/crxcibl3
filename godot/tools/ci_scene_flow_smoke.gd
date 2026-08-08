@@ -28,9 +28,7 @@ func _run_smoke() -> void:
 	if not await _change_and_wait(HERO_SELECTION):
 		return
 
-	GameState.reset_for_new_game()
-	GameState.squad = ["enforcer_ghost"]
-	GameState.current_hero_index = 0
+	_prepare_solo_squad()
 
 	if not await _change_and_wait(TEST_ROOM, 3):
 		return
@@ -42,6 +40,17 @@ func _run_smoke() -> void:
 
 	print("[ci_scene_flow] PASS (MainMenu → HeroSelection → TestRoom)")
 	quit(0)
+
+
+func _prepare_solo_squad() -> void:
+	var gs: Node = get_root().get_node("GameState")
+	if gs == null:
+		push_error("[ci_scene_flow] GameState autoload missing")
+		quit(1)
+		return
+	gs.call("reset_for_new_game")
+	gs.set("squad", ["enforcer_ghost"])
+	gs.set("current_hero_index", 0)
 
 
 func _verify_test_room() -> bool:
