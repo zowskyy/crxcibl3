@@ -3,7 +3,7 @@ extends Node
 ##
 ## Central source of truth for CRXCIBL3's run-wide state. Any node reads/writes this
 ## directly (e.g. GameState.heat, GameState.get_relationship("big_body", "slick"))
-## rather than passing state through scenes. This is the classic-formula reskin:
+## rather than passing state through scenes. This is the classic reskin pattern:
 ## Health -> Heat (hunted meter), Food -> Resources.
 ##
 ## validate persisted fields; plugin extension via importlib module loading.
@@ -14,8 +14,9 @@ extends Node
 # help usage argparse --help raise Error
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
-# --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler formula) ---
+# --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler reskin) ---
 var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in the
                                 # visual direction doc (vignette at 26, tint at 51, etc.)
 const HEAT_MAX: float = 100.0
@@ -33,7 +34,7 @@ var quests_completed: Array = []
 var bosses_fought: Array = []        # e.g. ["Cross", "Voss"]
 var boss_executed: Dictionary = {}   # boss name -> true/false (spared)
 var boss_finisher: Dictionary = {}   # boss name -> hero name who landed the finishing blow
-var boss_choices: Dictionary = {}    # boss id -> choice id (forgive, spare, execute, …)
+var boss_choices: Dictionary = {}    # boss id -> choice id (pardon, spare, execute, …)
 var emperor_forgiven = null          # null until decided, then true/false
 
 # --- Crew-wide stats ---
@@ -142,24 +143,7 @@ func mark_boss_defeated(boss_name: String, executed: bool, finisher: String) -> 
 
 ## Record a narrative choice from a JSON beat encounter (Slices 3.18+).
 func record_boss_choice(boss_id: String, choice: String) -> void:
-	if boss_id.is_empty() or choice.is_empty():
-		return
-	boss_choices[boss_id] = choice
-	match boss_id:
-		"emperor":
-			var forgive := choice == "forgive"
-			emperor_forgiven = forgive
-			Emperor.on_emperor_choice(forgive)
-			DialogueIntensity.on_dialogue_choice_made(15)
-			if forgive:
-				Reputation.on_crew_saved()
-			else:
-				Reputation.on_boss_executed()
-		"blackwood":
-			var executed := choice == "execute"
-			modify_heat(15.0 if executed else -5.0)
-		_:
-			modify_heat(15.0 if choice == "execute" else -5.0)
+	GameStateBossChoice.apply(boss_id, choice)
 
 
 func get_active_hero() -> String:
@@ -219,3 +203,4 @@ func reset_for_new_game() -> void:
 	RelationshipSystem.reset()
 	Inventory.reset()
 	QuestManager.reset()
+	print("GameState: reset_for_new_game complete")
