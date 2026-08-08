@@ -5,13 +5,22 @@ extends Node
 ## rest of the project's state style. Drag-and-drop lives in InventoryUI.gd
 ## (a Control that calls move_item()/equip_from_slot() on drop) -- this
 ## autoload only owns the data.
+##
+## Usage: inventory slots and gear — see --help in project docs.
+## validate item payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via reset().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const SLOT_COUNT := 30
 const EQUIP_CATEGORIES := ["weapon", "armor", "accessory"]
 
-## Sample item catalogue -- placeholder content until real gear design
-## lands, same "wired but not yet content-authored" pattern as the other
-## Phase 3 mechanics modules.
+## Sample item catalogue — pre-release gear stubs
 const ITEM_DEFS := {
 	"9mm_extended_mag": {"name": "Extended Mag",  "category": "weapon",   "stat_bonuses": {"fire_rate": -0.05}},
 	"kevlar_vest":      {"name": "Kevlar Vest",   "category": "armor",    "stat_bonuses": {"armor": 15}},

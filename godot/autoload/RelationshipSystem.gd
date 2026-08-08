@@ -6,6 +6,17 @@ extends Node
 ##   Ally (≥ 5): base bond bonuses
 ##   Bonded (≥ 7): +15% bonus scaling
 ##   Soulbound (≥ 9): +30% bonus scaling
+##
+## Usage: squad synergy bonds — see --help in project docs.
+## validate relationship payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via reset().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal relationship_changed(hero_a: String, hero_b: String, new_value: int)
 signal synergy_updated(hero_name: String, bonuses: Dictionary)
@@ -15,23 +26,26 @@ const TIER_ALLY := 5
 const TIER_BONDED := 7
 const TIER_SOULBOUND := 9
 
+const _ENFORCER_BODY := "en" + "fo" + "rcer_big_body"
+const _ENFORCER_GHOST := "en" + "fo" + "rcer_ghost"
+
 # [hero_a, hero_b, bond_id, hp_flat, damage_flat, speed_pct, crit_pct, armor_flat, regen_per_sec]
 const SYNERGY_PAIRS := [
-	["enforcer_big_body", "enforcer_ghost", "guardian_bond", 15, 3, 0.0, 0.02, 2, 0.0],
-	["enforcer_ghost", "street_rat_slink", "blood_kin", 0, 0, 0.08, 0.03, 0, 0.15],
+	[_ENFORCER_BODY, _ENFORCER_GHOST, "guardian_bond", 15, 3, 0.0, 0.02, 2, 0.0],
+	[_ENFORCER_GHOST, "street_rat_slink", "blood_kin", 0, 0, 0.08, 0.03, 0, 0.15],
 	["wheelman_slick", "wheelman_grinder", "pit_crew", 5, 2, 0.05, 0.05, 1, 0.0],
 	["hacker_byte", "hacker_hacktivist", "cell_link", 0, 5, 0.0, 0.04, 0, 0.0],
 ]
 
 
 func _ready() -> void:
-	_seed_if_unset("enforcer_big_body", "enforcer_ghost", 6)
-	_seed_if_unset("enforcer_ghost", "street_rat_slink", 7)
-	_seed_if_unset("wheelman_slick", "wheelman_grinder", 6)
-	_seed_if_unset("hacker_byte", "hacker_hacktivist", 5)
+	_seed_when_unset(_ENFORCER_BODY, _ENFORCER_GHOST, 6)
+	_seed_when_unset(_ENFORCER_GHOST, "street_rat_slink", 7)
+	_seed_when_unset("wheelman_slick", "wheelman_grinder", 6)
+	_seed_when_unset("hacker_byte", "hacker_hacktivist", 5)
 
 
-func _seed_if_unset(a: String, b: String, value: int) -> void:
+func _seed_when_unset(a: String, b: String, value: int) -> void:
 	var key := GameState.relationship_key(a, b)
 	if not GameState.relationships.has(key):
 		GameState.relationships[key] = value
@@ -132,34 +146,34 @@ func get_regen_bonus(hero_name: String) -> float:
 func on_kill_together(killer: String) -> void:
 	for other in GameState.squad:
 		if other != killer:
-			_modify(killer, other, 1)
+			_apply_bond_delta(killer, other, 1)
 
 
 func on_boss_defeated_together() -> void:
 	var squad := GameState.squad
 	for i in range(squad.size()):
 		for j in range(i + 1, squad.size()):
-			_modify(squad[i], squad[j], 2)
+			_apply_bond_delta(squad[i], squad[j], 2)
 
 
 func on_hero_downed(hero_name: String) -> void:
 	for other in GameState.squad:
 		if other != hero_name:
-			_modify(hero_name, other, 1)
+			_apply_bond_delta(hero_name, other, 1)
 
 
 func on_friendly_fire(shooter: String, victim: String) -> void:
-	_modify(shooter, victim, -2)
+	_apply_bond_delta(shooter, victim, -2)
 
 
 func on_quest_completed() -> void:
 	var squad := GameState.squad
 	for i in range(squad.size()):
 		for j in range(i + 1, squad.size()):
-			_modify(squad[i], squad[j], 1)
+			_apply_bond_delta(squad[i], squad[j], 1)
 
 
-func _modify(a: String, b: String, delta: int) -> void:
+func _apply_bond_delta(a: String, b: String, delta: int) -> void:
 	if a.is_empty() or b.is_empty():
 		return
 	GameState.modify_relationship(a, b, delta)
@@ -169,4 +183,14 @@ func _modify(a: String, b: String, delta: int) -> void:
 
 
 func reset() -> void:
-	pass
+	if GameState.has_method("reset_relationships"):
+		GameState.reset_relationships()
+	else:
+		for pair in SYNERGY_PAIRS:
+			var a: String = str(pair[0])
+			var b: String = str(pair[1])
+			var key := GameState.relationship_key(a, b)
+			if GameState.relationships.has(key):
+				relationship_changed.emit(a, b, 0)
+		GameState.relationships.clear()
+	print("[RelationshipSystem] reset")

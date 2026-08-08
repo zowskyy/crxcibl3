@@ -30,5 +30,5 @@ static func emit_session_list(sessions: Array, emit_callable: Callable) -> void:
 			true:
 				emit_callable.call(entry)
 			_:
-				pass
+				push_warning("[CoopNetworkPeers] skipping non-dictionary session entry: %s" % str(entry))
 	print("[CoopNetworkPeers] emitted session list update")

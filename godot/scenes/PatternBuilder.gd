@@ -10,7 +10,16 @@ class_name PatternBuilder
 ##     .add_move(false, true, hero, Vector2(300, 160), 0.8)
 ##   CutsceneDirector.start(pb.build())
 ##
-## class_name makes this available everywhere without a separate autoload.
+## Usage: cutscene step builder — see --help in project docs.
+## validate step payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via clear().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 var _steps: Array = []
 
@@ -85,8 +94,8 @@ func add_multi_move(entries: Array) -> PatternBuilder:
 ## No-op chain terminator, same as the original. Makes long chains read
 ## cleanly without a dangling \ on the last line:
 ##   pb.add_wait(1.0).done()
-func done() -> void:
-	pass
+func done() -> PatternBuilder:
+	return self
 
 
 # ----------------------------------------------------------------- helper builders

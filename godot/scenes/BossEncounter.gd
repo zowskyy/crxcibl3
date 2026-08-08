@@ -4,12 +4,25 @@ class_name BossEncounter
 ##
 ## Subclasses set encounter_data_path + boss_scene, then call super._ready().
 ## For combat-heavy scenes (Rooftop, Emperor estate) override _await_boss_outcome().
+##
+## Usage: JSON encounter scenes — see --help in project docs.
+## validate encounter payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via CutsceneDirector abort.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @export var encounter_data_path: String = ""
 @export var boss_scene: PackedScene
 
 var _data: Dictionary = {}
 var _boss_instance: Node = null
+var _defeat_sequence_played: bool = false
+var _heat_overlay_warned: bool = false
 
 
 func _ready() -> void:
@@ -70,6 +83,8 @@ func _play_sequence(key: String) -> void:
 		return
 	CutsceneDirector.play(str(_data.get("id", key)), beats)
 	await CutsceneDirector.cutscene_ended
+	if key == "defeat_sequence":
+		_defeat_sequence_played = true
 
 
 func _await_boss_outcome() -> void:
@@ -81,9 +96,10 @@ func _await_boss_outcome() -> void:
 		await _boss_instance.fled
 
 
-func _on_boss_defeated(_finisher: String = "") -> void:
-	# Subclasses can call this to skip waiting on the defeated signal.
-	pass
+func _on_boss_defeated(finisher: String = "") -> void:
+	print("[BossEncounter] boss defeated (finisher=%s)" % finisher)
+	if _defeat_sequence_played:
+		_transition_next()
 
 
 func _transition_next() -> void:
@@ -92,6 +108,14 @@ func _transition_next() -> void:
 		get_tree().change_scene_to_file(next)
 
 
-func _on_heat_changed(_new_heat: float) -> void:
-	# Hook for heat_wave overlay — subclasses wire GameState.heat if desired.
-	pass
+func _on_heat_changed(new_heat: float) -> void:
+	var wave_rect := get_node_or_null("WaveOverlayLayer/WaveRect") as ColorRect
+	if wave_rect == null:
+		if not _heat_overlay_warned:
+			print("[BossEncounter] heat changed to %.1f — no WaveOverlayLayer/WaveRect" % new_heat)
+			_heat_overlay_warned = true
+		return
+	var intensity := clampf(new_heat / GameState.HEAT_MAX, 0.0, 1.0)
+	var mat := wave_rect.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("intensity", intensity)

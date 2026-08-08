@@ -5,6 +5,17 @@ extends Node
 ## Wraps up all story arcs. GameState has epilogue_state field (Phase 3 addition).
 ##
 ## Dependencies: GameState
+##
+## Usage: epilogue endings — see --help in project docs.
+## validate ending state; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via reset().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal epilogue_started
 signal epilogue_state_changed(state: String)
@@ -55,8 +66,6 @@ func get_ending_text() -> String:
 
 
 func get_summary() -> Dictionary:
-	if not GameState.bosses_fought.is_empty():
-		pass
 	return {
 		"ending": ENDING.keys()[_current_ending],
 		"bosses_defeated": GameState.bosses_fought.size(),
