@@ -1,23 +1,5 @@
 extends Node
-## Proximity-aware co-op networking autoload.
-##
-## Discovery: UDP broadcast beacons (port 7778) on the LAN broadcast domain as a
-## proximity proxy. Gameplay sync: ENet (port 7777). Transport selection delegates
-## to TransportPolicy (M2M → Wi-Fi → Bluetooth stub → mobile fallback).
-##
-## Usage: host_session(alias), join_session(address), scan_nearby() — see --help.
-## validate session payloads; plugin extension via importlib module loading.
-## rollback revert undo migration downgrade via stop_session().
-
-# logging retry health rollback revert undo migration downgrade timeout fallback circuit
-# validate dataclass schema transparent fair explain plugin importlib module loading
-# help usage argparse --help raise Error
-# log.info print feedback
-# try except finally fallback; readiness liveness /health /ping /status
-
-const GAME_PORT := 7777
-const BEACON_INTERVAL_SEC := 2.0
-const PROXIMITY_TTL_SEC := 6.0
+## Proximity-aware co-op — M2M hook catches mobile/LAN/BT IPs; multi-transport join.
 
 signal session_started
 signal peer_joined(peer_id: int)
@@ -26,21 +8,27 @@ signal nearby_session_found(session_info: Dictionary)
 signal transport_changed(kind: String)
 signal player_state_sync(peer_id: int, pos: Vector2, facing: Vector2, hero_id: String, health: int)
 signal heat_sync(heat: float)
+signal m2m_mobile_ip_ready(ip: String)
+
+const GAME_PORT := 7777
+const BEACON_INTERVAL_SEC := 2.0
 
 var is_coop: bool = false
 
 var _session_id: String = ""
 var _host_alias: String = ""
-var _active_transport: String = TransportPolicy.TRANSPORT_WIFI
+var _active_transport: String = TransportPolicy.TRANSPORT_M2M
 var _enet_peer: ENetMultiplayerPeer = null
 var _beacon_timer: Timer = null
 var _discovery := CoopDiscovery.new()
 var _connected: bool = false
 var _remote_player_states: Dictionary = {}
 var _own_session_id: String = ""
+var _join_start_usec: int = 0
 
 
 func _ready() -> void:
+	M2MResilienceCore.start()
 	_beacon_timer = Timer.new()
 	_beacon_timer.wait_time = BEACON_INTERVAL_SEC
 	_beacon_timer.timeout.connect(_send_beacon)
@@ -52,11 +40,16 @@ func _ready() -> void:
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 
+	M2MSession.mobile_ip_caught.connect(_on_mobile_ip_caught)
+	M2MSession.m2m_sessions_updated.connect(_on_m2m_sessions_updated)
+	M2MSession.proximity_match.connect(_on_proximity_match)
+	CoopBluetooth.session_discovered.connect(_on_bluetooth_session)
+
 
 func _process(_delta: float) -> void:
 	for session in _discovery.poll(is_host(), Callable(self, "_send_beacon")):
 		if str(session.get("session_id", "")) != _own_session_id:
-			nearby_session_found.emit(session)
+			_enrich_and_emit(session)
 
 
 func host_session(alias: String) -> Error:
@@ -65,6 +58,10 @@ func host_session(alias: String) -> Error:
 	_host_alias = alias if not alias.is_empty() else "Host"
 	_session_id = _generate_session_id()
 	_own_session_id = _session_id
+	GameState.coop_session_id = _session_id
+
+	M2MSession.catch_mobile_ip()
+	M2MSession.start_m2m_watch()
 	_active_transport = _select_transport_for_host()
 	_emit_transport_changed()
 
@@ -76,11 +73,12 @@ func host_session(alias: String) -> Error:
 	_discovery.start()
 	_beacon_timer.start()
 	_connected = true
+	_publish_bluetooth_advert()
 	session_started.emit()
 	return OK
 
 
-func join_session(address: String) -> Error:
+func join_session(address: String, transport: String = "") -> Error:
 	if address.is_empty():
 		return ERR_INVALID_PARAMETER
 
@@ -88,21 +86,46 @@ func join_session(address: String) -> Error:
 	is_coop = true
 	_host_alias = "Client"
 	_own_session_id = ""
-	_active_transport = CoopLanUtil.transport_for_address(address)
+	_join_start_usec = Time.get_ticks_usec()
+
+	if transport.is_empty():
+		_active_transport = CoopLanUtil.transport_for_address(address)
+	else:
+		_active_transport = transport
 	_emit_transport_changed()
 
-	var err := _start_enet_client(address)
+	var err: Error = ERR_CANT_CONNECT
+	if _active_transport == TransportPolicy.TRANSPORT_BLUETOOTH and CoopBluetooth.is_available():
+		if CoopBluetooth.connect_rfcomm(address):
+			err = _start_enet_client(CoopLanUtil.primary_local_ip())
+			if err != OK:
+				err = _start_enet_client(address)
+		else:
+			err = _start_enet_client(address)
+	else:
+		err = _start_enet_client(address)
+
 	if err != OK:
+		M2MTransportLearner.record_failure(_active_transport)
 		stop_session()
 		return err
 
+	M2MSession.start_m2m_watch()
 	_discovery.start()
 	return OK
 
 
+func join_session_info(session: Dictionary) -> Error:
+	var pick: Dictionary = M2MSession.pick_join_address(session)
+	var addr: String = str(pick.get("address", ""))
+	var transport: String = str(pick.get("transport", ""))
+	return join_session(addr, transport)
+
+
 func scan_nearby() -> Array:
 	_discovery.broadcast("discover", {"requester": _host_alias})
-	return get_nearby_sessions()
+	await M2MSession.run_m2m_scan()
+	return get_all_nearby_sessions()
 
 
 func stop_session() -> void:
@@ -112,8 +135,12 @@ func stop_session() -> void:
 	_session_id = ""
 	_own_session_id = ""
 	_host_alias = ""
+	GameState.coop_session_id = ""
 	_remote_player_states.clear()
 	_discovery.stop()
+	M2MSession.stop_m2m_watch()
+	CoopBluetooth.stop_advertising()
+	CoopBluetooth.close_rfcomm()
 
 	if _enet_peer:
 		_enet_peer.close()
@@ -151,7 +178,7 @@ func get_friends_count() -> int:
 
 
 func get_transport_label() -> String:
-	return get_active_transport_label()
+	return TransportPolicy.transport_label(_active_transport)
 
 
 func get_active_transport() -> String:
@@ -159,11 +186,28 @@ func get_active_transport() -> String:
 
 
 func get_active_transport_label() -> String:
-	return TransportPolicy.transport_label(_active_transport)
+	return get_transport_label()
 
 
 func get_nearby_sessions() -> Array:
 	return _discovery.get_sessions()
+
+
+func get_all_nearby_sessions() -> Array:
+	var merged: Dictionary = {}
+	for s in _discovery.get_sessions():
+		merged[str(s.get("session_id", ""))] = s
+	for s in M2MSession.get_ranked_sessions():
+		merged[str(s.get("session_id", ""))] = s
+	var out: Array = []
+	for sid in merged.keys():
+		if sid != "":
+			out.append(merged[sid])
+	return M2MResilienceCore.filter_peer_sessions(out)
+
+
+func get_caught_ips() -> Dictionary:
+	return M2MSession.get_caught_addresses()
 
 
 func get_remote_player_state(peer_id: int) -> Dictionary:
@@ -171,16 +215,10 @@ func get_remote_player_state(peer_id: int) -> Dictionary:
 
 
 @rpc("any_peer", "call_local", "reliable")
-func sync_player_state(
-	peer_id: int,
-	pos: Vector2,
-	facing: float,
-	hero_id: String,
-	health: float
-) -> void:
+func sync_player_state(peer_id: int, pos: Vector2, facing: float, hero_id: String, health: float) -> void:
 	var facing_vec := Vector2(cos(facing), sin(facing))
 	var health_i := int(round(health))
-	_remote_player_states[peer_id] = {"pos": pos, "facing": facing, "hero_id": hero_id, "health": health}
+	_remote_player_states[peer_id] = {"pos": pos, "facing": facing, "hero_id": hero_id, "health": health_i}
 	player_state_sync.emit(peer_id, pos, facing_vec, hero_id, health_i)
 
 
@@ -211,55 +249,52 @@ func broadcast_heat(heat: float) -> void:
 
 func _select_transport_for_host() -> String:
 	var probes: Array = _build_transport_probes()
-	for _session in _probe_bluetooth_nearby():
+	if CoopBluetooth.is_available():
 		probes.append({
 			"kind": TransportPolicy.TRANSPORT_BLUETOOTH,
-			"latency_ms": 40.0,
+			"latency_ms": 38.0,
 			"same_subnet": true,
-			"peer_reachable": true,
+			"rssi_dbm": -60.0,
 			"hop_count": 0,
+			"peer_reachable": true,
+			"bandwidth_mbps": 10.0,
 		})
 	return TransportPolicy.score_transports(probes)
 
 
 func _build_transport_probes() -> Array:
 	var local_ip := CoopLanUtil.primary_local_ip()
-	var subnet := CoopLanUtil.subnet_prefix(local_ip)
 	var on_lan := not local_ip.is_empty()
+	var mobile := M2MSession.mobile_ip
 	return [
 		{
 			"kind": TransportPolicy.TRANSPORT_M2M,
-			"latency_ms": 4.0,
+			"latency_ms": 5.0 if on_lan else 25.0,
 			"same_subnet": on_lan,
-			"rssi_dbm": -55.0,
+			"rssi_dbm": -52.0,
 			"hop_count": 0,
-			"peer_reachable": on_lan,
-			"bandwidth_mbps": 80.0,
+			"peer_reachable": on_lan or not mobile.is_empty(),
+			"bandwidth_mbps": 85.0,
 		},
 		{
 			"kind": TransportPolicy.TRANSPORT_WIFI,
-			"latency_ms": 8.0,
-			"same_subnet": not subnet.is_empty(),
-			"rssi_dbm": -60.0,
+			"latency_ms": 10.0 if on_lan else 120.0,
+			"same_subnet": on_lan,
+			"rssi_dbm": -58.0,
 			"hop_count": 0,
 			"peer_reachable": on_lan,
 			"bandwidth_mbps": 50.0,
 		},
 		{
 			"kind": TransportPolicy.TRANSPORT_MOBILE,
-			"latency_ms": 90.0,
+			"latency_ms": 85.0 if not mobile.is_empty() else 999.0,
 			"same_subnet": false,
-			"rssi_dbm": -95.0,
+			"rssi_dbm": -88.0,
 			"hop_count": 1,
-			"peer_reachable": true,
-			"bandwidth_mbps": 12.0,
+			"peer_reachable": not mobile.is_empty(),
+			"bandwidth_mbps": 18.0,
 		},
 	]
-
-
-func _probe_bluetooth_nearby() -> Array:
-	print("CoopNetwork: Bluetooth BLE discovery stub — awaiting Android plugin.")
-	return []
 
 
 func _start_enet_server() -> Error:
@@ -283,14 +318,57 @@ func _start_enet_client(address: String) -> Error:
 func _send_beacon() -> void:
 	if not is_host():
 		return
-	_discovery.broadcast("beacon", {
+	var beacon := M2MSession.build_host_beacon(
+		_session_id, _host_alias, get_peer_count() + 1, GAME_PORT
+	)
+	beacon["transport"] = _active_transport
+	beacon["address"] = str(beacon.get("lan_address", ""))
+	_discovery.broadcast("beacon", beacon)
+	_publish_bluetooth_advert()
+
+
+func _publish_bluetooth_advert() -> void:
+	if not is_host() or not CoopBluetooth.is_available():
+		return
+	CoopBluetooth.start_advertising({
 		"session_id": _session_id,
 		"host_alias": _host_alias,
 		"player_count": get_peer_count() + 1,
-		"transport": _active_transport,
 		"port": GAME_PORT,
-		"address": CoopLanUtil.primary_local_ip(),
+		"lan_address": M2MSession.lan_ip,
+		"mobile_address": M2MSession.effective_mobile_ip(),
+		"machine_id": M2MMachineIdentity.machine_id,
 	})
+
+
+func _enrich_and_emit(session: Dictionary) -> void:
+	if M2MMachineIdentity.is_self_beacon(session):
+		return
+	session["lan_address"] = str(session.get("lan_address", session.get("address", "")))
+	session["mobile_address"] = str(session.get("mobile_address", ""))
+	session["bluetooth_address"] = str(session.get("bluetooth_address", ""))
+	M2MSession.register_external_session(session)
+	nearby_session_found.emit(session)
+
+
+func _on_mobile_ip_caught(ip: String) -> void:
+	m2m_mobile_ip_ready.emit(ip)
+	if is_host():
+		_send_beacon()
+
+
+func _on_m2m_sessions_updated(sessions: Array) -> void:
+	for s in sessions:
+		if s is Dictionary:
+			nearby_session_found.emit(s)
+
+
+func _on_proximity_match(session: Dictionary) -> void:
+	nearby_session_found.emit(session)
+
+
+func _on_bluetooth_session(session: Dictionary) -> void:
+	_enrich_and_emit(session)
 
 
 func _on_peer_connected(id: int) -> void:
@@ -308,10 +386,13 @@ func _on_peer_disconnected(id: int) -> void:
 
 func _on_connected_to_server() -> void:
 	_connected = true
+	var ms := float(Time.get_ticks_usec() - _join_start_usec) / 1000.0
+	M2MTransportLearner.record_success(_active_transport, ms)
 	session_started.emit()
 
 
 func _on_connection_failed() -> void:
+	M2MTransportLearner.record_failure(_active_transport)
 	push_warning("CoopNetwork: connection failed.")
 	stop_session()
 

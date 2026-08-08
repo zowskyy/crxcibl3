@@ -103,10 +103,17 @@ func _register_beacon(body) -> Dictionary:
 		"session_id": session_id,
 		"host_alias": str(body.get("host_alias", "Unknown")),
 		"player_count": int(body.get("player_count", 1)),
-		"transport": str(body.get("transport", TransportPolicy.TRANSPORT_WIFI)),
-		"address": str(body.get("address", "")),
+		"transport": str(body.get("transport", TransportPolicy.TRANSPORT_M2M)),
+		"address": str(body.get("address", body.get("lan_address", ""))),
+		"lan_address": str(body.get("lan_address", body.get("address", ""))),
+		"mobile_address": str(body.get("mobile_address", "")),
+		"bluetooth_address": str(body.get("bluetooth_address", "")),
+		"machine_id": str(body.get("machine_id", "")),
 		"port": int(body.get("port", 7777)),
+		"m2m": body.get("m2m", false),
 	}
+	if M2MMachineIdentity.is_self_beacon(session_info):
+		return {}
 	remember(session_info)
 	return session_info.duplicate(true)
 
