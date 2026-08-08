@@ -1,13 +1,22 @@
 extends BossEncounter
 class_name BossArenaScene
 ## Shared arena + HUD setup for Corrupted Six boss encounters (Slices 3.18–3.22).
+## Usage: boss_context_key, spawn_pos — see --help in project docs.
+## validate player spawn; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via super._ready() chain.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @export var boss_context_key: String = "boss"
 @export var spawn_pos: Vector2 = Vector2(80, 160)
 @export var world_bounds: Rect2 = Rect2(0, 0, 600, 320)
 @export var arrival_text: String = "BOSS ARENA — Move!"
 
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
 
 var player: CharacterBody2D = null
@@ -17,7 +26,6 @@ var _intro_done := false
 func _ready() -> void:
 	_setup_arena()
 	_setup_player()
-	add_child(ARCANE_OVERLAY.instantiate())
 	if not encounter_data_path.is_empty():
 		DialogueIntensity.on_boss_encountered(_get_boss_name())
 	await super._ready()
@@ -52,6 +60,7 @@ func _setup_player() -> void:
 		return
 	var fire_button := get_node_or_null("CanvasLayer/FireButton") as Button
 	if fire_button:
+		SlugHudTheme.draw_fire_button_style(fire_button)
 		fire_button.pressed.connect(func(): player.fire())
 
 

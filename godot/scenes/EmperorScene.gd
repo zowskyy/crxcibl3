@@ -17,7 +17,6 @@ extends Node2D
 @onready var fire_button: Button = $CanvasLayer/FireButton
 
 const RECKONING_DATA := "res://data/emperor_scene.json"
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const ARRIVAL_DISPLAY_TIME := 3.0
 
 var _arrival_timer := ARRIVAL_DISPLAY_TIME
@@ -27,8 +26,8 @@ var _reckoning := false
 func _ready() -> void:
 	GameState.current_act = 3
 	boss.defeated.connect(_on_blackwood_defeated)
+	SlugHudTheme.draw_fire_button_style(fire_button)
 	fire_button.pressed.connect(func(): player.fire())
-	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Emperor")
 
 

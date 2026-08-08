@@ -17,13 +17,14 @@ extends Node2D
 @onready var ending_label:  Label  = $CanvasLayer/EndingLabel
 @onready var summary_label: Label  = $CanvasLayer/SummaryLabel
 @onready var play_again:    Button = $CanvasLayer/PlayAgainButton
-
-const TITLE_COLOR := Color(1.0, 0.4, 0.0)  # Heat orange — same as the rest of the HUD
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
+@onready var background:   ColorRect = $Background
 
 
 func _ready() -> void:
-	add_child(ARCANE_OVERLAY.instantiate())
+	background.color = SlugHudTheme.INK
+	ending_label.modulate = SlugHudTheme.TAG_GOLD
+	summary_label.modulate = SlugHudTheme.TEXT_DIM
+	SlugHudTheme.style_menu_button(play_again)
 	ending_label.text = Epilogue.get_ending_text()
 	summary_label.text = _format_summary(Epilogue.get_summary())
 	play_again.pressed.connect(_on_play_again)

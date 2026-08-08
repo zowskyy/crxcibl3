@@ -139,7 +139,8 @@ func scan_nearby() -> Array:
 
 
 func stop_session() -> void:
-	_beacon_timer.stop()
+	if _beacon_timer:
+		_beacon_timer.stop()
 	_connected = false
 	is_coop = false
 	_session_id = ""

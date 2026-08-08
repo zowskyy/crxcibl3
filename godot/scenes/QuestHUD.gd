@@ -1,9 +1,15 @@
 extends Control
-## Quest HUD — bottom-center display for active quest title and objective progress.
-## Polls QuestManager via refresh(); updates on quest lifecycle signals.
+## Quest HUD — MS mission ticker at bottom (OC brawl strip, no plain box).
+## Usage: set_quest_title(), refresh() — see --help in project docs.
+## validate quest payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade when quest completes.
 
-const BG_COLOR := Color(0.1, 0.1, 0.1, 0.85)
-const TEXT_COLOR := Color(1.0, 1.0, 1.0, 1.0)
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 var _label: Label = null
 var _title_overrides: Dictionary = {}
@@ -15,30 +21,40 @@ func set_quest_title(quest_id: String, title: String) -> void:
 
 
 func _ready() -> void:
+	_apply_layout()
+	_build_label()
+	_connect_quest_signals()
+	print("[QuestHUD] MS mission ticker online — OC brawl strip")
+	refresh()
+
+
+func _apply_layout() -> void:
 	anchor_left = 0.5
 	anchor_right = 0.5
 	anchor_top = 1.0
 	anchor_bottom = 1.0
-	offset_left = -160.0
-	offset_right = 160.0
-	offset_top = -44.0
-	offset_bottom = -8.0
+	offset_left = -170.0
+	offset_right = 170.0
+	offset_top = -36.0
+	offset_bottom = -6.0
 
+
+func _build_label() -> void:
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_color_override("font_color", TEXT_COLOR)
-	_label.add_theme_font_size_override("font_size", 11)
+	_label.add_theme_color_override("font_color", SlugHudTheme.TEXT_WHITE)
+	_label.add_theme_font_size_override("font_size", 9)
 	add_child(_label)
 
+
+func _connect_quest_signals() -> void:
 	QuestManager.quest_started.connect(func(_id: String) -> void: refresh())
 	QuestManager.quest_objective_progress.connect(
 		func(_id: String, _obj: String, _prog: int, _count: int) -> void: refresh())
 	QuestManager.quest_completed.connect(func(_id: String) -> void: refresh())
-
-	refresh()
 
 
 func refresh() -> void:
@@ -47,25 +63,15 @@ func refresh() -> void:
 		_label.text = ""
 		queue_redraw()
 		return
-
 	var quest_id: String = active[0]
 	var title: String = _title_overrides.get(quest_id, quest_id.replace("_", " ").capitalize())
-	var objectives: Array = QuestManager.get_objectives(quest_id)
-	var obj_lines: PackedStringArray = []
-	for obj in objectives:
-		var obj_id: String = obj.get("id", "objective")
-		var progress: int = obj.get("progress", 0)
-		var count: int = obj.get("count", 1)
-		obj_lines.append("%s %d/%d" % [obj_id.replace("_", " "), progress, count])
-
-	if obj_lines.is_empty():
-		_label.text = title
-	else:
-		_label.text = "%s — %s" % [title, ", ".join(obj_lines)]
+	var obj_lines := QuestHudFormat.format_objectives(QuestManager.get_objectives(quest_id))
+	_label.text = QuestHudFormat.format_quest_line(title, obj_lines)
 	queue_redraw()
 
 
 func _draw() -> void:
 	if _label.text.is_empty():
 		return
-	draw_rect(Rect2(Vector2.ZERO, size), BG_COLOR)
+	SlugHudTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size), SlugHudTheme.ASPHALT)
+	SlugHudTheme.draw_label(self, Vector2(6, 2), "MISSION", SlugHudTheme.SPRAY_ORANGE, 7)

@@ -2,8 +2,7 @@ extends Node2D
 ## Slice 2.5 -- minimal test room. Confirms GameState reads/writes
 ## correctly at runtime before any real level content gets built. Press
 ## the "Add Heat" button (or the H key) to bump GameState.heat -- the
-## HeatMeter HUD (Slice 2.10) polls and redraws itself, no manual
-## refresh call needed here anymore.
+## SlugHud (MS × OC brawl) polls GameState — no manual refresh needed here.
 ##
 ## Slice 2.14: also wires the Fire button/Space key to Player.fire() --
 ## Metal Slug-style gun combat per the Architect's direction. RuneLabel
@@ -39,7 +38,6 @@ const INVENTORY_UI_SCRIPT := preload("res://scenes/InventoryUI.gd")
 const QUEST_HUD_SCRIPT := preload("res://scenes/QuestHUD.gd")
 const HIDEOUT_ZONE_SCRIPT := preload("res://scenes/HideoutZone.gd")
 const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const SYNERGY_HUD_SCRIPT := preload("res://scenes/SynergyHUD.gd")
 
 var _inventory_ui: CanvasLayer = null
@@ -62,6 +60,7 @@ var _coop_sync: TestRoomCoopSync
 
 func _ready() -> void:
 	_setup_environment()
+	SlugHudTheme.draw_fire_button_style(fire_button)
 	fire_button.pressed.connect(_on_fire_pressed)
 
 	ActProgression.apply_qa_cmdline_flags()
@@ -127,8 +126,6 @@ func _setup_environment() -> void:
 	backdrop.z_index = -20
 	add_child(backdrop)
 	move_child(backdrop, 0)
-
-	add_child(ARCANE_OVERLAY.instantiate())
 
 
 func _setup_synergy_hud() -> void:

@@ -21,7 +21,6 @@ extends Node2D
 @onready var fire_button: Button = $CanvasLayer/FireButton
 
 const BLACKWOOD_DATA := "res://data/blackwood_scene.json"
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const ARRIVAL_DISPLAY_TIME := 3.0
 
 var _arrival_timer := ARRIVAL_DISPLAY_TIME
@@ -33,8 +32,8 @@ func _ready() -> void:
 	boss.set_flashbang_node(flashbang)
 	boss.fled.connect(_on_boss_fled)
 	flashbang.visible = false
+	SlugHudTheme.draw_fire_button_style(fire_button)
 	fire_button.pressed.connect(func(): player.fire())
-	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Blackwood")
 	call_deferred("_play_intro_cutscene")
 

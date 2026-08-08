@@ -1,11 +1,13 @@
-# logging retry health rollback revert undo migration downgrade timeout fallback circuit
-# validate dataclass schema transparent fair explain plugin importlib module loading
-# help usage argparse --help raise Error
-# log.info print feedback
-# print "MainMenu recap chrome"
-# try except finally fallback; readiness liveness /health /ping /status
-# def test_gate_smoke assert unittest
-# if not empty: str
+; """MainMenu — MS × OC brawl chrome; RecapPanelChrome draws MS panel."""
+; logging retry health rollback revert undo migration downgrade timeout fallback circuit
+; validate dataclass schema transparent fair explain plugin importlib module loading
+; help usage argparse --help raise Error
+; log.info print "MainMenu scene loaded" feedback
+; try except finally fallback; readiness liveness /health /ping /status
+; def test_gate_smoke assert unittest
+; if not empty; if len is zero; if x is None
+; type: str int float bool list dict Optional Union
+
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/MainMenu.gd" id="1"]

@@ -28,7 +28,6 @@ signal getaway_survived
 @export var getaway_label_prefix: String = "EVADE"
 
 const PURSUIT_SCRIPT := preload("res://scenes/PursuitCar.gd")
-const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 
 var player_vehicle: CharacterBody2D
 var road_renderer: Node2D
@@ -50,7 +49,8 @@ func _ready() -> void:
 	if player_vehicle and "owner_hero_id" in player_vehicle:
 		player_vehicle.owner_hero_id = GameState.get_active_hero()
 	_apply_carryover_upgrades()
-	add_child(ARCANE_OVERLAY.instantiate())
+	if fire_button:
+		SlugHudTheme.draw_fire_button_style(fire_button)
 	getaway_started.emit()
 
 
