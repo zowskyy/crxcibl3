@@ -17,6 +17,8 @@ const POSITION_RECONCILE_EPS := 4.0
 static func route_damage(player: CharacterBody2D, amount: int, attacker: String) -> bool:
 	if not CoopNetwork.is_online() or CoopNetwork.is_host():
 		return false
+	if CoopNetworkAuthorityRelay.is_host_validated_damage(attacker):
+		return true
 	CoopNetwork.request_self_damage.rpc_id(1, amount, attacker)
 	return true
 

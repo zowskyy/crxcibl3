@@ -13,6 +13,8 @@ extends RefCounted
 
 const PLAYER_SPEED := 120.0
 const DEFAULT_SPAWN := Vector2(550, 300)
+## Matches RemotePlayer silhouette / collision footprint for host hit tests.
+const PEER_HIT_RADIUS := 12.0
 
 var peer_input: Dictionary = {}
 var authoritative_state: Dictionary = {}
@@ -82,6 +84,21 @@ func apply_damage(peer_id: int, amount: int) -> Dictionary:
 	state["health"] = clampi(int(state.get("health", max_hp)) - amount, 0, max_hp)
 	authoritative_state[peer_id] = state
 	return state.duplicate(true)
+
+
+func find_peer_hit_at(world_pos: Vector2, exclude_peer_id: int) -> int:
+	var best_peer := -1
+	var best_dist := PEER_HIT_RADIUS + 1.0
+	for raw_id in authoritative_state.keys():
+		var peer_id := int(raw_id)
+		if peer_id == exclude_peer_id:
+			continue
+		var pos: Vector2 = authoritative_state[peer_id].get("pos", Vector2.ZERO)
+		var dist := world_pos.distance_to(pos)
+		if dist <= PEER_HIT_RADIUS and dist < best_dist:
+			best_dist = dist
+			best_peer = peer_id
+	return best_peer
 
 
 func tick(

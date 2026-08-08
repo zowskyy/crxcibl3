@@ -20,6 +20,7 @@ const DAMAGE := 15
 const LIFETIME := 1.2
 const RADIUS := 5.0
 const POOL_MAX := 48
+const COOP_HIT_RELAY := preload("res://autoload/CoopNetworkAuthorityRelay.gd")
 
 ## Hitscan combat stats (wow.txt spec): crit rolls and damage variance.
 ## Armor mitigation and cover live on the target's take_damage() instead
@@ -88,6 +89,8 @@ func _ensure_collision_shape() -> void:
 func _physics_process(delta: float) -> void:
 	position += direction * SPEED * delta
 	_age += delta
+	if CoopNetwork.is_online() and CoopNetwork.is_host() and _try_host_peer_hit():
+		return
 	if _age >= LIFETIME:
 		_recycle()
 
@@ -107,29 +110,40 @@ func _on_body_entered(body: Node) -> void:
 	# this from also triggering on the player who fired it.
 	if body.is_in_group("player") and body.has_method("take_damage"):
 		if shooter != body.hero_name:
-			var ff_dmg := float(DAMAGE + damage_bonus)
-			ff_dmg *= randf_range(1.0 - DAMAGE_VARIANCE, 1.0 + DAMAGE_VARIANCE)
-			var is_ff_crit := randf() < clampf(CRIT_CHANCE + crit_chance_bonus, 0.0, 1.0)
-			if is_ff_crit:
-				ff_dmg *= CRIT_MULT
-			ff_dmg *= 0.5
+			var ff_dmg := _compute_damage_amount(true)
 			Blame.on_friendly_fire(shooter, body.hero_name)
 			RelationshipSystem.on_friendly_fire(shooter, body.hero_name)
-			body.take_damage(int(round(ff_dmg)), shooter)
+			body.take_damage(ff_dmg, shooter)
 			_recycle()
 		return
 
 	if (body.is_in_group("enemy") or body.is_in_group("spawn_generator") \
 			or body.is_in_group("boss") or body.is_in_group("npc")) \
 			and body.has_method("take_damage"):
-		var dmg := float(DAMAGE + damage_bonus)
-		dmg *= randf_range(1.0 - DAMAGE_VARIANCE, 1.0 + DAMAGE_VARIANCE)
-		var is_crit := randf() < clampf(CRIT_CHANCE + crit_chance_bonus, 0.0, 1.0)
-		if is_crit:
-			dmg *= CRIT_MULT
-		body.take_damage(int(round(dmg)), shooter)
+		var dmg := _compute_damage_amount(false)
+		body.take_damage(dmg, shooter)
 		Stress.on_hit_dealt()
 		_recycle()
+
+
+func _try_host_peer_hit() -> bool:
+	var dmg := _compute_damage_amount(false)
+	if not COOP_HIT_RELAY.try_apply_peer_bullet_hit(CoopNetwork, global_position, dmg, shooter):
+		return false
+	Stress.on_hit_dealt()
+	_recycle()
+	return true
+
+
+func _compute_damage_amount(apply_friendly_penalty: bool) -> int:
+	var dmg := float(DAMAGE + damage_bonus)
+	dmg *= randf_range(1.0 - DAMAGE_VARIANCE, 1.0 + DAMAGE_VARIANCE)
+	var is_crit := randf() < clampf(CRIT_CHANCE + crit_chance_bonus, 0.0, 1.0)
+	if is_crit:
+		dmg *= CRIT_MULT
+	if apply_friendly_penalty:
+		dmg *= 0.5
+	return int(round(dmg))
 
 func _draw() -> void:
 	draw_circle(Vector2.ZERO, RADIUS, Color(1.0, 0.85, 0.2))
