@@ -84,7 +84,9 @@ func _spawn_triggers() -> void:
 		shape.size = Vector2(80, 80)
 		col.shape = shape
 		zone.add_child(col)
-		zone.body_entered.connect(_on_trigger_entered.bind(boss_id))
+		var cb := _on_trigger_entered.bind(boss_id)
+		if not zone.body_entered.is_connected(cb):
+			zone.body_entered.connect(cb)
 		_room.add_child(zone)
 		_triggers[boss_id] = zone
 

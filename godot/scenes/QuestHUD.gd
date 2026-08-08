@@ -33,11 +33,28 @@ func _ready() -> void:
 	_label.add_theme_font_size_override("font_size", 11)
 	add_child(_label)
 
-	QuestManager.quest_started.connect(func(_id: String) -> void: refresh())
-	QuestManager.quest_objective_progress.connect(
-		func(_id: String, _obj: String, _prog: int, _count: int) -> void: refresh())
-	QuestManager.quest_completed.connect(func(_id: String) -> void: refresh())
+	_ensure_connected(QuestManager.quest_started, _on_quest_started)
+	_ensure_connected(QuestManager.quest_objective_progress, _on_quest_objective_progress)
+	_ensure_connected(QuestManager.quest_completed, _on_quest_completed)
 
+	refresh()
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_quest_started(_id: String) -> void:
+	refresh()
+
+
+func _on_quest_objective_progress(
+		_id: String, _obj: String, _prog: int, _count: int) -> void:
+	refresh()
+
+
+func _on_quest_completed(_id: String) -> void:
 	refresh()
 
 

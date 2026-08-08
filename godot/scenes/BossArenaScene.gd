@@ -12,6 +12,7 @@ const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
 
 var player: CharacterBody2D = null
 var _intro_done := false
+var _boss_outcome_done := false
 
 
 func _ready() -> void:
@@ -51,8 +52,8 @@ func _setup_player() -> void:
 		push_error("BossArenaScene: failed to spawn player")
 		return
 	var fire_button := get_node_or_null("CanvasLayer/FireButton") as Button
-	if fire_button:
-		fire_button.pressed.connect(func(): player.fire())
+	if fire_button and not fire_button.pressed.is_connected(_on_fire_pressed):
+		fire_button.pressed.connect(_on_fire_pressed)
 
 
 func _spawn_boss() -> void:
@@ -85,14 +86,27 @@ func _await_boss_outcome() -> void:
 	await _wait_boss_end()
 
 
+func _on_fire_pressed() -> void:
+	if player:
+		player.fire()
+
+
 func _wait_boss_end() -> void:
-	var ended := false
-	if _boss_instance.has_signal("fled"):
-		_boss_instance.fled.connect(func(): ended = true, CONNECT_ONE_SHOT)
-	if _boss_instance.has_signal("defeated"):
-		_boss_instance.defeated.connect(func(_f): ended = true, CONNECT_ONE_SHOT)
-	while not ended and is_instance_valid(_boss_instance):
+	_boss_outcome_done = false
+	if _boss_instance.has_signal("fled") and not _boss_instance.fled.is_connected(_on_boss_outcome_fled):
+		_boss_instance.fled.connect(_on_boss_outcome_fled, CONNECT_ONE_SHOT)
+	if _boss_instance.has_signal("defeated") and not _boss_instance.defeated.is_connected(_on_boss_outcome_defeated):
+		_boss_instance.defeated.connect(_on_boss_outcome_defeated, CONNECT_ONE_SHOT)
+	while not _boss_outcome_done and is_instance_valid(_boss_instance):
 		await get_tree().process_frame
+
+
+func _on_boss_outcome_fled() -> void:
+	_boss_outcome_done = true
+
+
+func _on_boss_outcome_defeated(_finisher: String) -> void:
+	_boss_outcome_done = true
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

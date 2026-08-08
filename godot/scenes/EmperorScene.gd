@@ -20,11 +20,17 @@ var _reckoning := false
 
 func _ready() -> void:
 	GameState.current_act = 3
-	boss.defeated.connect(_on_blackwood_defeated)
-	fire_button.pressed.connect(func(): player.fire())
+	if not boss.defeated.is_connected(_on_blackwood_defeated):
+		boss.defeated.connect(_on_blackwood_defeated)
+	if not fire_button.pressed.is_connected(_on_fire_pressed):
+		fire_button.pressed.connect(_on_fire_pressed)
 	legacy_dialogue.visible = false
 	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Emperor")
+
+
+func _on_fire_pressed() -> void:
+	player.fire()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

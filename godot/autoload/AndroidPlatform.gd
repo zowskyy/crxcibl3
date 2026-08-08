@@ -89,6 +89,8 @@ func _notification(what: int) -> void:
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			_handle_predictive_back()
 			get_viewport().set_input_as_handled()
+		NOTIFICATION_CRASH:
+			log_crash("engine_notification", "NOTIFICATION_CRASH")
 
 func _on_app_paused() -> void:
 	_audio_was_playing.clear()
@@ -107,14 +109,17 @@ func _on_app_resumed() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func log_crash(context: String, details: String = "") -> void:
+	var line := "[%s] %s — %s\n" % [Time.get_datetime_string_from_system(), context, details]
 	push_error("CrashLog: %s — %s" % [context, details])
 	if not SaveSystem.has_sufficient_storage():
 		return
-	var file := FileAccess.open(CRASH_LOG_PATH, FileAccess.WRITE_READ)
+	var file := FileAccess.open(CRASH_LOG_PATH, FileAccess.READ_WRITE)
+	if file == null:
+		file = FileAccess.open(CRASH_LOG_PATH, FileAccess.WRITE)
 	if file == null:
 		return
 	file.seek_end()
-	file.store_string("[%s] %s — %s\n" % [Time.get_datetime_string_from_system(), context, details])
+	file.store_string(line)
 	file.close()
 
 func _apply_safe_area() -> void:

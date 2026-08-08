@@ -67,8 +67,11 @@ func _build_buttons() -> void:
 		container.add_child(btn)
 		_buttons.append({"btn": btn, "upgrade": upgrade})
 		var id: String = upgrade["id"]
-		btn.pressed.connect(func(): _on_upgrade_pressed(id))
-	close_btn.pressed.connect(_close_menu)
+		var cb := _on_upgrade_pressed.bind(id)
+		if not btn.pressed.is_connected(cb):
+			btn.pressed.connect(cb)
+	if not close_btn.pressed.is_connected(_close_menu):
+		close_btn.pressed.connect(_close_menu)
 
 
 func _refresh_buttons() -> void:

@@ -17,7 +17,8 @@ func _ready() -> void:
 	add_child(ARCANE_OVERLAY.instantiate())
 	ending_label.text = Epilogue.get_ending_text()
 	summary_label.text = _format_summary(Epilogue.get_summary())
-	play_again.pressed.connect(_on_play_again)
+	if not play_again.pressed.is_connected(_on_play_again):
+		play_again.pressed.connect(_on_play_again)
 	Epilogue.on_game_complete()
 
 

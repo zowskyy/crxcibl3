@@ -53,9 +53,22 @@ func _ready() -> void:
 
 	panel.custom_minimum_size = Vector2(222, 190)
 
-	Inventory.inventory_changed.connect(_refresh_all)
-	Inventory.item_equipped.connect(func(_c, _i): _refresh_all())
-	Inventory.item_unequipped.connect(func(_c, _i): _refresh_all())
+	_ensure_connected(Inventory.inventory_changed, _refresh_all)
+	_ensure_connected(Inventory.item_equipped, _on_item_equipped)
+	_ensure_connected(Inventory.item_unequipped, _on_item_unequipped)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_item_equipped(_c: String, _i: String) -> void:
+	_refresh_all()
+
+
+func _on_item_unequipped(_c: String, _i: String) -> void:
+	_refresh_all()
 
 
 func _refresh_all() -> void:

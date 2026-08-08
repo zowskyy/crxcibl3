@@ -26,8 +26,17 @@ func _ready() -> void:
 		add_child(label)
 	label.add_theme_font_size_override("font_size", 8)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	RelationshipSystem.synergy_updated.connect(_on_synergy_updated)
-	RelationshipSystem.relationship_changed.connect(func(_a, _b, _v): _refresh())
+	_ensure_connected(RelationshipSystem.synergy_updated, _on_synergy_updated)
+	_ensure_connected(RelationshipSystem.relationship_changed, _on_relationship_changed)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _on_relationship_changed(_a: String, _b: String, _v: int) -> void:
+	_refresh()
 
 
 func _on_synergy_updated(_hero: String, _bonuses: Dictionary) -> void:

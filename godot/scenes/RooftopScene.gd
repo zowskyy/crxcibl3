@@ -25,12 +25,18 @@ var _intro_done := false
 func _ready() -> void:
 	boss.set_flee_target(flee_marker.global_position)
 	boss.set_flashbang_node(flashbang)
-	boss.fled.connect(_on_boss_fled)
+	if not boss.fled.is_connected(_on_boss_fled):
+		boss.fled.connect(_on_boss_fled)
 	flashbang.visible = false
-	fire_button.pressed.connect(func(): player.fire())
+	if not fire_button.pressed.is_connected(_on_fire_pressed):
+		fire_button.pressed.connect(_on_fire_pressed)
 	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Blackwood")
 	call_deferred("_play_intro_cutscene")
+
+
+func _on_fire_pressed() -> void:
+	player.fire()
 
 
 func _play_intro_cutscene() -> void:

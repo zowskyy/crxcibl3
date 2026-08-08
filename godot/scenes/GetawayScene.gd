@@ -36,7 +36,8 @@ var _done := false
 func _ready() -> void:
 	_resolve_nodes()
 	if fire_button and player_vehicle and player_vehicle.has_method("fire"):
-		fire_button.pressed.connect(func(): player_vehicle.fire())
+		if not fire_button.pressed.is_connected(_on_fire_pressed):
+			fire_button.pressed.connect(_on_fire_pressed)
 	if player_vehicle and "owner_hero_id" in player_vehicle:
 		player_vehicle.owner_hero_id = GameState.get_active_hero()
 	_apply_carryover_upgrades()
@@ -51,6 +52,11 @@ func _resolve_nodes() -> void:
 	chase_label = get_node_or_null("CanvasLayer/ChaseLabel") as Label
 	hp_label = get_node_or_null("CanvasLayer/HpLabel") as Label
 	fire_button = get_node_or_null("CanvasLayer/FireButton") as Button
+
+
+func _on_fire_pressed() -> void:
+	if player_vehicle and player_vehicle.has_method("fire"):
+		player_vehicle.fire()
 
 
 func _apply_carryover_upgrades() -> void:

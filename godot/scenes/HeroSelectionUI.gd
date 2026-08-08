@@ -66,7 +66,9 @@ func _populate_hero_grid() -> void:
 		button.text = variant.name
 		button.custom_minimum_size = Vector2(64, 64)
 		button.add_to_group(variant_id)
-		button.toggled.connect(func(pressed: bool): _on_hero_toggled(variant_id, pressed))
+		var cb := _on_hero_button_toggled.bind(variant_id)
+		if not button.toggled.is_connected(cb):
+			button.toggled.connect(cb)
 
 		var portrait_path := "res://assets/heroes/portraits/%s.png" % variant_id
 		if ResourceLoader.exists(portrait_path):
@@ -82,6 +84,10 @@ func _populate_hero_grid() -> void:
 				"street_rat": button.modulate = Color.GREEN
 
 		hero_grid.add_child(button)
+
+func _on_hero_button_toggled(variant_id: String, is_selected: bool) -> void:
+	_on_hero_toggled(variant_id, is_selected)
+
 
 func _on_hero_toggled(variant_id: String, is_selected: bool) -> void:
 	if _coop_online and not _coop_is_host:
