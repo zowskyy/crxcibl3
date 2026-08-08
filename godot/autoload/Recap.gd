@@ -47,13 +47,25 @@ func _bosses_line() -> String:
 		return ""
 
 	var count := GameState.bosses_fought.size()
+	var total := Bosses.BOSS_LIST.size()
 	var last_boss: String = GameState.bosses_fought[count - 1]
 	var executed = GameState.boss_executed.get(last_boss, false)
 	var outcome := "didn't survive" if executed else "was left alive, broken"
+	var corrupted_down := ActProgression.corrupted_six_defeated_count()
 
-	if count == 1:
+	if corrupted_down == 0:
 		return "%s %s the confrontation." % [last_boss, outcome]
-	return "%d of the Corrupted Six are down. %s %s the last one." % [count, last_boss, outcome]
+	if corrupted_down < ActProgression.CORRUPTED_SIX_IDS.size():
+		return "%d of the Corrupted Six are down. %s %s the last one." % [
+			corrupted_down, last_boss, outcome
+		]
+	if count < total:
+		return "The Corrupted Six are finished. %s %s the latest reckoning." % [
+			last_boss, outcome
+		]
+	return "All %d bosses are down. %s %s the final confrontation." % [
+		count, last_boss, outcome
+	]
 
 
 func _heat_line() -> String:

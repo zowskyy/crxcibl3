@@ -30,7 +30,10 @@ func _format_summary(s: Dictionary) -> String:
 	var lines: Array = []
 	lines.append("- Run Summary -")
 	lines.append("")
-	lines.append("Bosses defeated:  %d / 7" % int(s.get("bosses_defeated", 0)))
+	lines.append("Bosses defeated:  %d / %d" % [
+		int(s.get("bosses_defeated", 0)),
+		int(s.get("bosses_total", Bosses.BOSS_LIST.size())),
+	])
 	lines.append("Crew lost:        %d"     % int(s.get("crew_lost",       0)))
 	lines.append("Final heat:       %.0f"  % float(s.get("heat_final",    0.0)))
 	lines.append("Final morale:     %d"    % int(s.get("morale_final",    0)))

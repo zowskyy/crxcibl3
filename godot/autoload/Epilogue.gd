@@ -58,6 +58,7 @@ func get_summary() -> Dictionary:
 	return {
 		"ending": ENDING.keys()[_current_ending],
 		"bosses_defeated": GameState.bosses_fought.size(),
+		"bosses_total": Bosses.BOSS_LIST.size(),
 		"crew_lost": GameState.ghost_count,
 		"heat_final": GameState.heat,
 		"morale_final": GameState.morale,
