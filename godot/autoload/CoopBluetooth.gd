@@ -46,7 +46,7 @@ func start_advertising(beacon: Dictionary) -> void:
 	if not is_available():
 		return
 	var payload := beacon.duplicate(true)
-	payload["machine_id"] = str(payload.get("machine_id", M2MMachineIdentity.machine_id))
+	payload["machine_id"] = str(payload.get("machine_id", M2MMachineIdentity.get_machine_id()))
 	var compact := JSON.stringify(payload)
 	if compact.length() > 24:
 		var minimal := {

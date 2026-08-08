@@ -290,7 +290,7 @@ func _publish_bluetooth_advert() -> void:
 		"port": GAME_PORT,
 		"lan_address": M2MSession.lan_ip,
 		"mobile_address": M2MSession.effective_mobile_ip(),
-		"machine_id": M2MMachineIdentity.machine_id,
+		"machine_id": M2MMachineIdentity.get_machine_id(),
 	})
 
 

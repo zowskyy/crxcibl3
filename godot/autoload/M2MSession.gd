@@ -92,7 +92,7 @@ func build_host_beacon(session_id: String, host_alias: String, player_count: int
 		"lan_address": lan_ip,
 		"mobile_address": mobile,
 		"bluetooth_address": bluetooth_address,
-		"machine_id": M2MMachineIdentity.machine_id,
+		"machine_id": M2MMachineIdentity.get_machine_id(),
 		"m2m": true,
 	}
 

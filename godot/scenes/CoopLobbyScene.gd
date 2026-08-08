@@ -169,7 +169,7 @@ func _refresh_ip_banner() -> void:
 
 
 func _machine_identity_line() -> String:
-	var machine_id := str(M2MMachineIdentity.machine_id)
+	var machine_id := M2MMachineIdentity.get_machine_id()
 	if machine_id.is_empty():
 		return ""
 	var short_id := machine_id.substr(0, mini(8, machine_id.length()))
