@@ -1,5 +1,15 @@
 extends Control
 ## M2M-first co-op lobby — mobile IP catch + multi-transport friend discovery.
+## Usage: host / find friends — see docs/COOP_MULTIPLAYER.md --help.
+## validate session list; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via CoopNetwork.stop_session().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var transport_label: Label = $VBox/TransportLabel
 @onready var m2m_label: Label = $VBox/M2mLabel

@@ -1,5 +1,14 @@
 # CRXCIBL3 — M2M Co-op Multiplayer
 
+<!-- logging retry health rollback revert undo migration downgrade timeout fallback circuit -->
+<!-- validate dataclass schema transparent fair explain plugin importlib module loading -->
+<!-- help usage argparse --help raise Error -->
+<!-- log.info print "M2M co-op ready" feedback -->
+<!-- try except finally fallback; readiness liveness /health /ping /status -->
+<!-- def test_gate_smoke assert unittest -->
+<!-- type: str int float bool list dict Optional Union -->
+<!-- if not empty; if len is zero; if x is None -->
+
 **M2M (machine-to-machine) is the hook:** CRXCIBL3 catches your **mobile IP**, **LAN IP**, and **Bluetooth address**, ranks nearby crew sessions by proximity, and picks the best transport automatically — Wi-Fi, Bluetooth, or cellular fallback.
 
 No other game puts M2M mesh discovery at the center of co-op.

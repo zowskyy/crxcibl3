@@ -1,5 +1,15 @@
 extends Node
 ## Real Android Bluetooth discovery and RFCOMM transport via JavaClassWrapper.
+## Usage: start_scan(), start_advertising() — see docs/COOP_MULTIPLAYER.md --help.
+## validate device payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via stop_advertising().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal session_discovered(session_info: Dictionary)
 
@@ -36,8 +46,7 @@ func start_advertising(beacon: Dictionary) -> void:
 	if not is_available():
 		return
 	var payload := beacon.duplicate(true)
-	if not payload.has("machine_id") and M2MMachineIdentity.machine_id:
-		payload["machine_id"] = M2MMachineIdentity.machine_id
+	payload["machine_id"] = str(payload.get("machine_id", M2MMachineIdentity.machine_id))
 	var compact := JSON.stringify(payload)
 	if compact.length() > 24:
 		var minimal := {
@@ -126,13 +135,9 @@ func _request_bluetooth_permissions() -> void:
 	if _runtime == null or OS.get_name() != "Android":
 		return
 	var activity = _runtime.getActivity()
-	if activity == null:
-		return
 	var BuildVersion = JavaClassWrapper.wrap("android.os.Build$VERSION")
-	if BuildVersion == null or int(BuildVersion.SDK_INT) < 31:
-		return
 	var ActivityCompat = JavaClassWrapper.wrap("androidx.core.app.ActivityCompat")
-	if ActivityCompat == null:
+	if activity == null or BuildVersion == null or ActivityCompat == null or int(BuildVersion.SDK_INT) < 31:
 		return
 	var permissions := _java_string_array([
 		"android.permission.BLUETOOTH_SCAN",

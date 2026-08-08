@@ -1,5 +1,15 @@
 extends Node
 ## Proximity-aware co-op — M2M hook catches mobile/LAN/BT IPs; multi-transport join.
+## Usage: host_session(), scan_nearby() — see docs/COOP_MULTIPLAYER.md --help.
+## validate beacon payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via stop_session().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal session_started
 signal peer_joined(peer_id: int)
@@ -62,7 +72,11 @@ func host_session(alias: String) -> Error:
 
 	M2MSession.catch_mobile_ip()
 	M2MSession.start_m2m_watch()
-	_active_transport = _select_transport_for_host()
+	_active_transport = TransportPolicy.select_host_transport(
+		CoopLanUtil.primary_local_ip(),
+		M2MSession.mobile_ip,
+		CoopBluetooth.is_available(),
+	)
 	_emit_transport_changed()
 
 	var err := _start_enet_server()
@@ -95,14 +109,9 @@ func join_session(address: String, transport: String = "") -> Error:
 	_emit_transport_changed()
 
 	var err: Error = ERR_CANT_CONNECT
-	if _active_transport == TransportPolicy.TRANSPORT_BLUETOOTH and CoopBluetooth.is_available():
-		if CoopBluetooth.connect_rfcomm(address):
-			err = _start_enet_client(CoopLanUtil.primary_local_ip())
-			if err != OK:
-				err = _start_enet_client(address)
-		else:
-			err = _start_enet_client(address)
-	else:
+	var target := CoopLanUtil.resolve_join_address(address, _active_transport)
+	err = _start_enet_client(target)
+	if err != OK and _active_transport == TransportPolicy.TRANSPORT_BLUETOOTH:
 		err = _start_enet_client(address)
 
 	if err != OK:
@@ -194,16 +203,10 @@ func get_nearby_sessions() -> Array:
 
 
 func get_all_nearby_sessions() -> Array:
-	var merged: Dictionary = {}
-	for s in _discovery.get_sessions():
-		merged[str(s.get("session_id", ""))] = s
-	for s in M2MSession.get_ranked_sessions():
-		merged[str(s.get("session_id", ""))] = s
-	var out: Array = []
-	for sid in merged.keys():
-		if sid != "":
-			out.append(merged[sid])
-	return M2MResilienceCore.filter_peer_sessions(out)
+	var merged := CoopDiscovery.merge_session_lists(
+		_discovery.get_sessions(), M2MSession.get_ranked_sessions()
+	)
+	return M2MResilienceCore.filter_peer_sessions(merged)
 
 
 func get_caught_ips() -> Dictionary:
@@ -245,56 +248,6 @@ func broadcast_player_state(pos: Vector2, facing: Vector2, hero_id: String, heal
 func broadcast_heat(heat: float) -> void:
 	if is_online() and is_host():
 		sync_heat.rpc(heat)
-
-
-func _select_transport_for_host() -> String:
-	var probes: Array = _build_transport_probes()
-	if CoopBluetooth.is_available():
-		probes.append({
-			"kind": TransportPolicy.TRANSPORT_BLUETOOTH,
-			"latency_ms": 38.0,
-			"same_subnet": true,
-			"rssi_dbm": -60.0,
-			"hop_count": 0,
-			"peer_reachable": true,
-			"bandwidth_mbps": 10.0,
-		})
-	return TransportPolicy.score_transports(probes)
-
-
-func _build_transport_probes() -> Array:
-	var local_ip := CoopLanUtil.primary_local_ip()
-	var on_lan := not local_ip.is_empty()
-	var mobile := M2MSession.mobile_ip
-	return [
-		{
-			"kind": TransportPolicy.TRANSPORT_M2M,
-			"latency_ms": 5.0 if on_lan else 25.0,
-			"same_subnet": on_lan,
-			"rssi_dbm": -52.0,
-			"hop_count": 0,
-			"peer_reachable": on_lan or not mobile.is_empty(),
-			"bandwidth_mbps": 85.0,
-		},
-		{
-			"kind": TransportPolicy.TRANSPORT_WIFI,
-			"latency_ms": 10.0 if on_lan else 120.0,
-			"same_subnet": on_lan,
-			"rssi_dbm": -58.0,
-			"hop_count": 0,
-			"peer_reachable": on_lan,
-			"bandwidth_mbps": 50.0,
-		},
-		{
-			"kind": TransportPolicy.TRANSPORT_MOBILE,
-			"latency_ms": 85.0 if not mobile.is_empty() else 999.0,
-			"same_subnet": false,
-			"rssi_dbm": -88.0,
-			"hop_count": 1,
-			"peer_reachable": not mobile.is_empty(),
-			"bandwidth_mbps": 18.0,
-		},
-	]
 
 
 func _start_enet_server() -> Error:

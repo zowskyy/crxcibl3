@@ -75,6 +75,19 @@ func get_sessions() -> Array:
 	return sessions
 
 
+static func merge_session_lists(primary: Array, secondary: Array) -> Array:
+	var merged: Dictionary = {}
+	for s in primary:
+		merged[str(s.get("session_id", ""))] = s
+	for s in secondary:
+		merged[str(s.get("session_id", ""))] = s
+	var out: Array = []
+	for sid in merged.keys():
+		if sid != "":
+			out.append(merged[sid])
+	return out
+
+
 func remember(session_info: Dictionary) -> void:
 	var session_id: String = str(session_info.get("session_id", ""))
 	if session_id.is_empty():

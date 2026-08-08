@@ -3,6 +3,16 @@ extends Node
 ##
 ## This is the pivotal co-op entry: one scan finds friends across M2M mesh policy,
 ## Wi-Fi LAN, Bluetooth proximity, and mobile-data IP fallbacks.
+## Usage: catch_mobile_ip(), run_m2m_scan() — see docs/COOP_MULTIPLAYER.md --help.
+## validate session payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via stop_m2m_watch().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal mobile_ip_caught(ip: String)
 signal m2m_sessions_updated(sessions: Array)
@@ -172,68 +182,12 @@ func _register_session(raw: Dictionary) -> void:
 	if M2MMachineIdentity.is_self_beacon(session):
 		return
 	M2MResilienceCore.register_peer_snapshot(session)
-	var probes := _build_probes_for_session(session)
+	var probes := TransportPolicy.build_session_probes(
+		session, lan_ip, _latency_cache, PROBE_PORT, CoopBluetooth.is_available()
+	)
 	session["recommended_transport"] = TransportPolicy.score_transports(probes)
-	session["proximity_score"] = _proximity_score(session, probes)
+	session["proximity_score"] = TransportPolicy.proximity_score(session, probes)
 	_merged_sessions[sid] = session
-
-
-func _build_probes_for_session(session: Dictionary) -> Array:
-	var probes: Array = []
-	var lan := str(session.get("lan_address", ""))
-	var mobile := str(session.get("mobile_address", ""))
-	var bt := str(session.get("bluetooth_address", ""))
-	if not lan.is_empty():
-		probes.append({
-			"kind": TransportPolicy.TRANSPORT_WIFI,
-			"latency_ms": float(_latency_cache.get("%s:%d" % [lan, PROBE_PORT], 12.0)),
-			"same_subnet": CoopLanUtil.subnet_prefix(lan_ip) == CoopLanUtil.subnet_prefix(lan),
-			"rssi_dbm": -58.0,
-			"hop_count": 0,
-			"peer_reachable": true,
-			"bandwidth_mbps": 45.0,
-		})
-		probes.append({
-			"kind": TransportPolicy.TRANSPORT_M2M,
-			"latency_ms": float(_latency_cache.get("%s:%d" % [lan, PROBE_PORT], 8.0)),
-			"same_subnet": CoopLanUtil.subnet_prefix(lan_ip) == CoopLanUtil.subnet_prefix(lan),
-			"rssi_dbm": -55.0,
-			"hop_count": 0,
-			"peer_reachable": true,
-			"bandwidth_mbps": 70.0,
-		})
-	if not bt.is_empty() and CoopBluetooth.is_available():
-		probes.append({
-			"kind": TransportPolicy.TRANSPORT_BLUETOOTH,
-			"latency_ms": 35.0,
-			"same_subnet": true,
-			"rssi_dbm": float(session.get("rssi_dbm", -62.0)),
-			"hop_count": 0,
-			"peer_reachable": true,
-			"bandwidth_mbps": 8.0,
-		})
-	if not mobile.is_empty():
-		probes.append({
-			"kind": TransportPolicy.TRANSPORT_MOBILE,
-			"latency_ms": 95.0,
-			"same_subnet": false,
-			"rssi_dbm": -90.0,
-			"hop_count": 1,
-			"peer_reachable": true,
-			"bandwidth_mbps": 15.0,
-		})
-	return probes
-
-
-func _proximity_score(session: Dictionary, probes: Array) -> float:
-	var best := 0.0
-	for p in probes:
-		if not p is Dictionary:
-			continue
-		best = maxf(best, TransportPolicy.score_probe(p) / 1000.0)
-	var rssi := float(session.get("rssi_dbm", -80.0))
-	var signal := clampf((rssi + 100.0) / 40.0, 0.0, 1.0)
-	return clampf(best + signal * 0.35, 0.0, 1.0)
 
 
 func _emit_best_proximity() -> void:

@@ -50,3 +50,13 @@ static func is_private_ip(address: String) -> bool:
 			var second := int(parts[1])
 			return second >= 16 and second <= 31
 	return address == "127.0.0.1" or address == "localhost"
+
+
+static func resolve_join_address(address: String, transport: String) -> String:
+	match transport:
+		TransportPolicy.TRANSPORT_BLUETOOTH:
+			if CoopBluetooth.is_available() and CoopBluetooth.connect_rfcomm(address):
+				return primary_local_ip()
+		_:
+			pass
+	return address

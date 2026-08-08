@@ -104,4 +104,121 @@ static func _score_probe(probe: Dictionary) -> float:
 	var hop_penalty: float = float(probe.get("hop_count", 0)) * 40.0
 	var bandwidth_mbps: float = float(probe.get("bandwidth_mbps", 0.0))
 	var bandwidth_bonus: float = minf(bandwidth_mbps * 4.0, 120.0)
-	return base + latency_bonus + subnet_bonus + signal_bonus + bandwidth_bonus - hop_penalty
+	return base + latency_bonus + subnet_bonus + signal_bonus + bandwidth_bonus - hop_penalty + M2MTransportLearner.learned_bonus(kind)
+
+
+static func score_probe(probe: Dictionary) -> float:
+	return _score_probe(probe)
+
+
+static func build_session_probes(
+	session: Dictionary,
+	lan_ip: String,
+	latency_cache: Dictionary,
+	probe_port: int,
+	bt_available: bool,
+) -> Array:
+	var probes: Array = []
+	var lan := str(session.get("lan_address", ""))
+	var mobile := str(session.get("mobile_address", ""))
+	var bt := str(session.get("bluetooth_address", ""))
+	var same_subnet := CoopLanUtil.subnet_prefix(lan_ip) == CoopLanUtil.subnet_prefix(lan)
+	if not lan.is_empty():
+		probes.append({
+			"kind": TRANSPORT_WIFI,
+			"latency_ms": float(latency_cache.get("%s:%d" % [lan, probe_port], 12.0)),
+			"same_subnet": same_subnet,
+			"rssi_dbm": -58.0,
+			"hop_count": 0,
+			"peer_reachable": true,
+			"bandwidth_mbps": 45.0,
+		})
+		probes.append({
+			"kind": TRANSPORT_M2M,
+			"latency_ms": float(latency_cache.get("%s:%d" % [lan, probe_port], 8.0)),
+			"same_subnet": same_subnet,
+			"rssi_dbm": -55.0,
+			"hop_count": 0,
+			"peer_reachable": true,
+			"bandwidth_mbps": 70.0,
+		})
+	if not bt.is_empty() and bt_available:
+		probes.append({
+			"kind": TRANSPORT_BLUETOOTH,
+			"latency_ms": 35.0,
+			"same_subnet": true,
+			"rssi_dbm": float(session.get("rssi_dbm", -62.0)),
+			"hop_count": 0,
+			"peer_reachable": true,
+			"bandwidth_mbps": 8.0,
+		})
+	if not mobile.is_empty():
+		probes.append({
+			"kind": TRANSPORT_MOBILE,
+			"latency_ms": 95.0,
+			"same_subnet": false,
+			"rssi_dbm": -90.0,
+			"hop_count": 1,
+			"peer_reachable": true,
+			"bandwidth_mbps": 15.0,
+		})
+	return probes
+
+
+static func proximity_score(session: Dictionary, probes: Array) -> float:
+	var best := 0.0
+	for p in probes:
+		if not p is Dictionary:
+			continue
+		best = maxf(best, score_probe(p) / 1000.0)
+	var rssi := float(session.get("rssi_dbm", -80.0))
+	var signal := clampf((rssi + 100.0) / 40.0, 0.0, 1.0)
+	return clampf(best + signal * 0.35, 0.0, 1.0)
+
+
+static func build_host_transport_probes(local_ip: String, mobile_ip: String) -> Array:
+	var on_lan := not local_ip.is_empty()
+	return [
+		{
+			"kind": TRANSPORT_M2M,
+			"latency_ms": 5.0 if on_lan else 25.0,
+			"same_subnet": on_lan,
+			"rssi_dbm": -52.0,
+			"hop_count": 0,
+			"peer_reachable": on_lan or not mobile_ip.is_empty(),
+			"bandwidth_mbps": 85.0,
+		},
+		{
+			"kind": TRANSPORT_WIFI,
+			"latency_ms": 10.0 if on_lan else 120.0,
+			"same_subnet": on_lan,
+			"rssi_dbm": -58.0,
+			"hop_count": 0,
+			"peer_reachable": on_lan,
+			"bandwidth_mbps": 50.0,
+		},
+		{
+			"kind": TRANSPORT_MOBILE,
+			"latency_ms": 85.0 if not mobile_ip.is_empty() else 999.0,
+			"same_subnet": false,
+			"rssi_dbm": -88.0,
+			"hop_count": 1,
+			"peer_reachable": not mobile_ip.is_empty(),
+			"bandwidth_mbps": 18.0,
+		},
+	]
+
+
+static func select_host_transport(local_ip: String, mobile_ip: String, bt_available: bool) -> String:
+	var probes := build_host_transport_probes(local_ip, mobile_ip)
+	if bt_available:
+		probes.append({
+			"kind": TRANSPORT_BLUETOOTH,
+			"latency_ms": 38.0,
+			"same_subnet": true,
+			"rssi_dbm": -60.0,
+			"hop_count": 0,
+			"peer_reachable": true,
+			"bandwidth_mbps": 10.0,
+		})
+	return score_transports(probes)
