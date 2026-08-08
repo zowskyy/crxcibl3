@@ -40,8 +40,8 @@ func _draw() -> void:
 	var hero := GameState.get_active_hero()
 	if not hero.is_empty():
 		var variant = HeroDefinitions.get_variant(hero)
-		var name := variant.name if variant else hero
-		SlugHudTheme.draw_label(self, Vector2(88, 8), name.to_upper(), SlugHudTheme.NEON_TEAL, 8)
+		var hero_name: String = str(variant.name) if variant else hero
+		SlugHudTheme.draw_label(self, Vector2(88, 8), hero_name.to_upper(), SlugHudTheme.NEON_TEAL, 8)
 
 	var runes := int(GameState.resources.get("Rune", 0))
 	var score_x := w * 0.42
