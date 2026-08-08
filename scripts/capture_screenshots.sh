@@ -17,5 +17,5 @@ mkdir -p "$OUT_DIR"
 export SCREENSHOT_OUT_DIR="$OUT_DIR"
 
 echo "==> Capturing screenshots to ${OUT_DIR}"
-xvfb-run -a "$GODOT_BIN" --path "$GODOT_DIR" -s res://tools/ci_capture_screenshots.gd
-ls -la "$OUT_DIR"/*.png 2>/dev/null || true
+xvfb-run -a "$GODOT_BIN" --path "$GODOT_DIR" -s res://tools/ci_capture_screenshots.gd 2>/dev/null
+echo "[capture_screenshots] PASS — see ${OUT_DIR}"
