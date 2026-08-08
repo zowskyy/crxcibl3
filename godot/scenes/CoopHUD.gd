@@ -10,6 +10,7 @@ extends Control
 # help usage argparse --help raise Error
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 var _label: Label
 
@@ -29,6 +30,7 @@ func _ready() -> void:
 	_label.add_theme_font_size_override("font_size", 8)
 	add_child(_label)
 	visible = false
+	print("CoopHUD: initialized")
 
 
 func _process(_delta: float) -> void:

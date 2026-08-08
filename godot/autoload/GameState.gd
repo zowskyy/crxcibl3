@@ -165,9 +165,8 @@ func record_boss_choice(boss_id: String, choice: String) -> void:
 func get_active_hero() -> String:
 	if squad.is_empty():
 		return ""
-	if current_hero_index < 0 or current_hero_index >= squad.size():
-		current_hero_index = 0
-	return squad[current_hero_index] if current_hero_index < squad.size() else ""
+	current_hero_index = clampi(current_hero_index, 0, squad.size() - 1)
+	return squad[current_hero_index]
 
 
 func switch_to_hero(index: int) -> void:

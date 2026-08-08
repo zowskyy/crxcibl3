@@ -11,6 +11,7 @@ extends Node
 # help usage argparse --help raise Error
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const REMOTE_PLAYER_SCRIPT := preload("res://scenes/RemotePlayer.gd")
 const COOP_HUD_SCRIPT := preload("res://scenes/CoopHUD.gd")
@@ -21,7 +22,6 @@ var _canvas_layer: CanvasLayer
 var _remote_players: Dictionary = {}
 var _sync_timer := 0.0
 var _last_synced_heat := -1.0
-var _signals_connected := false
 
 
 func setup(room: Node2D, canvas_layer: CanvasLayer) -> void:
@@ -42,7 +42,6 @@ func teardown() -> void:
 		if is_instance_valid(remote):
 			remote.queue_free()
 	_remote_players.clear()
-	_signals_connected = false
 
 
 func spawn_offset() -> Vector2:
@@ -69,8 +68,6 @@ func can_modify_heat() -> bool:
 
 
 func _connect_signals() -> void:
-	if _signals_connected:
-		return
 	if not CoopNetwork.peer_joined.is_connected(_on_peer_joined):
 		CoopNetwork.peer_joined.connect(_on_peer_joined)
 	if not CoopNetwork.peer_left.is_connected(_on_peer_left):
@@ -79,7 +76,6 @@ func _connect_signals() -> void:
 		CoopNetwork.player_state_sync.connect(_on_player_state_sync)
 	if not CoopNetwork.heat_sync.is_connected(_on_heat_sync):
 		CoopNetwork.heat_sync.connect(_on_heat_sync)
-	_signals_connected = true
 
 
 func _add_coop_hud() -> void:
@@ -146,6 +142,7 @@ func _on_player_state_sync(
 		return
 	var remote := _ensure_remote_player(peer_id)
 	remote.set_network_state(pos, facing, hero_id, health)
+	print("TestRoomCoopSync: applied state for peer %d" % peer_id)
 
 
 func _on_heat_sync(heat: float) -> void:

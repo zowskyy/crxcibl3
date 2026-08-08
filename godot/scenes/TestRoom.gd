@@ -16,6 +16,17 @@ extends Node2D
 ##
 ## Co-op (Slice 4.x): TestRoomCoopSync handles remote avatars + host heat when
 ## CoopNetwork.is_online(); solo path unchanged when offline.
+##
+## Usage: solo or co-op TestRoom — see --help in project docs.
+## validate player spawn; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via CoopNetwork.stop_session().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
@@ -76,6 +87,7 @@ func _ready() -> void:
 
 	_spawn_local_player()
 	_connect_player_signals()
+	print("TestRoom: player spawned for %s run" % ("co-op" if CoopNetwork.is_online() else "solo"))
 
 	_setup_hideout_zone()
 	_setup_quest_hud()

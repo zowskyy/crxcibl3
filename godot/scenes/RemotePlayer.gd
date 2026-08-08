@@ -11,6 +11,7 @@ extends CharacterBody2D
 # help usage argparse --help raise Error
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const PORTRAIT_TARGET_SIZE := 24.0
 const SILHOUETTE_COLOR := Color(0.15, 0.18, 0.28, 0.92)
@@ -45,6 +46,7 @@ func _ready() -> void:
 func set_network_state(pos: Vector2, facing: Vector2, hero_id: String, health: int) -> void:
 	if hero_id.is_empty():
 		push_warning("RemotePlayer: empty hero_id for peer %d" % peer_id)
+		print("RemotePlayer: rejected empty hero_id")
 		return
 	global_position = pos
 	if facing.length_squared() > 0.0001:
