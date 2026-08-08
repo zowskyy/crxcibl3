@@ -10,9 +10,11 @@ extends Node2D
 @onready var play_again:    Button = $CanvasLayer/PlayAgainButton
 
 const TITLE_COLOR := Color(1.0, 0.4, 0.0)  # Heat orange — same as the rest of the HUD
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 
 
 func _ready() -> void:
+	add_child(ARCANE_OVERLAY.instantiate())
 	ending_label.text = Epilogue.get_ending_text()
 	summary_label.text = _format_summary(Epilogue.get_summary())
 	play_again.pressed.connect(_on_play_again)

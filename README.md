@@ -4,7 +4,7 @@
 
 [![Godot 4.7.1](https://img.shields.io/badge/Godot-4.7.1-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-blue.svg)](CHANGELOG.md)
+[![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-blue.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-lightgrey)](godot/export_presets.cfg)
 
 ---
@@ -41,13 +41,13 @@ python3 scripts/check_gd.py
 | **5 future bosses** | Cross, Voss, Moreau, Hayes, Webb — data-templated (`bosses.json` + beat template) |
 | **Export** | Android, Web, Windows Desktop, Linux/X11 presets; CI debug APK artifact |
 
-Phaser 3 web prototype under `js/` is **legacy reference only**.
+Godot 4.7.1 is the **sole shipping client** — the legacy Phaser web prototype has been retired.
 
 ---
 
 ## Cutscene beats (Slices 3.18+)
 
-Hand declarative beats to `CutsceneDirector.play()`:
+Hand declarative beats to `CutsceneDirector.play()`. Lines render as **captions** with lip flap — no voiceover:
 
 ```gdscript
 CutsceneDirector.play("emperor", [
@@ -74,7 +74,7 @@ Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.jso
 │   ├── autoload/               # 25+ singletons incl. CutsceneDirector, GameState
 │   ├── scenes/                 # MainMenu, TestRoom, Blackwood arc, DialogueBox, …
 │   ├── data/                   # JSON beat sequences + boss metadata
-│   ├── assets/                 # Sprites, shaders, audio/ (VO drop-in)
+│   ├── assets/                 # Sprites, shaders, environment art, audio/
 │   ├── configs/game_config.json
 │   ├── export_presets.cfg      # Android / Web / Windows / Linux
 │   └── project.godot           # version 1.0.0, brand icon

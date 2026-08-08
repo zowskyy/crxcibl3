@@ -5,8 +5,8 @@ extends Node
 ##   1. PatternBuilder steps via start(steps) — ported from nezvers/Godot_cutscene_system.
 ##   2. Declarative JSON beats via play(scene_id, beats) — animation starter (Slices 3.18+).
 ##
-## Beat playback drives DialogueBox via signals. Audio + duration sync: a line beat
-## finishes when BOTH the audio finished signal and the duration timer elapse — whichever is LAST.
+## Beat playback drives DialogueBox captions with SpeakCapable lip flap (no voiceover).
+## Line beats finish when the JSON `duration` elapses or the player skips.
 
 signal cutscene_started
 signal cutscene_ended
@@ -192,35 +192,22 @@ func _beat_wait(duration: float) -> void:
 func _beat_line(beat: Dictionary, narrator: bool) -> void:
 	var text: String = str(beat.get("text", ""))
 	var duration: float = float(beat.get("duration", 3.0))
+	var target_key: String = str(beat.get("target", ""))
 	if narrator:
 		narrator_shown.emit(text)
 	else:
 		line_shown.emit(str(beat.get("speaker", "")), text)
+	var target_node := _resolve_target(target_key)
 	if beat.has("gesture"):
-		_beat_gesture({"target": beat.get("target", ""), "name": beat.get("gesture")})
-	var audio_path: String = str(beat.get("audio", ""))
-	var audio_done := audio_path == ""
-	var timer_done := false
-	if audio_path != "" and ResourceLoader.exists(audio_path):
-		var stream := load(audio_path)
-		if stream is AudioStream:
-			_audio.stream = stream
-			_audio.play()
-			_audio.finished.connect(func(): audio_done = true, CONNECT_ONE_SHOT)
-		else:
-			push_warning("CutsceneDirector: not an AudioStream — %s" % audio_path)
-			audio_done = true
-	elif audio_path != "":
-		push_warning("CutsceneDirector: missing audio — %s (using duration fallback)" % audio_path)
-		audio_done = true
+		SpeakCapable.play_gesture(target_node, str(beat.get("gesture")))
+	elif target_key != "":
+		SpeakCapable.play_gesture(target_node, "talk")
+	SpeakCapable.start_speaking(target_node)
 	var elapsed := 0.0
-	while (not audio_done or not timer_done) and not _skip_beat:
+	while elapsed < duration and not _skip_beat:
 		elapsed += get_process_delta_time()
-		if elapsed >= duration:
-			timer_done = true
 		await get_tree().process_frame
-	if _audio.playing:
-		_audio.stop()
+	SpeakCapable.stop_speaking(target_node)
 
 
 func _beat_gesture(beat: Dictionary) -> void:

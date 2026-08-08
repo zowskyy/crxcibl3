@@ -53,6 +53,7 @@ func _on_body_entered(body: Node) -> void:
 				ff_dmg *= CRIT_MULT
 			ff_dmg *= 0.5
 			Blame.on_friendly_fire(shooter, body.hero_name)
+			RelationshipSystem.on_friendly_fire(shooter, body.hero_name)
 			body.take_damage(int(round(ff_dmg)), shooter)
 			queue_free()
 		return

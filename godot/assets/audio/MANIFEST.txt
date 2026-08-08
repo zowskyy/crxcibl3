@@ -1,47 +1,22 @@
-CRXCIBL3 — Voiceover WAV delivery manifest
-==========================================
+CRXCIBL3 — Caption delivery manifest (no voiceover)
+====================================================
 
-Drop recorded WAVs into the folders below. Paths match JSON `audio` keys in
-`godot/data/emperor_scene.json` and `godot/data/blackwood_scene.json`.
+All story beats use on-screen captions with SpeakCapable lip flap.
+CutsceneDirector line beats honor the JSON `duration` field; `audio` keys
+in encounter JSON are ignored at runtime.
 
-Format spec
------------
-- Sample rate: 44.1 kHz
-- Bit depth: 16-bit or 24-bit
-- Channels: mono or stereo
-- Peak normalize: -3 dBFS
-- Format: uncompressed WAV
+Optional SFX only
+-----------------
+Place ambient / combat SFX under res://assets/audio/sfx/ if desired.
+Cutscene `sfx` beats reference streams by path when present.
 
-If a file is missing, CutsceneDirector logs a warning and uses the JSON
-`duration` field as a silent fallback.
-
-Emperor (res://assets/audio/emperor/)
--------------------------------------
-EMPEROR_ENTER_01.wav
-EMPEROR_001_DidntBetray.wav
-EMPEROR_002_MadeADeal.wav
-EMPEROR_003_ThoughtIfI.wav
-
-Crew (res://assets/audio/crew/)
--------------------------------
-CREW_001_WeKnow.wav
-CREW_002_YouMade.wav
-CREW_003_FlatsAint.wav
-
-Narrator (res://assets/audio/narrator/)
----------------------------------------
-NAR_001_ForgiveEpilogue.wav
-NAR_002_CrewSaidNothing.wav
-NAR_003_AloneInRoom.wav
-
-Blackwood (res://assets/audio/blackwood/)
------------------------------------------
-BLACKWOOD_PRE_01.wav
-BLACKWOOD_DEFEAT_01.wav
-BLACKWOOD_DEFEAT_02.wav
-BLACKWOOD_SPARE_01.wav
+Encounter data
+--------------
+- godot/data/emperor_scene.json
+- godot/data/blackwood_scene.json
+- godot/data/_beat_encounter_template.json (future bosses)
 
 Future bosses (Slices 3.18–3.23)
 --------------------------------
-Copy `godot/data/_beat_encounter_template.json` and add matching WAVs under
-`res://assets/audio/<boss_id>/` using the filenames in your new JSON.
+Copy `godot/data/_beat_encounter_template.json` and author caption beats
+with `duration` per line — no WAV delivery required.

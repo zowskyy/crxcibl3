@@ -209,8 +209,7 @@ abstract after 2-3 concrete cases exist, not before).
 - 8-bit visual/audio direction: exact palette, sprite scale, resolution constraints for
   mobile (replaces the old 320×180 desktop-zoom assumption — needs a mobile-appropriate
   equivalent).
-- "San Espada" vs. "Beach Boulevard" naming — lore doc flags these as needing reconciliation.
-- Whether the Phaser web build gets fully retired now that Godot is the confirmed target, or
-  kept as a lightweight reference/demo build.
+- **Resolved:** Beach Boulevard is the canonical setting name (San Espada retired).
+- **Resolved:** Phaser web build fully retired — Godot 4.7.1 is the shipping target.
 - The other 11 mechanics modules `Stress.gd` templates for — build order/priority not yet
   decided.

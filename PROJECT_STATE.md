@@ -578,7 +578,7 @@ Release-ready code pass using the quarterback/worker delegation pattern from
 **Still content-blocked (not code):** final art, voiceover, remaining 5 bosses, 3-act map.
 
 ## Blocking / needs Architect input
-- Still open: does the Phaser web build stay alive as a reference, or is it fully retired
+- **Resolved:** Phaser web build fully retired — Godot 4.7.1 is the sole shipping client.
   now that Godot is confirmed as the real target? (Carried over from a previous slice,
   still unresolved.)
 - Getaway sequence design — shared mechanic across levels, or unique per level?

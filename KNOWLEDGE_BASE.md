@@ -37,7 +37,7 @@ the relationship/synergy system).
 1. **The Fixer — Councilman Victor Cross** (Cross Tower Penthouse) — bodyguards/turrets/political attacks, panic room retreat.
 2. **The Broker — Damian Voss** (Voss Compound Vault) — drones/turrets/data scrambles, personal energy shield.
 3. **The Pusher — Dr. Celeste Moreau** (Moreau Pharmaceuticals Lab) — chemical weapons, self-injects into a "Super Rager" phase.
-4. **The Warden — Leonard "Iron" Hayes** (San Espada Correctional Facility) — guards/turrets/gas, riot shield + baton.
+4. **The Warden — Leonard "Iron" Hayes** (Beach Boulevard Correctional Facility) — guards/turrets/gas, riot shield + baton.
 5. **The Trader — Marcus Webb** (Webb Industries Data Center) — digital defenses, reveals a mech suit.
 6. **The Priest — Reverend Isaiah Blackwood** (Blackwood Megachurch) — deacons/traps/fake "divine" illusions.
 7. **The Emperor** (final, non-combat reckoning) — dies confessing he traded the Seven Sorrows to save the crew's lives.
@@ -57,9 +57,7 @@ resources_starting 100, enemy_wave_interval 30, per-hero health/damage for the 4
   ghost_count (permanently lost crew), alliance formed/broken/betrayed counters, blame ledger,
   act/scene checkpoint. Not yet registered as an Autoload in the actual Godot project settings
   — that's Slice 2.3.
-- **Reference only, not ported forward:** `js/GameState.js` (Phaser build) — a minimal subset
-  (heat + resources only), written before the full `.gd` version was rediscovered. Superseded
-  by the real GameState.gd; keep for comparison but don't build on it further.
+- **Retired:** Phaser 3 web prototype — Godot 4.7.1 is the shipping client.
 
 ## Godot autoload modules (all in `godot/autoload/`, none wired into a scene yet)
 - **`GameState.gd`** — see above. Load first; everything else depends on it.
@@ -97,10 +95,7 @@ listing, or compliance scope needed. Still required regardless:
 - Android SDK + NDK + JDK, referenced from Godot's Editor Settings → Export → Android.
 - Godot's Android export templates (free, downloadable in-editor or via CLI).
 - A signing keystore (`keytool`, standard/free, fully scriptable).
-- Touch controls — nothing exists yet; the Phaser prototype assumed WASD/arrow keys, which
-  doesn't carry over.
-- A scaling/safe-area strategy for varying phone/tablet aspect ratios — the Phaser build's
-  fixed 320×180 @ 3x zoom assumption was desktop-only.
+- Touch controls — VirtualJoystick in TestRoom; keyboard fallback for desktop.
 
 ## Art pipeline (full detail: `Downloads/CRXCIBL3-art-prompt-sheet.md`)
 Leonardo.ai (Pixel Art model, primary) or Bing Image Creator (backup) → Pixel It (snap to

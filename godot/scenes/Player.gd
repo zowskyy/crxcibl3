@@ -22,14 +22,16 @@ const RESPAWN_TIME  := 3.0
 const BULLET_SCRIPT  := preload("res://scenes/Bullet.gd")
 const ANIM_LOADER    := preload("res://scenes/AnimationLoader.gd")
 const FIRE_COOLDOWN  := 0.25
-const RECOIL_SPREAD_DEG := 4.0  # random kick applied to fired direction (hitscan combat stats spec)
-const ARMOR_K := 50.0  # same diminishing-returns curve as Enemy.gd's armor mitigation
+const RECOIL_SPREAD_DEG := 4.0
+const ARMOR_K := 50.0
 
 signal downed
 signal respawned
 
 var health    := MAX_HEALTH
 var hero_name : String = "enforcer"
+var speaking  := false
+var _lip_phase := 0.0
 
 # Bodega upgrade fields
 var bullet_damage_bonus   : int   = 0
@@ -50,6 +52,31 @@ func _ready() -> void:
 	add_to_group("player")
 	call_deferred("_find_joystick")
 	call_deferred("_setup_animation")
+	call_deferred("_apply_rpg_bonuses")
+
+
+func _apply_rpg_bonuses() -> void:
+	var hp_bonus := RelationshipSystem.get_hp_bonus(hero_name)
+	health = MAX_HEALTH + hp_bonus
+
+
+func set_speaking(active: bool) -> void:
+	speaking = active
+	if not speaking:
+		_lip_phase = 0.0
+
+
+func play_gesture(_name: String) -> void:
+	set_speaking(true)
+
+
+func _draw() -> void:
+	if not speaking:
+		return
+	_lip_phase += 0.0  # driven in _physics_process
+	var open := absf(sin(_lip_phase)) > 0.35
+	var mouth_h := 2.5 if open else 0.8
+	draw_rect(Rect2(-2, -2, 4, mouth_h), Color(0.1, 0.05, 0.05))
 
 
 func _find_joystick() -> void:
@@ -99,6 +126,14 @@ func _physics_process(delta: float) -> void:
 
 	_fire_timer  = maxf(0.0, _fire_timer  - delta)
 	_shoot_timer = maxf(0.0, _shoot_timer - delta)
+
+	if speaking:
+		_lip_phase += delta * 14.0
+		queue_redraw()
+
+	var regen := RelationshipSystem.get_regen_bonus(hero_name)
+	if regen > 0.0 and health < _max_health():
+		health = mini(_max_health(), health + int(regen * delta))
 
 	_update_animation(input_vector)
 
@@ -154,7 +189,7 @@ func fire() -> void:
 		return
 	var base      := fire_cooldown_override if fire_cooldown_override > 0.0 else FIRE_COOLDOWN
 	var s_mult    := 2.0 if Stress.stress >= Stress.THRESHOLD_CRITICAL else 1.0
-	base         *= (1.0 + Inventory.get_stat_bonus("fire_rate"))  # gear bonus is negative = faster
+	base         *= (1.0 + Inventory.get_stat_bonus("fire_rate"))
 	_fire_timer   = maxf(0.05, base * s_mult)
 	_shoot_timer  = SHOOT_ANIM_DURATION
 
@@ -164,9 +199,9 @@ func fire() -> void:
 	bullet.set_script(BULLET_SCRIPT)
 	bullet.direction     = _facing.rotated(recoil_angle)
 	bullet.shooter       = hero_name
-	bullet.damage_bonus  = bullet_damage_bonus \
-		+ RelationshipSystem.get_damage_bonus(hero_name)
-	bullet.crit_chance_bonus = Inventory.get_stat_bonus("crit_chance")
+	bullet.damage_bonus  = bullet_damage_bonus + RelationshipSystem.get_damage_bonus(hero_name)
+	bullet.crit_chance_bonus = Inventory.get_stat_bonus("crit_chance") \
+		+ RelationshipSystem.get_crit_bonus(hero_name)
 	get_parent().add_child(bullet)
 	bullet.global_position = global_position + _facing * 12.0
 
@@ -175,7 +210,7 @@ func fire() -> void:
 
 
 func take_damage(amount: int, attacker: String = "") -> void:
-	var armor_bonus := Inventory.get_stat_bonus("armor")
+	var armor_bonus := Inventory.get_stat_bonus("armor") + float(RelationshipSystem.get_armor_bonus(hero_name))
 	if armor_bonus > 0.0:
 		var mitigation := armor_bonus / (armor_bonus + ARMOR_K)
 		amount = int(round(amount * (1.0 - mitigation)))
@@ -207,3 +242,7 @@ func _start_respawn() -> void:
 
 func is_dead() -> bool:
 	return health <= 0
+
+
+func _max_health() -> int:
+	return MAX_HEALTH + RelationshipSystem.get_hp_bonus(hero_name)

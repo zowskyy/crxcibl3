@@ -24,6 +24,9 @@ var player: CharacterBody2D  # Spawned dynamically by HeroFactory
 const INVENTORY_UI_SCRIPT := preload("res://scenes/InventoryUI.gd")
 const QUEST_HUD_SCRIPT := preload("res://scenes/QuestHUD.gd")
 const HIDEOUT_ZONE_SCRIPT := preload("res://scenes/HideoutZone.gd")
+const ENV_BACKDROP_SCRIPT := preload("res://scenes/EnvironmentBackdrop.gd")
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
+const SYNERGY_HUD_SCRIPT := preload("res://scenes/SynergyHUD.gd")
 
 var _inventory_ui: CanvasLayer = null
 var _quest_hud: Control = null
@@ -41,6 +44,7 @@ const SAMPLE_QUEST := {
 
 
 func _ready() -> void:
+	_setup_environment()
 	fire_button.pressed.connect(_on_fire_pressed)
 	rooftop_trigger.body_entered.connect(_on_rooftop_trigger_entered)
 
@@ -66,12 +70,38 @@ func _ready() -> void:
 	_setup_hideout_zone()
 	_setup_quest_hud()
 	_setup_squad_label()
+	_setup_synergy_hud()
 	_connect_player_signals()
 
 	if "--demo" in OS.get_cmdline_args():
 		var driver := preload("res://tools/DemoDriver.gd").new()
 		driver.name = "DemoDriver"
 		add_child(driver)
+
+
+func _setup_environment() -> void:
+	var ground := get_node_or_null("Ground")
+	if ground:
+		ground.visible = false
+
+	var backdrop := Node2D.new()
+	backdrop.name = "EnvironmentBackdrop"
+	backdrop.set_script(ENV_BACKDROP_SCRIPT)
+	backdrop.z_index = -20
+	add_child(backdrop)
+	move_child(backdrop, 0)
+
+	add_child(ARCANE_OVERLAY.instantiate())
+
+
+func _setup_synergy_hud() -> void:
+	var synergy := Control.new()
+	synergy.name = "SynergyHUD"
+	synergy.set_script(SYNERGY_HUD_SCRIPT)
+	var bond_label := Label.new()
+	bond_label.name = "BondLabel"
+	synergy.add_child(bond_label)
+	canvas_layer.add_child(synergy)
 
 
 func _setup_hideout_zone() -> void:

@@ -11,6 +11,7 @@ extends Node2D
 @onready var legacy_dialogue: ColorRect = $CanvasLayer/DialoguePanel
 
 const RECKONING_DATA := "res://data/emperor_scene.json"
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 const ARRIVAL_DISPLAY_TIME := 3.0
 
 var _arrival_timer := ARRIVAL_DISPLAY_TIME
@@ -22,6 +23,7 @@ func _ready() -> void:
 	boss.defeated.connect(_on_blackwood_defeated)
 	fire_button.pressed.connect(func(): player.fire())
 	legacy_dialogue.visible = false
+	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Emperor")
 
 

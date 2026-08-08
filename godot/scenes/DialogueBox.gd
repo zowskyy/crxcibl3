@@ -31,9 +31,10 @@ func _on_line_shown(speaker: String, text: String) -> void:
 	_awaiting_choice = false
 	_clear_choices()
 	panel.visible = true
-	speaker_label.text = speaker
-	speaker_label.visible = speaker != ""
+	speaker_label.text = speaker if speaker != "" else "CAPTION"
+	speaker_label.visible = true
 	body_label.text = text
+	continue_hint.text = "▼"
 	continue_hint.visible = true
 	choice_row.visible = false
 
