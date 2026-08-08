@@ -47,13 +47,24 @@ func _ensure_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
 		sig.connect(callable)
 
+func _ensure_disconnected(sig: Signal, callable: Callable) -> void:
+	if sig.is_connected(callable):
+		sig.disconnect(callable)
+
+func _return_to_menu() -> void:
+	CoopNetwork.stop_session()
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+func _exit_tree() -> void:
+	_ensure_disconnected(start_button.pressed, _on_start_pressed)
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+		_return_to_menu()
 		get_viewport().set_input_as_handled()
 
 func handle_android_back() -> void:
-	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+	_return_to_menu()
 
 func _populate_hero_grid() -> void:
 	var variant_ids = HeroDefinitions.get_all_variant_ids()

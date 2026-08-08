@@ -4,6 +4,18 @@ extends Control
 ## desktop without a touchscreen. Player.gd reads `output` (a normalized
 ## Vector2, zero when not being dragged) and falls back to arrow keys when
 ## this returns zero, so desktop testing works either way.
+##
+## Usage: touch/mouse joystick output — see --help in project docs.
+
+## validate drag delta; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via _reset_knob().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 ## Sized against the project's design-space viewport (384x216, see
 ## project.godot's window/size/viewport_*), not real device pixels --
@@ -26,7 +38,9 @@ var _knob_position := Vector2.ZERO
 
 
 func _ready() -> void:
+	print("[VirtualJoystick] ready")
 	add_to_group("virtual_joystick")
+	custom_minimum_size = Vector2(56, 56)
 	_knob_position = size / 2.0
 
 

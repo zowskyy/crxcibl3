@@ -71,7 +71,7 @@ func _on_choice_shown(prompt: String, choices: Array) -> void:
 			continue
 		var btn := Button.new()
 		btn.text = str(choice.get("label", "???"))
-		btn.custom_minimum_size = Vector2(112, 28)
+		btn.custom_minimum_size = Vector2(112, 48)
 		btn.add_theme_font_size_override("font_size", 9)
 		var cid: String = str(choice.get("id", ""))
 		btn.pressed.connect(func(): _pick_choice(cid))

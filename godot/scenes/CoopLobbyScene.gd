@@ -44,6 +44,9 @@ func _ready() -> void:
 	_ensure_connected(M2MResilienceCore.recognition_confidence_changed, _on_recognition_confidence_changed)
 	back_button.custom_minimum_size = Vector2(200, 48)
 	host_button.custom_minimum_size = Vector2(200, 48)
+	find_button.custom_minimum_size = Vector2(200, 48)
+	scan_button.custom_minimum_size = Vector2(200, 48)
+	join_button.custom_minimum_size = Vector2(120, 48)
 	status_label.text = "M2M catches your mobile IP and finds friends on Wi-Fi, Bluetooth, or cellular."
 	_refresh_ip_banner()
 	_refresh_machine_identity()
@@ -51,6 +54,30 @@ func _ready() -> void:
 func _ensure_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
 		sig.connect(callable)
+
+func _ensure_disconnected(sig: Signal, callable: Callable) -> void:
+	if sig.is_connected(callable):
+		sig.disconnect(callable)
+
+func _disconnect_lobby_signals() -> void:
+	_ensure_disconnected(host_button.pressed, _on_host_pressed)
+	_ensure_disconnected(find_button.pressed, _on_find_friends_pressed)
+	_ensure_disconnected(scan_button.pressed, _on_scan_pressed)
+	_ensure_disconnected(join_button.pressed, _on_join_pressed)
+	_ensure_disconnected(back_button.pressed, _on_back_pressed)
+	_ensure_disconnected(nearby_list.item_selected, _on_nearby_selected)
+	_ensure_disconnected(CoopNetwork.nearby_session_found, _on_nearby_session_found)
+	_ensure_disconnected(CoopNetwork.session_started, _on_session_started)
+	_ensure_disconnected(CoopNetwork.transport_changed, _update_transport_label)
+	_ensure_disconnected(CoopNetwork.m2m_mobile_ip_ready, _on_mobile_ip_ready)
+	_ensure_disconnected(M2MSession.mobile_ip_caught, _on_mobile_ip_ready)
+	_ensure_disconnected(M2MSession.m2m_sessions_updated, _on_m2m_updated)
+	_ensure_disconnected(M2MResilienceCore.self_recognized, _on_self_recognized)
+	_ensure_disconnected(M2MResilienceCore.recognition_confidence_changed, _on_recognition_confidence_changed)
+
+func _exit_tree() -> void:
+	_disconnect_lobby_signals()
+	M2MSession.stop_m2m_watch()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -69,6 +96,9 @@ func _on_host_pressed() -> void:
 	status_label.text = "Session live. Share M2M codes or wait for friends to Find You."
 
 func _on_find_friends_pressed() -> void:
+	PermissionRationale.request_network_permissions(Callable(self, "_run_find_friends"))
+
+func _run_find_friends() -> void:
 	status_label.text = "M2M scan — Wi-Fi, Bluetooth, mobile IP mesh..."
 	M2MSession.catch_mobile_ip()
 	M2MSession.start_m2m_watch()

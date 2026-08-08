@@ -60,6 +60,10 @@ func handle_android_back() -> void:
 func _on_continue() -> void:
 	if not SaveSystem.has_save():
 		return
+	if not SaveSystem.has_sufficient_storage():
+		push_error("MainMenu: insufficient storage to load save")
+		AndroidPlatform.log_crash("load_game", "insufficient storage")
+		return
 	SaveSystem.load_game()
 	var recap_text := Recap.generate()
 	if _should_show_recap(recap_text):

@@ -30,6 +30,7 @@ func _ready() -> void:
 
 	if OS.get_name() == "Android":
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE, true)
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, true)
 
 	if not get_tree().root.size_changed.is_connected(_apply_safe_area):
 		get_tree().root.size_changed.connect(_apply_safe_area)

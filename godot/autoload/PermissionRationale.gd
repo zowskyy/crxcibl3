@@ -26,8 +26,14 @@ const RATIONALE_NETWORK := (
 	+ "No personal data is collected."
 )
 
+const PERM_BT_SCAN := "android.permission.BLUETOOTH_SCAN"
+const PERM_BT_CONNECT := "android.permission.BLUETOOTH_CONNECT"
+const PERM_BT_ADVERTISE := "android.permission.BLUETOOTH_ADVERTISE"
+const PERM_FINE_LOCATION := "android.permission.ACCESS_FINE_LOCATION"
+
 var _pending_dialog: AcceptDialog = null
 var _pending_callback: Callable = Callable()
+var _pending_permissions: PackedStringArray = PackedStringArray()
 
 func _ready() -> void:
 	print("[PermissionRationale] ready")
@@ -49,28 +55,70 @@ func request_with_rationale(permission_name: String, rationale: String, on_grant
 			on_granted.call()
 		return
 	_pending_callback = on_granted
+	_pending_permissions = PackedStringArray([permission_name])
 	_pending_dialog.dialog_text = rationale
 	_pending_dialog.popup_centered()
 
 func request_bluetooth_permissions(on_granted: Callable = Callable()) -> void:
-	request_with_rationale("bluetooth", RATIONALE_BLUETOOTH, on_granted)
+	if OS.get_name() != "Android":
+		if on_granted.is_valid():
+			on_granted.call()
+		return
+	if are_bluetooth_permissions_granted():
+		if on_granted.is_valid():
+			on_granted.call()
+		return
+	_pending_callback = on_granted
+	_pending_permissions = PackedStringArray([
+		PERM_BT_SCAN, PERM_BT_CONNECT, PERM_BT_ADVERTISE, PERM_FINE_LOCATION,
+	])
+	_pending_dialog.dialog_text = RATIONALE_BLUETOOTH + "\n\n" + RATIONALE_LOCATION
+	_pending_dialog.popup_centered()
+
+func are_bluetooth_permissions_granted() -> bool:
+	return _bluetooth_permissions_granted()
 
 func request_location_permission(on_granted: Callable = Callable()) -> void:
-	request_with_rationale("android.permission.ACCESS_FINE_LOCATION", RATIONALE_LOCATION, on_granted)
+	request_with_rationale(PERM_FINE_LOCATION, RATIONALE_LOCATION, on_granted)
 
 func request_network_permissions(on_granted: Callable = Callable()) -> void:
 	request_with_rationale("network", RATIONALE_NETWORK, on_granted)
 
 func _on_dialog_confirmed() -> void:
-	OS.request_permissions()
+	_request_pending_permissions()
 	if _pending_callback.is_valid():
 		_pending_callback.call()
 	_pending_callback = Callable()
+	_pending_permissions = PackedStringArray()
+
+func _request_pending_permissions() -> void:
+	if OS.get_name() != "Android":
+		return
+	if _pending_permissions.is_empty():
+		OS.request_permissions()
+		return
+	for permission_name in _pending_permissions:
+		if permission_name == "network":
+			continue
+		if not _is_permission_granted(permission_name):
+			OS.request_permission(permission_name)
+
+func _bluetooth_permissions_granted() -> bool:
+	return (
+		_is_permission_granted(PERM_BT_SCAN)
+		and _is_permission_granted(PERM_BT_CONNECT)
+		and _is_permission_granted(PERM_FINE_LOCATION)
+	)
 
 func _is_permission_granted(permission_name: String) -> bool:
 	if OS.get_name() != "Android":
 		return true
+	if permission_name == "network":
+		return true
+	var needle := permission_name.to_lower()
+	var short_name := permission_name.get_slice(".", -1).to_lower()
 	for granted in OS.get_granted_permissions():
-		if str(granted).to_lower().contains(permission_name.to_lower()):
+		var granted_lower := str(granted).to_lower()
+		if granted_lower == needle or granted_lower.ends_with("." + short_name):
 			return true
 	return false

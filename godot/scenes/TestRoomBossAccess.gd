@@ -24,7 +24,9 @@ const HINT_RADIUS := 120.0
 
 var _room: Node2D
 var _player_getter: Callable
+var _rooftop_trigger: Area2D
 var _triggers: Dictionary = {}
+var _trigger_callbacks: Dictionary = {}
 var _hint_label: Label
 var _active_hint_id := ""
 
@@ -32,12 +34,27 @@ var _active_hint_id := ""
 func setup(room: Node2D, canvas_layer: CanvasLayer, player_getter: Callable, rooftop_trigger: Area2D) -> void:
 	_room = room
 	_player_getter = player_getter
+	_rooftop_trigger = rooftop_trigger
 	_spawn_triggers()
 	_hint_label = _make_hint_label(canvas_layer)
 	if not Bosses.boss_defeated.is_connected(_on_boss_defeated):
 		Bosses.boss_defeated.connect(_on_boss_defeated)
-	if not rooftop_trigger.body_entered.is_connected(_on_rooftop_entered):
-		rooftop_trigger.body_entered.connect(_on_rooftop_entered)
+	if not _rooftop_trigger.body_entered.is_connected(_on_rooftop_entered):
+		_rooftop_trigger.body_entered.connect(_on_rooftop_entered)
+
+
+func cleanup() -> void:
+	if Bosses.boss_defeated.is_connected(_on_boss_defeated):
+		Bosses.boss_defeated.disconnect(_on_boss_defeated)
+	if _rooftop_trigger != null and _rooftop_trigger.body_entered.is_connected(_on_rooftop_entered):
+		_rooftop_trigger.body_entered.disconnect(_on_rooftop_entered)
+	for boss_id in _triggers.keys():
+		var zone: Area2D = _triggers[boss_id]
+		var cb: Callable = _trigger_callbacks.get(boss_id, Callable())
+		if zone != null and cb.is_valid() and zone.body_entered.is_connected(cb):
+			zone.body_entered.disconnect(cb)
+	_triggers.clear()
+	_trigger_callbacks.clear()
 
 
 func queue_boss_cross_load() -> void:
@@ -89,6 +106,7 @@ func _spawn_triggers() -> void:
 			zone.body_entered.connect(cb)
 		_room.add_child(zone)
 		_triggers[boss_id] = zone
+		_trigger_callbacks[boss_id] = cb
 
 
 func _make_hint_label(canvas_layer: CanvasLayer) -> Label:
@@ -149,3 +167,7 @@ func _hide_hint() -> void:
 	_active_hint_id = ""
 	if _hint_label:
 		_hint_label.visible = false
+
+
+func _exit_tree() -> void:
+	cleanup()

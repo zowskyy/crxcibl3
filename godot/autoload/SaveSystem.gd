@@ -32,7 +32,10 @@ func has_sufficient_storage() -> bool:
 
 func save_game() -> void:
 	if not has_sufficient_storage():
-		push_error("SaveSystem: insufficient storage for save (need %d bytes free)" % MIN_FREE_BYTES)
+		AndroidPlatform.log_crash(
+			"save_game",
+			"SaveSystem: insufficient storage for save (need %d bytes free)" % MIN_FREE_BYTES,
+		)
 		return
 
 	var lines: Array = [
@@ -54,16 +57,18 @@ func save_game() -> void:
 		"alliances_betrayed=%s" % GameState.alliances_betrayed,
 		"emperor_forgiven=%s" % str(GameState.emperor_forgiven),
 	]
-	lines.append_array(_inventory_save_lines())
-	lines.append_array(_collection_save_lines())
+	SaveSystemCoopHook.augment_save_lines(lines)
+	lines.append_array(SaveSystemSerialize.inventory_lines())
+	lines.append_array(SaveSystemSerialize.collection_lines())
 
 	var payload := ""
 	for line in lines:
 		payload += line + "\n"
 
 	if not _atomic_write(SAVE_TEMP_PATH, SAVE_PATH, payload):
-		push_error("SaveSystem: atomic write failed")
+		AndroidPlatform.log_crash("save_game", "SaveSystem: atomic write failed")
 		return
+	SaveSystemCoopHook.after_save()
 	print("[SaveSystem] saved")
 
 func _has_sufficient_space() -> bool:
@@ -96,38 +101,6 @@ func _atomic_write(temp_path: String, final_path: String, content: String) -> bo
 		DirAccess.remove_absolute(temp_path)
 		return false
 	return true
-
-func _inventory_save_lines() -> Array:
-	var lines: Array = []
-	for entry in GameState.blame_ledger:
-		lines.append("blame_entry=%s" % JSON.stringify(entry))
-	for i in range(Inventory.SLOT_COUNT):
-		var slot: Variant = Inventory.slots[i]
-		if slot == null:
-			continue
-		lines.append("inv_slot_%d=%s:%d" % [i, slot["item_id"], slot["quantity"]])
-	for category: String in Inventory.EQUIP_CATEGORIES:
-		var item_id: Variant = Inventory.equipped.get(category)
-		if item_id == null:
-			continue
-		lines.append("equip_%s=%s" % [category, item_id])
-	return lines
-
-func _collection_save_lines() -> Array:
-	var lines: Array = []
-	for kind in GameState.resources.keys():
-		lines.append("resource:%s=%s" % [kind, GameState.resources[kind]])
-	for key in GameState.relationships.keys():
-		lines.append("relationship:%s=%s" % [key, GameState.relationships[key]])
-	for secret in GameState.secrets_unlocked:
-		lines.append("secret=%s" % secret)
-	for quest in GameState.quests_completed:
-		lines.append("quest=%s" % quest)
-	for boss in GameState.bosses_fought:
-		var executed = GameState.boss_executed.get(boss, false)
-		var finisher = GameState.boss_finisher.get(boss, "")
-		lines.append("boss:%s=%s,%s" % [boss, executed, finisher])
-	return lines
 
 func load_game() -> bool:
 	return SaveSystemLoad.load_from_path(SAVE_PATH)

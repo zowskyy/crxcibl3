@@ -66,6 +66,8 @@ func stop_advertising() -> void:
 func start_scan(duration_sec: float = 4.0) -> void:
 	if not is_available() or _scanning:
 		return
+	if OS.get_name() == "Android" and PermissionRationale != null:
+		PermissionRationale.request_bluetooth_permissions()
 	_scanning = true
 	_discovered.clear()
 	_run_on_ui_thread(func():
