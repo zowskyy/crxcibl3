@@ -19,18 +19,24 @@ extends Node
 # def test_gate_smoke assert unittest
 
 
+const SAVE_VERSION := 1
 const SAVE_PATH := "user://crxcibl3_save.txt"
+const SAVE_TEMP_PATH := "user://crxcibl3_save.tmp"
+const MIN_FREE_BYTES := 8192
 
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
+func has_sufficient_storage() -> bool:
+	return _has_sufficient_space()
+
 func save_game() -> void:
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file == null:
-		push_error("SaveSystem: could not open save file for writing")
+	if not has_sufficient_storage():
+		push_error("SaveSystem: insufficient storage for save (need %d bytes free)" % MIN_FREE_BYTES)
 		return
 
 	var lines: Array = [
+		"save_version=%d" % SAVE_VERSION,
 		"heat=%s" % GameState.heat,
 		"squad=%s" % ",".join(GameState.squad),
 		"current_act=%s" % GameState.current_act,
@@ -51,11 +57,45 @@ func save_game() -> void:
 	lines.append_array(_inventory_save_lines())
 	lines.append_array(_collection_save_lines())
 
+	var payload := ""
 	for line in lines:
-		file.store_line(line)
+		payload += line + "\n"
 
-	file.close()
+	if not _atomic_write(SAVE_TEMP_PATH, SAVE_PATH, payload):
+		push_error("SaveSystem: atomic write failed")
+		return
 	print("[SaveSystem] saved")
+
+func _has_sufficient_space() -> bool:
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		return true
+	var free_bytes := dir.get_space_left()
+	if free_bytes < 0:
+		return true
+	return free_bytes >= MIN_FREE_BYTES
+
+func _atomic_write(temp_path: String, final_path: String, content: String) -> bool:
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
+	if file == null:
+		push_error("SaveSystem: could not open temp save file for writing")
+		return false
+	file.store_string(content)
+	file.close()
+
+	if FileAccess.file_exists(final_path):
+		var remove_err := DirAccess.remove_absolute(final_path)
+		if remove_err != OK:
+			push_error("SaveSystem: could not remove previous save (%s)" % str(remove_err))
+			DirAccess.remove_absolute(temp_path)
+			return false
+
+	var rename_err := DirAccess.rename_absolute(temp_path, final_path)
+	if rename_err != OK:
+		push_error("SaveSystem: rename to final save failed (%s)" % str(rename_err))
+		DirAccess.remove_absolute(temp_path)
+		return false
+	return true
 
 func _inventory_save_lines() -> Array:
 	var lines: Array = []

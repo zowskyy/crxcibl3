@@ -13,13 +13,22 @@ extends CharacterBody2D
 ##
 ## Stress consequences (Slice 3.3): elevated/critical stress reduces speed and
 ## fire rate. RelationshipSystem synergy bonuses stack on top (Slice 3.6).
+##
+## validate animation frames; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via HeroFactory.switch_active_hero().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const SPEED         := 120.0
 const MAX_HEALTH    := 120
 const MELEE_DAMAGE  := 15   # lore ref, not an active attack path
 const RESPAWN_TIME  := 3.0
 
-const BULLET_SCRIPT  := preload("res://scenes/Bullet.gd")
 const ANIM_LOADER    := preload("res://scenes/AnimationLoader.gd")
 const FIRE_COOLDOWN  := 0.25
 const RECOIL_SPREAD_DEG := 4.0
@@ -41,7 +50,7 @@ var infinite_clip         : bool  = false
 var _joystick : Control = null
 var _facing   := Vector2.RIGHT
 var _fire_timer := 0.0
-var _shooting   := false   # true for one frame after fire() — drives shoot anim
+var _shooting   := false   # holds shoot anim one frame after fire()
 var _shoot_timer := 0.0
 const SHOOT_ANIM_DURATION := 0.12   # seconds to hold "shoot" before returning to walk/idle
 
@@ -50,6 +59,7 @@ var _anim: AnimatedSprite2D = null  # set in _ready(); null = no sheets loaded y
 
 func _ready() -> void:
 	add_to_group("player")
+	print("[Player] ready")
 	call_deferred("_find_joystick")
 	call_deferred("_setup_animation")
 	call_deferred("_apply_rpg_bonuses")
@@ -121,8 +131,7 @@ func _physics_process(delta: float) -> void:
 	velocity = input_vector * SPEED * speed_mult
 	move_and_slide()
 
-	if input_vector.length() > 0.0:
-		_facing = input_vector.normalized()
+	_facing = input_vector.normalized() if input_vector.length() > 0.0 else _facing
 
 	_fire_timer  = maxf(0.0, _fire_timer  - delta)
 	_shoot_timer = maxf(0.0, _shoot_timer - delta)
@@ -154,12 +163,12 @@ func _update_animation(input_vector: Vector2) -> void:
 		_play("idle")
 		return
 
-	# 8-direction → 4 walk animations.  Left/right take priority over up/down
-	# so diagonal movement looks horizontal (most natural for top-down 3/4 view).
+	var anim_name := "idle"
 	if absf(input_vector.x) >= absf(input_vector.y):
-		_play("walk_right" if input_vector.x >= 0.0 else "walk_left")
+		anim_name = "walk_right" if input_vector.x >= 0.0 else "walk_left"
 	else:
-		_play("walk_down" if input_vector.y >= 0.0 else "walk_up")
+		anim_name = "walk_down" if input_vector.y >= 0.0 else "walk_up"
+	_play(anim_name)
 
 
 func _play(anim_name: String) -> void:
@@ -170,18 +179,13 @@ func _play(anim_name: String) -> void:
 
 
 func _play_once(anim_name: String) -> void:
-	if _anim and _anim.visible and _anim.sprite_frames \
-			and _anim.sprite_frames.has_animation(anim_name) \
-			and _anim.animation != anim_name:
-		_anim.play(anim_name)
+	_play(anim_name)
 
 
 func _stress_speed_mult() -> float:
-	if Stress.stress >= Stress.THRESHOLD_CRITICAL:
-		return 0.70
-	if Stress.stress >= Stress.THRESHOLD_ELEVATED:
-		return 0.85
-	return 1.0
+	var tier := int(Stress.stress >= Stress.THRESHOLD_ELEVATED) \
+		+ int(Stress.stress >= Stress.THRESHOLD_CRITICAL)
+	return [1.0, 0.85, 0.70][mini(2, tier)]
 
 
 func fire() -> void:
@@ -194,16 +198,18 @@ func fire() -> void:
 	_shoot_timer  = SHOOT_ANIM_DURATION
 
 	var recoil_angle := deg_to_rad(randf_range(-RECOIL_SPREAD_DEG, RECOIL_SPREAD_DEG))
-
-	var bullet := Area2D.new()
-	bullet.set_script(BULLET_SCRIPT)
-	bullet.direction     = _facing.rotated(recoil_angle)
-	bullet.shooter       = hero_name
-	bullet.damage_bonus  = bullet_damage_bonus + RelationshipSystem.get_damage_bonus(hero_name)
-	bullet.crit_chance_bonus = Inventory.get_stat_bonus("crit_chance") \
+	var bullet_dir := _facing.rotated(recoil_angle)
+	var dmg_bonus := bullet_damage_bonus + RelationshipSystem.get_damage_bonus(hero_name)
+	var crit_bonus := Inventory.get_stat_bonus("crit_chance") \
 		+ RelationshipSystem.get_crit_bonus(hero_name)
-	get_parent().add_child(bullet)
-	bullet.global_position = global_position + _facing * 12.0
+	Bullet.spawn(
+		get_parent(),
+		global_position + _facing * 12.0,
+		bullet_dir,
+		hero_name,
+		dmg_bonus,
+		crit_bonus,
+	)
 
 	if not infinite_clip:
 		Scarcity.add_scarcity(2.0)

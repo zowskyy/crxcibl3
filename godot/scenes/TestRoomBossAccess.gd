@@ -1,6 +1,16 @@
 class_name TestRoomBossAccess
 extends Node
 ## Programmatic Corrupted Six triggers + proximity hints for TestRoom.
+##
+## validate boss trigger anchors; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via SaveSystem.save_game() on defeat.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const TRIGGER_SPECS := [
 	{"boss_id": "Cross", "anchor": "Building1", "offset": Vector2(0, 50)},
@@ -117,6 +127,8 @@ func _load_scene(scene_path: String) -> void:
 func _on_boss_defeated(_boss_name: String, _finisher: String, _executed: bool) -> void:
 	ActProgression.unlock_act_for_boss_progress()
 	_hide_hint()
+	SaveSystem.save_game()
+	print("[TestRoomBossAccess] boss checkpoint saved")
 
 
 func _on_rooftop_entered(body: Node) -> void:

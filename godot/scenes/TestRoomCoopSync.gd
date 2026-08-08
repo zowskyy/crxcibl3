@@ -37,6 +37,7 @@ func setup(room: Node2D, canvas_layer: CanvasLayer) -> void:
 
 
 func teardown() -> void:
+	_disconnect_signals()
 	for peer_id in _remote_players.keys():
 		var remote = _remote_players[peer_id]
 		if is_instance_valid(remote):
@@ -68,14 +69,33 @@ func can_modify_heat() -> bool:
 
 
 func _connect_signals() -> void:
-	if not CoopNetwork.peer_joined.is_connected(_on_peer_joined):
-		CoopNetwork.peer_joined.connect(_on_peer_joined)
-	if not CoopNetwork.peer_left.is_connected(_on_peer_left):
-		CoopNetwork.peer_left.connect(_on_peer_left)
-	if not CoopNetwork.player_state_sync.is_connected(_on_player_state_sync):
-		CoopNetwork.player_state_sync.connect(_on_player_state_sync)
-	if not CoopNetwork.heat_sync.is_connected(_on_heat_sync):
-		CoopNetwork.heat_sync.connect(_on_heat_sync)
+	_connect_signal_pairs([
+		[CoopNetwork.peer_joined, _on_peer_joined],
+		[CoopNetwork.peer_left, _on_peer_left],
+		[CoopNetwork.player_state_sync, _on_player_state_sync],
+		[CoopNetwork.heat_sync, _on_heat_sync],
+	])
+
+
+func _disconnect_signals() -> void:
+	for pair in [
+		[CoopNetwork.peer_joined, _on_peer_joined],
+		[CoopNetwork.peer_left, _on_peer_left],
+		[CoopNetwork.player_state_sync, _on_player_state_sync],
+		[CoopNetwork.heat_sync, _on_heat_sync],
+	]:
+		var sig: Signal = pair[0]
+		var callable: Callable = pair[1]
+		if sig.is_connected(callable):
+			sig.disconnect(callable)
+
+
+func _connect_signal_pairs(pairs: Array) -> void:
+	for pair in pairs:
+		var sig: Signal = pair[0]
+		var callable: Callable = pair[1]
+		if not sig.is_connected(callable):
+			sig.connect(callable)
 
 
 func _add_coop_hud() -> void:

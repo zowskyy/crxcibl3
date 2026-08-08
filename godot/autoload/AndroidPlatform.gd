@@ -1,6 +1,6 @@
 extends Node
 ## AndroidPlatform — mobile bootstrap: lifecycle save/restore, audio focus, safe area,
-## predictive back, edge-to-edge, and low-latency input settings.
+## predictive back, edge-to-edge, low-latency input, and audio bus layout.
 
 ## validate safe-area margins; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via ProcessDeathSnapshot restore.
@@ -13,14 +13,20 @@ extends Node
 # def test_gate_smoke assert unittest
 
 
+const CRASH_LOG_PATH := "user://crash_log.txt"
+
 var _safe_layer: CanvasLayer = null
 var _safe_area_root: MarginContainer = null
 var _audio_was_playing: Dictionary = {}
+var _music_bus_idx := -1
+var _sfx_bus_idx := -1
 
 func _ready() -> void:
 	print("[AndroidPlatform] bootstrap ready")
 	Input.use_accumulated_input = false
 	ProjectSettings.set_setting("rendering/2d/snap/snap_2d_transforms_to_pixel", true)
+	_setup_audio_buses()
+	_ensure_core_input_actions()
 
 	if OS.get_name() == "Android":
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE, true)
@@ -30,6 +36,47 @@ func _ready() -> void:
 
 	ProcessDeathSnapshot.restore_if_needed()
 	call_deferred("_apply_safe_area")
+
+func _setup_audio_buses() -> void:
+	var indices := {"Music": -1, "SFX": -1}
+	for bus_name in ["Music", "SFX"]:
+		var idx := AudioServer.get_bus_index(bus_name)
+		if idx < 0:
+			AudioServer.add_bus()
+			idx = AudioServer.bus_count - 1
+			AudioServer.set_bus_name(idx, bus_name)
+			AudioServer.set_bus_send(idx, "Master")
+		indices[bus_name] = idx
+	_music_bus_idx = indices["Music"]
+	_sfx_bus_idx = indices["SFX"]
+
+func get_music_bus_index() -> int:
+	return _music_bus_idx
+
+func get_sfx_bus_index() -> int:
+	return _sfx_bus_idx
+
+func set_music_volume_db(db: float) -> void:
+	if _music_bus_idx >= 0:
+		AudioServer.set_bus_volume_db(_music_bus_idx, db)
+
+func set_sfx_volume_db(db: float) -> void:
+	if _sfx_bus_idx >= 0:
+		AudioServer.set_bus_volume_db(_sfx_bus_idx, db)
+
+func _ensure_core_input_actions() -> void:
+	_ensure_action_key("fire", KEY_SPACE)
+	_ensure_action_key("add_heat", KEY_H)
+	_ensure_action_key("inventory", KEY_I)
+	_ensure_action_key("cycle_hero", KEY_TAB)
+
+func _ensure_action_key(action: String, keycode: Key) -> void:
+	if not InputMap.has_action(action):
+		InputMap.add_action(action)
+	var ev := InputEventKey.new()
+	ev.physical_keycode = keycode
+	if not InputMap.action_has_event(action, ev):
+		InputMap.action_add_event(action, ev)
 
 func _notification(what: int) -> void:
 	match what:
@@ -59,9 +106,18 @@ func _on_app_resumed() -> void:
 	_audio_was_playing.clear()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
-func _apply_safe_area() -> void:
-	if not is_inside_tree():
+func log_crash(context: String, details: String = "") -> void:
+	push_error("CrashLog: %s — %s" % [context, details])
+	if not SaveSystem.has_sufficient_storage():
 		return
+	var file := FileAccess.open(CRASH_LOG_PATH, FileAccess.WRITE_READ)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_string("[%s] %s — %s\n" % [Time.get_datetime_string_from_system(), context, details])
+	file.close()
+
+func _apply_safe_area() -> void:
 	var safe := DisplayServer.get_display_safe_area()
 	var win_size := DisplayServer.window_get_size()
 	if win_size.x <= 0 or win_size.y <= 0:
@@ -105,4 +161,6 @@ func play_audio_if_audible(player: AudioStreamPlayer) -> void:
 	var master_idx := AudioServer.get_bus_index("Master")
 	if master_idx >= 0 and AudioServer.is_bus_mute(master_idx):
 		return
+	if player.bus.is_empty() and _sfx_bus_idx >= 0:
+		player.bus = "SFX"
 	player.play()

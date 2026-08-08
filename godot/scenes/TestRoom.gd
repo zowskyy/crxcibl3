@@ -65,6 +65,7 @@ func _ready() -> void:
 	_setup_environment()
 	if not fire_button.pressed.is_connected(_on_fire_pressed):
 		fire_button.pressed.connect(_on_fire_pressed)
+	fire_button.custom_minimum_size = Vector2(80, 48)
 
 	ActProgression.apply_qa_cmdline_flags()
 	ActProgression.unlock_act_for_boss_progress()
@@ -79,7 +80,8 @@ func _ready() -> void:
 	add_child(_coop_sync)
 	_coop_sync.setup(self, canvas_layer)
 
-	if "--demo" in OS.get_cmdline_args():
+	var is_demo := "--demo" in OS.get_cmdline_args()
+	if is_demo:
 		GameState.reset_for_new_game()
 		GameState.squad = ["enforcer_ghost"]
 		GameState.current_hero_index = 0
@@ -89,14 +91,14 @@ func _ready() -> void:
 
 	_spawn_local_player()
 	_connect_player_signals()
-	print("TestRoom: player spawned for %s run" % ("co-op" if CoopNetwork.is_online() else "solo"))
+	print("TestRoom: player spawned (%s run)" % ["solo", "co-op"][int(CoopNetwork.is_online())])
 
 	_setup_hideout_zone()
 	_setup_quest_hud()
 	_setup_squad_label()
 	_setup_synergy_hud()
 
-	if "--demo" in OS.get_cmdline_args():
+	if is_demo:
 		var driver := preload("res://tools/DemoDriver.gd").new()
 		driver.name = "DemoDriver"
 		add_child(driver)
@@ -109,11 +111,8 @@ func _spawn_local_player() -> void:
 	var hero_id := GameState.get_active_hero()
 	if hero_id.is_empty() and not GameState.squad.is_empty():
 		hero_id = GameState.squad[0]
-
-	if not hero_id.is_empty():
-		player = HeroFactory.spawn_player(hero_id, spawn_pos, self, _world_bounds)
-	else:
-		player = HeroFactory.spawn_player("enforcer_ghost", spawn_pos, self, _world_bounds)
+	var spawn_id := hero_id if not hero_id.is_empty() else "enforcer_ghost"
+	player = HeroFactory.spawn_player(spawn_id, spawn_pos, self, _world_bounds)
 
 func _setup_environment() -> void:
 	var ground := get_node_or_null("Ground")
@@ -197,21 +196,20 @@ func _process(delta: float) -> void:
 	Scarcity.tick(delta)
 
 	var heat_t := clampf((GameState.heat - 51.0) / 49.0, 0.0, 1.0)
-	var mat := wave_rect.material as ShaderMaterial
-	if mat:
-		mat.set_shader_parameter("intensity", heat_t)
+	(wave_rect.material as ShaderMaterial).set_shader_parameter("intensity", heat_t)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_H:
-				_on_add_heat_pressed()
-			KEY_SPACE:
-				_on_fire_pressed()
-			KEY_I:
-				_toggle_inventory()
-			KEY_TAB:
-				_cycle_squad_hero()
+	if not (event is InputEventKey and event.pressed):
+		return
+	for entry in [
+		["add_heat", _on_add_heat_pressed],
+		["fire", _on_fire_pressed],
+		["inventory", _toggle_inventory],
+		["cycle_hero", _cycle_squad_hero],
+	]:
+		if event.is_action_pressed(entry[0]):
+			entry[1].call()
+			return
 
 func _cycle_squad_hero() -> void:
 	if GameState.squad.size() <= 1:
@@ -248,8 +246,12 @@ func _on_add_heat_pressed() -> void:
 	GameState.modify_heat(10.0)
 
 func _on_fire_pressed() -> void:
-	if player and is_instance_valid(player):
+	if is_instance_valid(player):
 		player.fire()
+
+func _exit_tree() -> void:
+	if _coop_sync != null:
+		_coop_sync.teardown()
 
 func _toggle_inventory() -> void:
 	if _inventory_ui and is_instance_valid(_inventory_ui):

@@ -22,15 +22,28 @@ static func load_from_path(path: String) -> bool:
 		push_error("SaveSystemLoad: could not open save file for reading")
 		return false
 	GameState.reset_for_new_game()
+	var save_version := 0
 	while not file.eof_reached():
 		var line := file.get_line().strip_edges()
 		var split_index := line.find("=")
 		if line == "" or split_index == -1:
 			continue
-		_apply_save_line(line.substr(0, split_index), line.substr(split_index + 1))
+		var key := line.substr(0, split_index)
+		var value := line.substr(split_index + 1)
+		if key == "save_version":
+			save_version = int(value)
+			continue
+		_apply_save_line(key, value)
 	file.close()
-	print("[SaveSystemLoad] load complete")
+	if save_version < SaveSystem.SAVE_VERSION:
+		_migrate_save(save_version)
+	print("[SaveSystemLoad] load complete (v%d)" % maxi(save_version, SaveSystem.SAVE_VERSION))
 	return true
+
+static func _migrate_save(from_version: int) -> void:
+	if from_version < 1:
+		push_warning("SaveSystemLoad: migrating legacy save (no version) to v%d" % SaveSystem.SAVE_VERSION)
+	SaveSystem.save_game()
 
 static func _apply_save_line(key: String, value: String) -> void:
 	match key:
@@ -68,6 +81,8 @@ static func _apply_save_line(key: String, value: String) -> void:
 			var parsed = JSON.parse_string(value)
 			if parsed is Dictionary:
 				GameState.blame_ledger.append(parsed)
+			else:
+				push_error("SaveSystemLoad: invalid blame_entry JSON")
 		"emperor_forgiven":
 			GameState.emperor_forgiven = null if value == "Null" else (value == "true")
 		"secret":
