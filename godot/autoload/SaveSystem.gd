@@ -6,11 +6,6 @@ extends Node
 ## automatically to the correct sandboxed app-storage location per platform — on Android
 ## that's the app's private files directory, no manual path-hunting and no special
 ## permissions needed, since it's app-scoped storage.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
 
 const SAVE_PATH := "user://crxcibl3_save.txt"
 

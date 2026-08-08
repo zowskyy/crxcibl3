@@ -2,11 +2,6 @@ class_name ActProgression
 extends RefCounted
 ## Static helpers for Corrupted Six boss order, scene routing, and act unlocks.
 ## Boss defeat registration stays in Bosses/GameState — this only reads progression.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
 
 const CORRUPTED_SIX_IDS := ["Cross", "Voss", "Moreau", "Hayes", "Webb"]
 

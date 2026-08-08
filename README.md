@@ -4,7 +4,7 @@
 
 [![Godot 4.7.1](https://img.shields.io/badge/Godot-4.7.1-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-blue.svg)](CHANGELOG.md)
+[![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-blue.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-lightgrey)](godot/export_presets.cfg)
 
 ---
@@ -132,4 +132,4 @@ See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 | [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md) | Roadmap checklist |
 | [godot/assets/audio/MANIFEST.txt](godot/assets/audio/MANIFEST.txt) | VO WAV filenames |
 
-**Godot:** 4.7.1 · **Project version:** 1.2.0 · **Updated:** 2026-08-08
+**Godot:** 4.7.1 · **Project version:** 1.2.1 · **Updated:** 2026-08-08

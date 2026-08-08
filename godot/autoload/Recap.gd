@@ -6,12 +6,6 @@ extends Node
 ## hits Continue, so returning after a break doesn't require re-reading a wall of text.
 ## Picks from small fragment banks per category and joins whatever applies — nothing
 ## forced, so an early save just gets a short recap and a late save gets a fuller one.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
-# assert unittest test_ coverage
 
 func generate() -> String:
 	var lines: Array = []

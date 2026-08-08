@@ -13,12 +13,6 @@ extends Node2D
 ## Shader integration (Slice 2.16): wave overlay intensity tracks
 ## GameState.heat -- kicks in past the 51 threshold already used by the
 ## vignette/tint in the visual direction doc, maxes out at heat 100.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print "feedback"
-# assert unittest test_ coverage
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect

@@ -1,14 +1,6 @@
 class_name BossGenericDraw
 extends RefCounted
 ## Shared silhouette drawing for BossGeneric (Slice 3.18+).
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# try except finally fallback
-# log.info print feedback
-# assert unittest test_
-
 
 static func hp_ratio(hp: int, max_hp: int) -> float:
 	if max_hp <= 0:

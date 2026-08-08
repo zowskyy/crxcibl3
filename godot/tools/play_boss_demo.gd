@@ -7,11 +7,6 @@ extends SceneTree
 ##   godot --path godot -s res://tools/play_boss_demo.gd -- --boss-moreau
 ##   godot --path godot -s res://tools/play_boss_demo.gd -- --boss-hayes
 ##   godot --path godot -s res://tools/play_boss_demo.gd -- --boss-webb
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
 
 const BOSS_FLAG_MAP := {
 	"--boss-cross": "Cross",

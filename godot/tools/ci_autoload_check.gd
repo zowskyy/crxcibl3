@@ -6,10 +6,6 @@ extends SceneTree
 # via `-s` boots autoloads first, so this is the correct way to verify they
 # resolve.
 #
-# logging retry health rollback revert undo migration downgrade timeout fallback circuit
-# validate dataclass schema transparent fair explain plugin importlib module loading
-# help usage argparse --help raise Error
-# log.info print feedback
 
 const AUTOLOADS := [
 	"DialogueBox",

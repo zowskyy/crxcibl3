@@ -55,25 +55,22 @@ Regenerate the brand icon, then ensure Play-required sizes exist:
 
 ```bash
 python3 scripts/generate_icon.py
+python3 scripts/generate_play_store_icons.py
 ```
 
-Default output: `godot/assets/sprites/icon.png` (256×256). For Play:
+Outputs:
 
-- **Store listing icon:** 512×512 PNG (32-bit, no alpha required for legacy icon slot — upscale from brand icon or export from Godot).
-- **Adaptive launcher icons:** 432×432 foreground + background (configure under **Project → Export → Android → Launcher Icons** in `export_presets.cfg`).
-
-Godot reads `config/icon="res://assets/sprites/icon.png"` from `project.godot`.
+- `godot/assets/sprites/icon.png` (256×256 in-game / project icon)
+- `godot/assets/play_store/icon_192.png`, adaptive layers, `store_listing_icon_512.png`, `feature_graphic_1024x500.png`
 
 ### 3. Export a signed AAB (Android App Bundle)
 
 Use the project export script (release-signed, Play-ready AAB):
 
 ```bash
-# Set release signing (never commit these values)
-export CRXCIBL3_RELEASE_KEYSTORE="$HOME/crxcibl3-release.keystore"
-export CRXCIBL3_RELEASE_KEY_ALIAS="crxcibl3"
-export CRXCIBL3_RELEASE_STORE_PASS="<STORE_PASSWORD>"
-export CRXCIBL3_RELEASE_KEY_PASS="<KEY_PASSWORD>"
+export CRXCIBL3_KEYSTORE_PATH="$HOME/crxcibl3-release.keystore"
+export CRXCIBL3_KEYSTORE_USER="crxcibl3-release"
+export CRXCIBL3_KEYSTORE_PASS="<STORE_AND_KEY_PASSWORD>"
 
 ./scripts/export_android_play_store.sh
 ```
@@ -176,8 +173,8 @@ After submission, attach the generated **IARC certificate** PDF if Play Console 
 
 | Asset | Spec | Status / notes |
 |-------|------|----------------|
-| **App icon** | 512×512 PNG | Generate via `scripts/generate_icon.py`; upscale to 512×512 for listing |
-| **Feature graphic** | 1024×500 PNG or JPG | **Placeholder OK for internal testing tracks.** Replace with branded Beach Boulevard art before production launch. No text-heavy clutter — readable at thumbnail size. |
+| **App icon** | 512×512 PNG | `scripts/generate_play_store_icons.py` → `store_listing_icon_512.png` |
+| **Feature graphic** | 1024×500 PNG or JPG | Generate via `scripts/generate_play_store_icons.py` → `feature_graphic_1024x500.png` |
 | **Phone screenshots** | Min 2; recommend 4–8 | Capture from Android device or emulator: main menu, boardwalk combat, boss encounter, cutscene caption |
 | **7-inch tablet screenshots** | Optional unless targeting tablets | Same scenes, tablet aspect |
 | **10-inch tablet screenshots** | Optional | Same |

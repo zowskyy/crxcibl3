@@ -1,12 +1,6 @@
 class_name TestRoomBossAccess
 extends Node
 ## Programmatic Corrupted Six triggers + proximity hints for TestRoom.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print "feedback"
-# assert unittest test_ coverage
 
 const TRIGGER_SPECS := [
 	{"boss_id": "Cross", "anchor": "Building1", "offset": Vector2(0, 50)},

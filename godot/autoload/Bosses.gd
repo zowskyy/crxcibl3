@@ -9,11 +9,6 @@ extends Node
 ## Cross–Webb are Corrupted Six encounters (slices 3.18–3.22, v1.2.0 GA).
 ##
 ## Dependencies: GameState
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
 
 signal boss_defeated(boss_name: String, finisher: String, executed: bool)
 signal boss_progression_changed(defeated_count: int, total_count: int)

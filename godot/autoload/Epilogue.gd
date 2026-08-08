@@ -5,12 +5,6 @@ extends Node
 ## Wraps up all story arcs. GameState has epilogue_state field (Phase 3 addition).
 ##
 ## Dependencies: GameState
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
-# assert unittest test_ coverage
 
 signal epilogue_started
 signal epilogue_state_changed(state: String)

@@ -45,6 +45,9 @@ TWILIGHT_BACKGROUND: Tuple[int, int, int] = (72, 28, 110)
 ADAPTIVE_SIZE = 432
 ADAPTIVE_SAFE_FRACTION = 0.66
 MAIN_ICON_SIZE = 192
+STORE_LISTING_SIZE = 512
+FEATURE_WIDTH = 1024
+FEATURE_HEIGHT = 500
 
 
 @dataclass
@@ -83,12 +86,33 @@ def _adaptive_background(
     return Image.new("RGB", (canvas, canvas), (r, g, b))
 
 
+def _feature_graphic(source: Image.Image, width: int = FEATURE_WIDTH, height: int = FEATURE_HEIGHT) -> Image.Image:
+    """Beach Boulevard twilight banner with centered brand mark."""
+    r, g, b = TWILIGHT_BACKGROUND
+    canvas = Image.new("RGB", (width, height))
+    pix = canvas.load()
+    for y in range(height):
+        t = y / max(1, height - 1)
+        row = (
+            int(18 + (r - 18) * t),
+            int(12 + (g - 12) * t),
+            int(48 + (b - 48) * t),
+        )
+        for x in range(width):
+            pix[x, y] = row
+    mark = _resize_icon(source, min(width, height) // 2)
+    mx = (width - mark.width) // 2
+    my = (height - mark.height) // 2
+    canvas.paste(mark, (mx, my), mark)
+    return canvas
+
+
 def generate_play_store_icons(
     source: Path | str = DEFAULT_SOURCE,
     out_dir: Path | str = PLAY_STORE_DIR,
     twilight_rgb: Tuple[int, int, int] = TWILIGHT_BACKGROUND,
-) -> tuple[Path, Path, Path]:
-    """Render Play Store launcher icons. Returns paths written (192, fg432, bg432)."""
+) -> tuple[Path, Path, Path, Path, Path]:
+    """Render Play Store assets. Returns (192, fg432, bg432, listing512, feature1024x500)."""
     src = Path(source)
     if not src.is_file():
         raise FileNotFoundError(f"source icon not found: {src}")
@@ -100,6 +124,8 @@ def generate_play_store_icons(
         dest / "icon_192.png",
         dest / "adaptive_foreground_432.png",
         dest / "adaptive_background_432.png",
+        dest / "store_listing_icon_512.png",
+        dest / "feature_graphic_1024x500.png",
     )
 
     try:
@@ -107,10 +133,14 @@ def generate_play_store_icons(
             main = _resize_icon(img, MAIN_ICON_SIZE)
             foreground = _adaptive_foreground(img, ADAPTIVE_SIZE)
             background = _adaptive_background(ADAPTIVE_SIZE, twilight_rgb)
+            listing = _resize_icon(img, STORE_LISTING_SIZE)
+            feature = _feature_graphic(img)
 
             main.save(icon_paths[0], format="PNG")
             foreground.save(icon_paths[1], format="PNG")
             background.save(icon_paths[2], format="PNG")
+            listing.save(icon_paths[3], format="PNG")
+            feature.save(icon_paths[4], format="PNG")
     except OSError as exc:
         # circuit-breaker style: surface a clear error for CI rollback / retry
         raise RuntimeError(f"play store icon write failed (rollback and retry): {exc}") from exc
