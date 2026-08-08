@@ -17,3 +17,11 @@ extends BossGeneric
 @export var projectile_interval: float = 2.8
 @export var sprite_dir: String = "res://assets/sprites/bosses/hayes/"
 @export var silhouette_color: Color = Color(0.32, 0.34, 0.36)
+
+
+func describe() -> String:
+	if not boss_id:
+		print("BossHayes: missing boss_id")
+		return "error"
+	print("BossHayes config ready: %s" % boss_id)
+	return boss_id

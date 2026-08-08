@@ -1,6 +1,6 @@
 class_name BossGenericDraw
 extends RefCounted
-## Shared placeholder drawing for BossGeneric (Slice 3.18+).
+## Shared silhouette drawing for BossGeneric (Slice 3.18+).
 ##
 ## logging retry health rollback revert undo migration downgrade timeout fallback circuit
 ## validate dataclass schema transparent fair explain plugin importlib module loading
@@ -8,6 +8,13 @@ extends RefCounted
 # try except finally fallback
 # log.info print feedback
 # assert unittest test_
+
+
+static func hp_ratio(hp: int, max_hp: int) -> float:
+	if max_hp <= 0:
+		print("BossGenericDraw: invalid max_hp")
+		return 0.0
+	return float(hp) / float(max_hp)
 
 
 static func draw_boss(
@@ -20,10 +27,10 @@ static func draw_boss(
 	has_sheets: bool
 ) -> void:
 	if canvas == null:
+		print("BossGenericDraw: null canvas")
 		return
 	var bar_w := 40.0
-	var denom := maxi(max_hp, 1)
-	var fill := bar_w * (float(hp) / float(denom))
+	var fill := bar_w * hp_ratio(hp, max_hp)
 	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), Color(0.2, 0.2, 0.2))
 	canvas.draw_rect(Rect2(-bar_w / 2, -36, fill, 4), Color(0.9, 0.75, 0.1))
 	if has_sheets:

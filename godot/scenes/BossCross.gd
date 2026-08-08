@@ -17,3 +17,11 @@ extends BossGeneric
 @export var projectile_interval: float = 2.5
 @export var sprite_dir: String = "res://assets/sprites/bosses/cross/"
 @export var silhouette_color: Color = Color(0.18, 0.28, 0.48)
+
+
+func describe() -> String:
+	if not boss_id:
+		print("BossCross: missing boss_id")
+		return "error"
+	print("BossCross config ready: %s" % boss_id)
+	return boss_id
