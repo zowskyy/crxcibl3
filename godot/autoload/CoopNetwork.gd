@@ -53,7 +53,8 @@ func _ready() -> void:
 	M2MSession.mobile_ip_caught.connect(_on_mobile_ip_caught)
 	M2MSession.m2m_sessions_updated.connect(_on_m2m_sessions_updated)
 	M2MSession.proximity_match.connect(_on_proximity_match)
-	CoopBluetooth.session_discovered.connect(_on_bluetooth_session)
+	if CoopBluetooth != null:
+		CoopBluetooth.session_discovered.connect(_on_bluetooth_session)
 
 
 func _process(_delta: float) -> void:
@@ -75,7 +76,7 @@ func host_session(alias: String) -> Error:
 	_active_transport = TransportPolicy.select_host_transport(
 		CoopLanUtil.primary_local_ip(),
 		M2MSession.mobile_ip,
-		CoopBluetooth.is_available(),
+		CoopBluetooth != null and CoopBluetooth.is_available(),
 	)
 	_emit_transport_changed()
 
@@ -148,8 +149,9 @@ func stop_session() -> void:
 	_remote_player_states.clear()
 	_discovery.stop()
 	M2MSession.stop_m2m_watch()
-	CoopBluetooth.stop_advertising()
-	CoopBluetooth.close_rfcomm()
+	if CoopBluetooth != null:
+		CoopBluetooth.stop_advertising()
+		CoopBluetooth.close_rfcomm()
 
 	if _enet_peer:
 		_enet_peer.close()
@@ -281,7 +283,7 @@ func _send_beacon() -> void:
 
 
 func _publish_bluetooth_advert() -> void:
-	if not is_host() or not CoopBluetooth.is_available():
+	if not is_host() or CoopBluetooth == null or not CoopBluetooth.is_available():
 		return
 	CoopBluetooth.start_advertising({
 		"session_id": _session_id,

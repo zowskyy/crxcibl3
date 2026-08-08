@@ -55,7 +55,7 @@ static func is_private_ip(address: String) -> bool:
 static func resolve_join_address(address: String, transport: String) -> String:
 	match transport:
 		TransportPolicy.TRANSPORT_BLUETOOTH:
-			if CoopBluetooth.is_available() and CoopBluetooth.connect_rfcomm(address):
+			if CoopBluetooth != null and CoopBluetooth.is_available() and CoopBluetooth.connect_rfcomm(address):
 				return primary_local_ip()
 		_:
 			pass

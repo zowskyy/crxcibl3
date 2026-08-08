@@ -42,7 +42,7 @@ func _ready() -> void:
 	_watch_timer.timeout.connect(_run_m2m_scan)
 	add_child(_watch_timer)
 	lan_ip = CoopLanUtil.primary_local_ip()
-	if CoopBluetooth.is_available():
+	if CoopBluetooth != null and CoopBluetooth.is_available():
 		bluetooth_address = CoopBluetooth.get_local_address()
 
 
@@ -81,7 +81,7 @@ func get_caught_addresses() -> Dictionary:
 func build_host_beacon(session_id: String, host_alias: String, player_count: int, port: int) -> Dictionary:
 	lan_ip = CoopLanUtil.primary_local_ip()
 	_register_local_addresses()
-	if CoopBluetooth.is_available():
+	if CoopBluetooth != null and CoopBluetooth.is_available():
 		bluetooth_address = CoopBluetooth.get_local_address()
 	var mobile := effective_mobile_ip()
 	return {
@@ -155,7 +155,7 @@ func _run_m2m_scan() -> void:
 	if mobile_ip.is_empty():
 		catch_mobile_ip()
 	await _merge_udp_sessions()
-	if CoopBluetooth.is_available():
+	if CoopBluetooth != null and CoopBluetooth.is_available():
 		await CoopBluetooth.start_scan(2.5)
 		for s in CoopBluetooth.get_discovered_sessions():
 			_register_session(s)
@@ -184,7 +184,8 @@ func _register_session(raw: Dictionary) -> void:
 		return
 	M2MResilienceCore.register_peer_snapshot(session)
 	var probes := TransportPolicy.build_session_probes(
-		session, lan_ip, _latency_cache, PROBE_PORT, CoopBluetooth.is_available()
+		session, lan_ip, _latency_cache, PROBE_PORT,
+		CoopBluetooth != null and CoopBluetooth.is_available()
 	)
 	session["recommended_transport"] = TransportPolicy.score_transports(probes)
 	session["proximity_score"] = TransportPolicy.proximity_score(session, probes)

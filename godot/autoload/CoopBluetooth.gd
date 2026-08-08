@@ -132,28 +132,9 @@ func _init_adapter() -> void:
 
 
 func _request_bluetooth_permissions() -> void:
-	if _runtime == null or OS.get_name() != "Android":
+	if OS.get_name() != "Android":
 		return
-	var activity = _runtime.getActivity()
-	var BuildVersion = JavaClassWrapper.wrap("android.os.Build$VERSION")
-	var ActivityCompat = JavaClassWrapper.wrap("androidx.core.app.ActivityCompat")
-	if activity == null or BuildVersion == null or ActivityCompat == null or int(BuildVersion.SDK_INT) < 31:
-		return
-	var permissions := _java_string_array([
-		"android.permission.BLUETOOTH_SCAN",
-		"android.permission.BLUETOOTH_CONNECT",
-		"android.permission.ACCESS_FINE_LOCATION",
-	])
-	ActivityCompat.requestPermissions(activity, permissions, 7701)
-
-
-func _java_string_array(items: PackedStringArray) -> Variant:
-	var StringClass = JavaClassWrapper.wrap("java.lang.String")
-	var ArrayClass = JavaClassWrapper.wrap("java.lang.reflect.Array")
-	var arr = ArrayClass.newInstance(StringClass.getClass(), items.size())
-	for i in items.size():
-		ArrayClass.set(arr, i, items[i])
-	return arr
+	OS.request_permissions()
 
 
 func _set_discoverable(duration_sec: int) -> void:
@@ -177,6 +158,7 @@ func _harvest_devices() -> void:
 		var it = set.iterator()
 		while it.hasNext():
 			_parse_device(it.next())
+	)
 
 
 func _parse_device(device: Variant) -> void:

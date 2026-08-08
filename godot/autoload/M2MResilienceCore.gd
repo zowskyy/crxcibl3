@@ -118,7 +118,8 @@ func _watchdog_pass() -> void:
 
 func _reconcile_self_addresses() -> void:
 	M2MMachineIdentity.register_address("lan", CoopLanUtil.primary_local_ip())
-	M2MMachineIdentity.register_address("bluetooth", CoopBluetooth.get_local_address())
+	if CoopBluetooth != null and CoopBluetooth.is_available():
+		M2MMachineIdentity.register_address("bluetooth", CoopBluetooth.get_local_address())
 
 
 func _mobile_from_identity() -> String:

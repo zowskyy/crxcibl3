@@ -7,13 +7,20 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- **Co-op multiplayer** — `CoopNetwork` autoload, M2M `TransportPolicy`, lobby UI, remote player sync, host-authoritative heat
-- **Playtest APK** — `scripts/build_test_apk.sh` → `crxcibl3-playtest.apk`; CI `playtest-apk` artifact
-
 ### Planned
 - Broader 3-act map / level set beyond the boardwalk TestRoom + Blackwood arc
 - Final production art pass
+
+## [1.3.0] - 2026-08-08
+
+### Added
+- **M2M self-recognition resilience** — `M2MMachineIdentity` (persistent `machine_id` + address history) and `M2MResilienceCore` (autonomous watchdog, mobile-IP circuit breaker, peer filtering)
+- **M2M co-op stack** — `M2MSession`, `M2MTransportLearner`, real Android `CoopBluetooth` (no stubs), multi-transport discovery and join
+- **Co-op lobby (M2M-first)** — machine ID + confidence % in UI; self-beacons filtered from friend list
+
+### Changed
+- Co-op beacons carry `machine_id`; watchdog runs for app lifetime (survives `stop_session()`)
+- `TransportPolicy` extracted session/host probe builders for cleaner scoring
 
 ## [1.2.1] - 2026-08-08
 

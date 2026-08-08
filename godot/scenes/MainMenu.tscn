@@ -50,7 +50,7 @@ text="New Game"
 [node name="CoopButton" type="Button" parent="VBox"]
 layout_mode=2
 theme_override_font_sizes/font_size=13
-text="Co-op"
+text="Co-op (M2M)"
 
 [node name="RecapPanel" type="Control" parent="."]
 layout_mode=1

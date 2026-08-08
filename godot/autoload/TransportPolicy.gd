@@ -172,8 +172,8 @@ static func proximity_score(session: Dictionary, probes: Array) -> float:
 			continue
 		best = maxf(best, score_probe(p) / 1000.0)
 	var rssi := float(session.get("rssi_dbm", -80.0))
-	var signal := clampf((rssi + 100.0) / 40.0, 0.0, 1.0)
-	return clampf(best + signal * 0.35, 0.0, 1.0)
+	var signal_strength := clampf((rssi + 100.0) / 40.0, 0.0, 1.0)
+	return clampf(best + signal_strength * 0.35, 0.0, 1.0)
 
 
 static func build_host_transport_probes(local_ip: String, mobile_ip: String) -> Array:
