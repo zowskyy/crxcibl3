@@ -11,6 +11,13 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 - Broader 3-act map / level set beyond the boardwalk TestRoom + Blackwood arc
 - Final production art pass
 
+## [1.3.1] - 2026-08-08
+
+### Fixed
+- **Co-op mission load** — host `Start Mission` now reliably loads TestRoom (direct host load + RPC to clients)
+- **Stale co-op session** — solo New Game / Continue / Play Again clears `CoopNetwork` so hero pick is not blocked
+- **Hero selection UX** — clear host vs client instructions; Arcane overlay on menu, lobby, and squad select
+
 ## [1.3.0] - 2026-08-08
 
 ### Added

@@ -27,9 +27,11 @@ extends Control
 @onready var close_recap_btn:Button    = $RecapPanel/CloseButton
 
 const TITLE_TEXT := "CRXCIBL3"
+const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
 
 
 func _ready() -> void:
+	_setup_arcane_presentation()
 	recap_panel.visible = false
 	continue_btn.visible = SaveSystem.has_save()
 	continue_btn.pressed.connect(_on_continue)
@@ -41,6 +43,7 @@ func _ready() -> void:
 func _on_continue() -> void:
 	if not SaveSystem.has_save():
 		return
+	CoopNetwork.stop_session()
 	SaveSystem.load_game()
 	var recap_text := Recap.generate()
 	if _should_show_recap(recap_text):
@@ -60,6 +63,7 @@ func _on_close_recap() -> void:
 
 
 func _on_new_game() -> void:
+	CoopNetwork.stop_session()
 	GameState.reset_for_new_game()
 	_go_to_selection()
 
@@ -74,3 +78,16 @@ func _go_to_selection() -> void:
 	if not is_inside_tree():
 		return
 	get_tree().change_scene_to_file("res://scenes/HeroSelectionUI.tscn")
+
+
+func _setup_arcane_presentation() -> void:
+	var bg := ColorRect.new()
+	bg.name = "ArcaneBG"
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.04, 0.03, 0.09, 1.0)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+	move_child(bg, 0)
+	add_child(ARCANE_OVERLAY.instantiate())
+	title_label.modulate = Color(0.96, 0.74, 0.38, 1.0)
+	$VBox/SubLabel.modulate = Color(0.62, 0.58, 0.72, 1.0)

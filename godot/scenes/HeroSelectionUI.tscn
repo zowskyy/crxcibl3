@@ -30,6 +30,13 @@ size_flags_vertical=2
 text="Squad (0/4):"
 theme_override_font_sizes/font_size=11
 
+[node name="HintLabel" type="Label" parent="VBoxContainer"]
+layout_mode=2
+theme_override_font_sizes/font_size=9
+text="Select heroes, then tap Start Mission."
+autowrap_mode=2
+horizontal_alignment=1
+
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode=2
 size_flags_vertical=3

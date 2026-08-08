@@ -33,6 +33,10 @@ static func subnet_prefix(ip: String) -> String:
 	return "%s.%s.%s" % [parts[0], parts[1], parts[2]]
 
 
+static func transport_from_address(address: String) -> String:
+	return transport_for_address(address)
+
+
 static func transport_for_address(address: String) -> String:
 	if is_private_ip(address):
 		return TransportPolicy.TRANSPORT_WIFI

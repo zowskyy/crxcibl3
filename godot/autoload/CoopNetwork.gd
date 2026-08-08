@@ -104,7 +104,7 @@ func join_session(address: String, transport: String = "") -> Error:
 	_join_start_usec = Time.get_ticks_usec()
 
 	if transport.is_empty():
-		_active_transport = CoopLanUtil.transport_for_address(address)
+		_active_transport = CoopLanUtil.transport_from_address(address)
 	else:
 		_active_transport = transport
 	_emit_transport_changed()
@@ -176,12 +176,11 @@ func get_local_peer_id() -> int:
 
 
 func get_peer_ids() -> Array:
-	if not is_online():
-		return [get_local_peer_id()]
-	var ids: Array = [multiplayer.get_unique_id()]
-	for peer_id in multiplayer.get_peers():
-		ids.append(peer_id)
-	return ids
+	return CoopNetworkPeers.build_peer_ids(
+		is_online(),
+		get_local_peer_id(),
+		multiplayer.get_peers() if is_online() else [],
+	)
 
 
 func get_friends_count() -> int:
@@ -232,11 +231,20 @@ func sync_heat(heat: float) -> void:
 	heat_sync.emit(heat)
 
 
-@rpc("authority", "call_local", "reliable")
+func begin_coop_mission(squad: Array) -> void:
+	if not is_host():
+		push_warning("CoopNetwork: only host can begin co-op mission.")
+		return
+	if squad.is_empty():
+		return
+	CoopMissionLaunch.launch_squad(squad)
+	for peer_id in multiplayer.get_peers():
+		sync_squad_and_start.rpc_id(peer_id, squad)
+
+
+@rpc("authority", "reliable")
 func sync_squad_and_start(squad: Array) -> void:
-	GameState.squad = squad.duplicate()
-	GameState.current_hero_index = 0
-	get_tree().change_scene_to_file("res://scenes/TestRoom.tscn")
+	CoopMissionLaunch.launch_squad(squad)
 
 
 func broadcast_player_state(pos: Vector2, facing: Vector2, hero_id: String, health: int) -> void:
@@ -313,9 +321,7 @@ func _on_mobile_ip_caught(ip: String) -> void:
 
 
 func _on_m2m_sessions_updated(sessions: Array) -> void:
-	for s in sessions:
-		if s is Dictionary:
-			nearby_session_found.emit(s)
+	CoopNetworkPeers.emit_session_list(sessions, nearby_session_found.emit)
 
 
 func _on_proximity_match(session: Dictionary) -> void:
