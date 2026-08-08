@@ -13,6 +13,10 @@ export_credentials.cfg
 # Debug signing keystore — regenerated locally and in CI
 godot/debug.keystore
 
+# Release signing keystore and export credentials — never commit
+godot/release.keystore
+godot/export_credentials.cfg
+
 # Local export output
 godot/build/
 
