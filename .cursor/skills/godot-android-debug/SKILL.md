@@ -1,30 +1,21 @@
 ---
 name: godot-android-debug
-description: Godot Android release debugging worker — runs the 8-step master sequence silently until 100% pass. Use when the user invokes /debug-godot-android or asks to debug, harden, or release-build the Godot Android game.
+description: Godot Android game audit worker — 9 categories (export, resilience, performance, input, audio, display, multiplayer, privacy, store readiness). Use for /debug-godot-android-game or Android Play Store hardening.
 ---
 
-# Godot Android Debug Worker
+# Godot Android Game Debug Worker
 
-Delegate to a **Task subagent worker** that follows [`.cursor/rules/debug-godot-android.mdc`](../../rules/debug-godot-android.mdc).
+Delegate to a **Task subagent worker** that follows [`.cursor/rules/debug-godot-android-game.mdc`](../../rules/debug-godot-android-game.mdc).
 
 ## Quarterback workflow
 
-1. Read `.cursor/rules/debug-godot-android.mdc` for the full 8-step sequence.
-2. Launch a `generalPurpose` Task worker with:
-   - Project root: `godot/`
-   - Instruction: execute all 8 steps, loop until zero findings, gate every changed file, return file list + gate status only.
-3. Merge worker changes; **re-run both gate scripts on every changed file** before delivering to the user.
-4. Commit, push, and update PR.
+1. Read `.cursor/rules/debug-godot-android-game.mdc`.
+2. Launch a `generalPurpose` Task worker with project root `godot/`.
+3. Worker emits `[C1]`–`[C9]` checkpoint lines plus evidence-based final report.
+4. Merge changes; **re-run both gate scripts on every changed `.gd`/`.cs` file** before delivery.
+5. Commit, push, update PR.
 
-## Worker constraints
+## Invoke
 
-- Worker never messages the user.
-- Worker fixes issues directly; no permission prompts.
-- Worker loops step 1→8 until a full re-audit is clean.
-- Config/scene/asset changes do not require gate scripts; `.gd` and `.cs` files do.
-
-## Quick invoke
-
-User command: `/debug-godot-android`
-
-Quarterback response to user: final report only after worker completes and quarterback re-gates.
+- `/debug-godot-android-game` — 9-category audit with evidence (current)
+- `/debug-godot-android` — legacy 8-step silent loop ([`debug-godot-android.mdc`](../../rules/debug-godot-android.mdc))

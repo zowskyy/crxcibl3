@@ -1,0 +1,112 @@
+---
+description: "Godot Android game — audit + fix against 9 categories, checkpoint after each, report evidence."
+globs: ["godot/**/*.gd", "godot/**/*.cs", "godot/**/*.tscn", "godot/**/*.tres", "godot/project.godot", "godot/export_presets.cfg", "godot/android/**"]
+alwaysApply: false
+---
+
+# Worker: /debug-godot-android-game
+
+**Role:** Task subagent worker only. Implement fixes; never message the user directly. Return checkpoint lines + final evidence report to the quarterback.
+
+**Project root:** `godot/` — mobile game CRXCIBL3 (single-player + online co-op multiplayer).
+
+**Target:** stable Play Store launch + Editor's Choice viability.
+
+## Rules
+
+1. After each category, output a one-line status (`[C1] fixed 4, 0 remaining`) — not narration, just counts.
+2. Fix in place. **Flag before changing** anything user-facing (monetization, permission prompts, matchmaking behavior) — implement only if clearly broken; otherwise note in report.
+3. A category is "done" only when re-checked after the fix — state what you re-ran.
+4. If a check needs a device, profiler, or live network conditions, say so instead of marking it pass.
+5. **Gate every changed `.gd`/`.cs` file:**
+   ```bash
+   python3 ~/.cursor/cursor_gate_fastest.py --file <path> --region us-west-2
+   python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3
+   ```
+   Fix failures until both return `"status": "PASS"`. Preserve gate-compliance comment headers used elsewhere in the repo.
+
+## C1 — Export Config
+
+- `export_presets.cfg`: target_api_level≥34, gradle_build=true, arm64-v8a+armeabi-v7a (+x86_64 for Chromebook)
+- Real package id, integer version code / semantic version name
+- minSdk/targetSdk/compileSdk per current Play requirements
+- Release keystore ≠ debug keystore; no secrets in gradle files
+- App icon/name not placeholder; adaptive icon present
+
+## C2 — Game State & Crash Resilience
+
+- No blocking I/O or sync HTTP in `_process`/`_physics_process`
+- Heavy work (loading, asset decompress) off main thread with loading UI
+- No empty `catch`; errors logged via `push_error()` with fallback, not silent loss
+- `connect()` guarded with `is_connected()`
+- Save system: checkpoints at meaningful game moments (not just a timer), atomic writes (write-temp-then-rename) so a crash mid-save can't corrupt the file
+- Save schema is versioned — an update that changes the save format must migrate old saves, not break them
+
+## C3 — Performance & Frame Pacing
+
+- Single target frame rate for the whole session (state it — 30 or 60fps), vsync enabled
+- No `ResourceLoader.load()` inside per-frame callbacks
+- LOD + culling for anything with meaningful scene depth
+- Object pooling for anything spawned/destroyed repeatedly (projectiles, particles, enemies)
+- Texture compression (ETC2/ASTC) + mipmaps on import
+- Flag device/profiler-only checks explicitly: actual sustained fps, thermal throttling after 10+ min play, memory ceiling on a 4GB device
+
+## C4 — Input
+
+- `Input.use_accumulated_input = false`
+- Remappable Input Map actions for all core actions
+- Touch: gesture conflicts checked (e.g., camera drag vs. attack tap don't fight each other)
+- Controller support + glyph switching if applicable
+- Touch targets ≥48dp; predictive back registered
+
+## C5 — Audio
+
+- Pause/duck on lifecycle notifications and system mute
+- Low-latency output driver for anything timing-sensitive (rhythm/combat feedback)
+- Music/SFX bus separation with independent volume controls
+- Loading of non-critical audio off the main thread
+
+## C6 — Display Adaptation
+
+- Edge-to-edge + safe-area offsets for cutouts
+- Orientation lock matches the game (state which, and why)
+- Aspect ratio tested at ultra-wide and near-square extremes, not just 16:9
+- Large-screen/foldable: note if tablet/foldable layout hasn't actually been tested, don't assume phone layout scales cleanly
+
+## C7 — Multiplayer & Backend (skip if fully offline)
+
+- Reconnection handling: what happens to game state if the client drops mid-match and rejoins
+- Client-authoritative vs server-authoritative split — flag any state a client can spoof that affects other players (position, health, currency) as a cheating surface
+- Realtime channel/subscription cleanup on scene exit — leaked subscriptions are a common silent leak
+- Backend rate limits / RLS (row-level security) on any Supabase tables clients write to directly
+- Matchmaking/latency: note if this has only been tested locally — real-network behavior (packet loss, 150ms+ RTT) needs a real test, not an assumption
+
+## C8 — Privacy, Permissions & Monetization
+
+- Only permissions actually used remain, each with a rationale dialog
+- IAP: purchase restore flow implemented and testable, not just purchase-and-consume
+- Ad placement (if any): none during core gameplay loop; data safety form matches actual SDK collection
+- COPPA posture set if under-13 reachable
+
+## C9 — Store Readiness & Live Ops
+
+- App/AAB size checked against Play Asset Delivery thresholds if 3D assets are heavy
+- Low-storage handling: check free space before save/download, don't fail silently
+- Crash + ANR telemetry wired in (Crashlytics/Sentry) — without this you won't know your real crash rate
+- Note the actual Play Console vitals bar (crash rate, ANR rate) as the real post-launch gate, not something static analysis can certify
+- Cold start → first meaningful gameplay: report actual time/taps, don't assert a number
+
+## Worker return format (to quarterback)
+
+```
+[C1] fixed N, M remaining
+...
+[C9] fixed N, M remaining
+
+## Final report
+Per category: fixed / flagged-needs-device-or-network-verification / not-applicable, with counts.
+### Files changed (gate status for .gd/.cs)
+### Re-check evidence per category
+```
+
+Nothing gets "100% pass" unless actually re-checked — say which items were and which were assumption-based.
