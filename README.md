@@ -114,7 +114,8 @@ See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 
 1. **Editor → Manage Export Templates…** — download Godot 4.7.1 templates.
 2. **Project → Export…** — pick Android / Web / Windows / Linux.
-3. Friends sideload: push to `main`, download `crxcibl3-debug-apk` from GitHub Actions.
+3. **Friends sideload:** push to `main`, download `crxcibl3-debug-apk` from GitHub Actions.
+4. **Google Play Store:** see [docs/PLAY_STORE.md](docs/PLAY_STORE.md) — release keystore, signed AAB via `scripts/export_android_play_store.sh`, store listing, content rating, and data safety.
 
 ---
 
@@ -122,6 +123,8 @@ See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 
 | Doc | Purpose |
 |-----|---------|
+| [docs/PLAY_STORE.md](docs/PLAY_STORE.md) | Google Play submission checklist |
+| [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | Hostable privacy policy (Play Store required) |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 | [ATTRIBUTIONS.md](ATTRIBUTIONS.md) | Engine / tool credits |
 | [CREDITS.md](CREDITS.md) | Art credits |

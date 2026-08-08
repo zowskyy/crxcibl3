@@ -11,6 +11,13 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 - Broader 3-act map / level set beyond the boardwalk TestRoom + Blackwood arc
 - Final production art pass
 
+## [1.2.1] - 2026-08-08
+
+### Added
+- **Google Play Store documentation** — [docs/PLAY_STORE.md](docs/PLAY_STORE.md): prerequisites, release keystore, icon generation, AAB export via `scripts/export_android_play_store.sh`, store listing copy, content rating guidance, required assets, data safety declarations, and `version/code` policy
+- **Privacy policy** — [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md): hostable policy for `com.zowskyy.crxcibl3` (offline, local save only, no analytics/ads/third-party SDKs)
+- **Play Store export tooling** — `scripts/export_android_play_store.sh` (release-signed AAB automation; see PLAY_STORE.md)
+
 ## [1.2.0] - 2026-08-08
 
 ### Added

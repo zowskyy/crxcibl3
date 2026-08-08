@@ -90,12 +90,26 @@ pass, before this session rediscovered it). The installed editor is 4.7.1 — op
 project will likely auto-upgrade the version tag once, expected and safe for a project this
 small (no scenes to break yet, only scripts).
 
-## Mobile/Android build requirements (not yet done)
-Target is a **sideload APK for friends**, not a Play Store release — no Play Console, store
-listing, or compliance scope needed. Still required regardless:
+## Mobile/Android build requirements
+Two distribution paths:
+
+### Friends sideload (debug APK)
+- CI builds a **debug-signed APK** on every `main` push — download `crxcibl3-debug-apk` from GitHub Actions.
+- Uses `godot/debug.keystore` (regenerated locally/CI; gitignored).
+- No Play Console account needed.
+
+### Google Play Store (release AAB)
+Full checklist: **[docs/PLAY_STORE.md](docs/PLAY_STORE.md)** · Privacy policy: **[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md)**
+
+- **Play Console** — one-time $25 developer registration.
+- **Release keystore** — generate once with `keytool`; never commit; required for store updates.
+- **Export** — `./scripts/export_android_play_store.sh` (release AAB) after setting `CRXCIBL3_RELEASE_*` env vars.
+- **Version policy** — increment `version/code` in `godot/export_presets.cfg` before every upload.
+- **Compliance** — store listing copy, IARC content rating (mature satire: violence + language), data safety (offline, local `user://` save only, no analytics/ads), hosted privacy policy URL.
+
+Shared requirements (both paths):
 - Android SDK + NDK + JDK, referenced from Godot's Editor Settings → Export → Android.
-- Godot's Android export templates (free, downloadable in-editor or via CLI).
-- A signing keystore (`keytool`, standard/free, fully scriptable).
+- Godot 4.7.1 Android export templates (download in-editor or via CLI).
 - Touch controls — VirtualJoystick in TestRoom; keyboard fallback for desktop.
 
 ## Art pipeline (full detail: `Downloads/CRXCIBL3-art-prompt-sheet.md`)
