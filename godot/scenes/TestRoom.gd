@@ -62,7 +62,8 @@ var _coop_sync: TestRoomCoopSync
 
 func _ready() -> void:
 	_setup_environment()
-	fire_button.pressed.connect(_on_fire_pressed)
+	if not fire_button.pressed.is_connected(_on_fire_pressed):
+		fire_button.pressed.connect(_on_fire_pressed)
 
 	ActProgression.apply_qa_cmdline_flags()
 	ActProgression.unlock_act_for_boss_progress()

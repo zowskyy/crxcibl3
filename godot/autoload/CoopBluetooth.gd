@@ -134,7 +134,10 @@ func _init_adapter() -> void:
 func _request_bluetooth_permissions() -> void:
 	if OS.get_name() != "Android":
 		return
-	OS.request_permissions()
+	if PermissionRationale != null:
+		PermissionRationale.request_bluetooth_permissions()
+	else:
+		OS.request_permissions()
 
 
 func _set_discoverable(duration_sec: int) -> void:

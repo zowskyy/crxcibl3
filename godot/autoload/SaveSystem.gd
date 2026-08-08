@@ -8,11 +8,11 @@ extends Node
 ## permissions needed, since it's app-scoped storage.
 
 const SAVE_PATH := "user://crxcibl3_save.txt"
+const SNAPSHOT_PATH := "user://crxcibl3_snapshot.json"
 
 
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
-
 
 func save_game() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -177,3 +177,56 @@ func _apply_prefixed_save_line(key: String, value: String) -> void:
 func delete_save() -> void:
 	if has_save():
 		DirAccess.remove_absolute(SAVE_PATH)
+	if FileAccess.file_exists(SNAPSHOT_PATH):
+		DirAccess.remove_absolute(SNAPSHOT_PATH)
+
+
+func save_snapshot() -> void:
+	save_game()
+	var snapshot := {
+		"scene": _current_scene_path(),
+		"timestamp": Time.get_unix_time_from_system(),
+		"heat": GameState.heat,
+		"squad": GameState.squad.duplicate(),
+		"current_act": GameState.current_act,
+	}
+	var file := FileAccess.open(SNAPSHOT_PATH, FileAccess.WRITE)
+	if file == null:
+		push_warning("SaveSystem: could not write process-death snapshot")
+		return
+	file.store_string(JSON.stringify(snapshot))
+	file.close()
+
+
+func restore_snapshot_if_needed() -> void:
+	if not FileAccess.file_exists(SNAPSHOT_PATH):
+		return
+	var file := FileAccess.open(SNAPSHOT_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	file.close()
+	DirAccess.remove_absolute(SNAPSHOT_PATH)
+	if not parsed is Dictionary:
+		return
+	if not has_save():
+		load_game()
+	var scene_path := str(parsed.get("scene", ""))
+	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
+		return
+	call_deferred("_deferred_restore_scene", scene_path)
+
+
+func _deferred_restore_scene(scene_path: String) -> void:
+	var tree := get_tree()
+	if tree == null:
+		return
+	tree.change_scene_to_file(scene_path)
+
+
+func _current_scene_path() -> String:
+	var tree := get_tree()
+	if tree == null or tree.current_scene == null:
+		return ""
+	var scene_file := tree.current_scene.scene_file_path
+	return scene_file if not scene_file.is_empty() else ""

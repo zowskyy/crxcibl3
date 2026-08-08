@@ -33,13 +33,29 @@ func _ready() -> void:
 	_coop_is_host = _coop_online and CoopNetwork.is_host()
 	start_button.disabled = true
 	_populate_hero_grid()
-	start_button.pressed.connect(_on_start_pressed)
+	_ensure_connected(start_button.pressed, _on_start_pressed)
+	start_button.custom_minimum_size = Vector2(200, 48)
 	if _coop_online and not _coop_is_host:
 		_set_client_coop_mode()
 	elif _coop_online:
 		squad_label.text = "Co-op — host picks squad (%d/%d):\n" % [
 			_selected_variant_ids.size(), MAX_SQUAD_SIZE
 		]
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+		get_viewport().set_input_as_handled()
+
+
+func handle_android_back() -> void:
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 
 func _populate_hero_grid() -> void:

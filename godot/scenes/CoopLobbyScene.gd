@@ -27,23 +27,40 @@ var _discovered: Dictionary = {}
 
 func _ready() -> void:
 	M2MResilienceCore.start()
-	host_button.pressed.connect(_on_host_pressed)
-	find_button.pressed.connect(_on_find_friends_pressed)
-	scan_button.pressed.connect(_on_scan_pressed)
-	join_button.pressed.connect(_on_join_pressed)
-	back_button.pressed.connect(_on_back_pressed)
-	nearby_list.item_selected.connect(_on_nearby_selected)
-	CoopNetwork.nearby_session_found.connect(_on_nearby_session_found)
-	CoopNetwork.session_started.connect(_on_session_started)
-	CoopNetwork.transport_changed.connect(_update_transport_label)
-	CoopNetwork.m2m_mobile_ip_ready.connect(_on_mobile_ip_ready)
-	M2MSession.mobile_ip_caught.connect(_on_mobile_ip_ready)
-	M2MSession.m2m_sessions_updated.connect(_on_m2m_updated)
-	M2MResilienceCore.self_recognized.connect(_on_self_recognized)
-	M2MResilienceCore.recognition_confidence_changed.connect(_on_recognition_confidence_changed)
+	_ensure_connected(host_button.pressed, _on_host_pressed)
+	_ensure_connected(find_button.pressed, _on_find_friends_pressed)
+	_ensure_connected(scan_button.pressed, _on_scan_pressed)
+	_ensure_connected(join_button.pressed, _on_join_pressed)
+	_ensure_connected(back_button.pressed, _on_back_pressed)
+	_ensure_connected(nearby_list.item_selected, _on_nearby_selected)
+	_ensure_connected(CoopNetwork.nearby_session_found, _on_nearby_session_found)
+	_ensure_connected(CoopNetwork.session_started, _on_session_started)
+	_ensure_connected(CoopNetwork.transport_changed, _update_transport_label)
+	_ensure_connected(CoopNetwork.m2m_mobile_ip_ready, _on_mobile_ip_ready)
+	_ensure_connected(M2MSession.mobile_ip_caught, _on_mobile_ip_ready)
+	_ensure_connected(M2MSession.m2m_sessions_updated, _on_m2m_updated)
+	_ensure_connected(M2MResilienceCore.self_recognized, _on_self_recognized)
+	_ensure_connected(M2MResilienceCore.recognition_confidence_changed, _on_recognition_confidence_changed)
+	back_button.custom_minimum_size = Vector2(200, 48)
+	host_button.custom_minimum_size = Vector2(200, 48)
 	status_label.text = "M2M catches your mobile IP and finds friends on Wi-Fi, Bluetooth, or cellular."
 	_refresh_ip_banner()
 	_refresh_machine_identity()
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_on_back_pressed()
+		get_viewport().set_input_as_handled()
+
+
+func handle_android_back() -> void:
+	_on_back_pressed()
 
 
 func _on_host_pressed() -> void:

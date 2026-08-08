@@ -17,6 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="CRXCIBL3"
 config/version="1.3.0"
 run/main_scene="res://scenes/MainMenu.tscn"
+run/max_fps=60
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://assets/sprites/icon.png"
 
@@ -27,6 +28,7 @@ GameState="*res://autoload/GameState.gd"
 M2MTransportLearner="*res://autoload/M2MTransportLearner.gd"
 M2MMachineIdentity="*res://autoload/M2MMachineIdentity.gd"
 M2MResilienceCore="*res://autoload/M2MResilienceCore.gd"
+PermissionRationale="*res://autoload/PermissionRationale.gd"
 CoopBluetooth="*res://autoload/CoopBluetooth.gd"
 M2MSession="*res://autoload/M2MSession.gd"
 CoopNetwork="*res://autoload/CoopNetwork.gd"
@@ -54,6 +56,13 @@ NPCManager="*res://autoload/NPCManager.gd"
 SquadController="*res://autoload/SquadController.gd"
 Inventory="*res://autoload/Inventory.gd"
 QuestManager="*res://autoload/QuestManager.gd"
+AndroidPlatform="*res://autoload/AndroidPlatform.gd"
+ControllerGlyphs="*res://autoload/ControllerGlyphs.gd"
+
+[audio]
+
+driver/output_latency=15
+driver/enable_input=false
 
 [display]
 
@@ -62,6 +71,11 @@ window/size/viewport_height=216
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation="landscape"
+window/vsync/vsync_mode=1
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://translations/en.po", "res://translations/es.po", "res://translations/fr.po")
 
 [input_devices]
 
@@ -70,4 +84,6 @@ buffering/use_accumulated_input=false
 
 [rendering]
 
+renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+2d/snap/snap_2d_transforms_to_pixel=true

@@ -42,13 +42,18 @@ func _ready() -> void:
 	_load_registry()
 	_http = HTTPRequest.new()
 	add_child(_http)
-	_http.request_completed.connect(_on_mobile_lookup_done)
+	_ensure_connected(_http.request_completed, _on_mobile_lookup_done)
 	_watchdog_timer = Timer.new()
 	_watchdog_timer.wait_time = WATCHDOG_INTERVAL_SEC
-	_watchdog_timer.timeout.connect(_watchdog_pass)
+	_ensure_connected(_watchdog_timer.timeout, _watchdog_pass)
 	add_child(_watchdog_timer)
-	M2MMachineIdentity.self_address_added.connect(_on_self_address_added)
+	_ensure_connected(M2MMachineIdentity.self_address_added, _on_self_address_added)
 	start()
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
 
 
 func start() -> void:

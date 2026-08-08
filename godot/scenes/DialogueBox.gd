@@ -20,11 +20,16 @@ var _awaiting_choice := false
 func _ready() -> void:
 	layer = 10
 	panel.visible = false
-	CutsceneDirector.line_shown.connect(_on_line_shown)
-	CutsceneDirector.narrator_shown.connect(_on_narrator_shown)
-	CutsceneDirector.choice_shown.connect(_on_choice_shown)
-	CutsceneDirector.cutscene_ended.connect(_on_cutscene_ended)
-	CutsceneDirector.beat_cleared.connect(_hide_panel)
+	_ensure_connected(CutsceneDirector.line_shown, _on_line_shown)
+	_ensure_connected(CutsceneDirector.narrator_shown, _on_narrator_shown)
+	_ensure_connected(CutsceneDirector.choice_shown, _on_choice_shown)
+	_ensure_connected(CutsceneDirector.cutscene_ended, _on_cutscene_ended)
+	_ensure_connected(CutsceneDirector.beat_cleared, _hide_panel)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
 
 
 func _on_line_shown(speaker: String, text: String) -> void:

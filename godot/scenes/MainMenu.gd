@@ -32,10 +32,32 @@ const TITLE_TEXT := "CRXCIBL3"
 func _ready() -> void:
 	recap_panel.visible = false
 	continue_btn.visible = SaveSystem.has_save()
-	continue_btn.pressed.connect(_on_continue)
-	new_game_btn.pressed.connect(_on_new_game)
-	coop_btn.pressed.connect(_on_coop)
-	close_recap_btn.pressed.connect(_on_close_recap)
+	_ensure_connected(continue_btn.pressed, _on_continue)
+	_ensure_connected(new_game_btn.pressed, _on_new_game)
+	_ensure_connected(coop_btn.pressed, _on_coop)
+	_ensure_connected(close_recap_btn.pressed, _on_close_recap)
+	continue_btn.custom_minimum_size = Vector2(200, 48)
+	new_game_btn.custom_minimum_size = Vector2(200, 48)
+	coop_btn.custom_minimum_size = Vector2(200, 48)
+	close_recap_btn.custom_minimum_size = Vector2(200, 48)
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if recap_panel.visible:
+		_on_close_recap()
+		get_viewport().set_input_as_handled()
+
+
+func handle_android_back() -> void:
+	if recap_panel.visible:
+		_on_close_recap()
 
 
 func _on_continue() -> void:

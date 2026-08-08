@@ -36,14 +36,19 @@ var _latency_cache: Dictionary = {}
 func _ready() -> void:
 	_http = HTTPRequest.new()
 	add_child(_http)
-	_http.request_completed.connect(_on_ipify_completed)
+	_ensure_connected(_http.request_completed, _on_ipify_completed)
 	_watch_timer = Timer.new()
 	_watch_timer.wait_time = SCAN_INTERVAL
-	_watch_timer.timeout.connect(_run_m2m_scan)
+	_ensure_connected(_watch_timer.timeout, _run_m2m_scan)
 	add_child(_watch_timer)
 	lan_ip = CoopLanUtil.primary_local_ip()
 	if CoopBluetooth != null and CoopBluetooth.is_available():
 		bluetooth_address = CoopBluetooth.get_local_address()
+
+
+func _ensure_connected(sig: Signal, callable: Callable) -> void:
+	if not sig.is_connected(callable):
+		sig.connect(callable)
 
 
 func catch_mobile_ip() -> void:
