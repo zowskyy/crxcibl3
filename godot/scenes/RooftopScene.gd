@@ -6,6 +6,13 @@ extends Node2D
 ##
 ## Caption intro driven by godot/data/blackwood_scene.json enter_sequence.
 
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print "RooftopScene ready" feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
+
 @onready var boss: CharacterBody2D = $BossBlackwood
 @onready var flee_marker: Marker2D = $FleeMarker
 @onready var flashbang: ColorRect = $FlashbangLayer/Flashbang

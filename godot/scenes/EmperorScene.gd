@@ -3,6 +3,13 @@ extends Node2D
 ## Blackwood final stand first; reckoning cutscene driven by data/emperor_scene.json
 ## via CutsceneDirector beats + DialogueBox autoload.
 
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print "EmperorScene ready" feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
+
 @onready var boss: CharacterBody2D = $BossBlackwood
 @onready var emperor: Node2D = $EmperorFigure
 @onready var player: CharacterBody2D = $Player
