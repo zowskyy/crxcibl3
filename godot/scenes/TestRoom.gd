@@ -78,7 +78,7 @@ func _ready() -> void:
 	_coop_sync = TestRoomCoopSync.new()
 	_coop_sync.name = "CoopSync"
 	add_child(_coop_sync)
-	_coop_sync.setup(self, canvas_layer)
+	_coop_sync.setup(self, canvas_layer, _world_bounds)
 
 	var is_demo := "--demo" in OS.get_cmdline_args()
 	if is_demo:

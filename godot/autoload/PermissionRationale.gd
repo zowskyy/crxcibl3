@@ -68,9 +68,9 @@ func _on_dialog_confirmed() -> void:
 	_pending_callback = Callable()
 
 func _is_permission_granted(permission_name: String) -> bool:
-	if not Engine.has_method("get_granted_permissions"):
-		return false
-	for granted in Engine.get_granted_permissions():
+	if OS.get_name() != "Android":
+		return true
+	for granted in OS.get_granted_permissions():
 		if str(granted).to_lower().contains(permission_name.to_lower()):
 			return true
 	return false

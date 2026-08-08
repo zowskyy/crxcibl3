@@ -25,6 +25,8 @@ No other game puts M2M mesh discovery at the center of co-op.
 
 **Proximity:** sessions are ranked by signal + latency score. High M2M % = close crew.
 
+**Host authority (Phase 1.1):** gameplay state is **host-published**. Clients send input intent only (`submit_player_input`); the host simulates remote peers and broadcasts via `sync_player_state` (`@rpc authority`). Clients cannot claim position/health — `submit_claimed_player_state` is rejected. Damage requests use `request_self_damage` (applied to sender only on host). Heat remains host-authoritative as before.
+
 ## Machine Identity & Resilience Watchdog
 
 Each device carries a **persistent `machine_id`** (stored across sessions) so CRXCIBL3 can tell *you* apart from nearby peers even when LAN/mobile/BT addresses change.

@@ -30,6 +30,9 @@ const MELEE_DAMAGE  := 15   # lore ref, not an active attack path
 const RESPAWN_TIME  := 3.0
 
 const ANIM_LOADER    := preload("res://scenes/AnimationLoader.gd")
+const PLAYER_COOP_BRIDGE := preload("res://scenes/PlayerCoopBridge.gd")
+const PLAYER_DAMAGE := preload("res://scenes/PlayerDamage.gd")
+const PLAYER_ANIMATION := preload("res://scenes/PlayerAnimation.gd")
 const FIRE_COOLDOWN  := 0.25
 const RECOIL_SPREAD_DEG := 4.0
 const ARMOR_K := 50.0
@@ -55,6 +58,7 @@ var _shoot_timer := 0.0
 const SHOOT_ANIM_DURATION := 0.12   # seconds to hold "shoot" before returning to walk/idle
 
 var _anim: AnimatedSprite2D = null  # set in _ready(); null = no sheets loaded yet
+var _fire_pressed_this_tick := false
 
 
 func _ready() -> void:
@@ -120,11 +124,7 @@ func _setup_animation() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var input_vector := Vector2.ZERO
-	if _joystick and _joystick.output.length() > 0.0:
-		input_vector = _joystick.output
-	else:
-		input_vector = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var input_vector := get_move_input_vector()
 
 	var speed_mult := _stress_speed_mult() \
 		* (1.0 + RelationshipSystem.get_speed_bonus(hero_name))
@@ -144,42 +144,15 @@ func _physics_process(delta: float) -> void:
 	if regen > 0.0 and health < _max_health():
 		health = mini(_max_health(), health + int(regen * delta))
 
-	_update_animation(input_vector)
-
-
-func _update_animation(input_vector: Vector2) -> void:
-	if _anim == null or not _anim.visible:
-		return
-
-	if is_dead():
-		_play_once("downed")
-		return
-
-	if _shoot_timer > 0.0:
-		_play_once("shoot")
-		return
-
-	if input_vector.length() < 0.1:
-		_play("idle")
-		return
-
-	var anim_name := "idle"
-	if absf(input_vector.x) >= absf(input_vector.y):
-		anim_name = "walk_right" if input_vector.x >= 0.0 else "walk_left"
-	else:
-		anim_name = "walk_down" if input_vector.y >= 0.0 else "walk_up"
-	_play(anim_name)
+	PLAYER_ANIMATION.update_animation(self, _anim, input_vector, _shoot_timer)
 
 
 func _play(anim_name: String) -> void:
-	if _anim and _anim.visible and _anim.sprite_frames \
-			and _anim.sprite_frames.has_animation(anim_name) \
-			and _anim.animation != anim_name:
-		_anim.play(anim_name)
+	PLAYER_ANIMATION._play(_anim, anim_name)
 
 
 func _play_once(anim_name: String) -> void:
-	_play(anim_name)
+	PLAYER_ANIMATION._play_once(_anim, anim_name)
 
 
 func _stress_speed_mult() -> float:
@@ -213,6 +186,19 @@ func fire() -> void:
 
 	if not infinite_clip:
 		Scarcity.add_scarcity(2.0)
+	_fire_pressed_this_tick = true
+
+
+func consume_fire_input() -> bool:
+	var pressed := _fire_pressed_this_tick
+	_fire_pressed_this_tick = false
+	return pressed
+
+
+func get_move_input_vector() -> Vector2:
+	if _joystick and _joystick.output.length() > 0.0:
+		return _joystick.output
+	return Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 
 
 func take_damage(amount: int, attacker: String = "") -> void:
@@ -221,29 +207,35 @@ func take_damage(amount: int, attacker: String = "") -> void:
 		var mitigation := armor_bonus / (armor_bonus + ARMOR_K)
 		amount = int(round(amount * (1.0 - mitigation)))
 
-	var was_dead := is_dead()
-	health = clampi(health - amount, 0, MAX_HEALTH)
-	if is_dead() and not was_dead:
-		Stress.on_crew_member_downed()
-		Injury.on_hero_downed()
-		RelationshipSystem.on_hero_downed(hero_name)
-		set_physics_process(false)
-		_play_once("downed")
-		downed.emit()
+	if PLAYER_COOP_BRIDGE.route_damage(self, amount, attacker):
+		return
+
+	_apply_damage_local(amount, attacker)
+	if CoopNetwork.is_online() and CoopNetwork.is_host():
+		CoopNetwork.notify_host_player_state(self)
+
+
+func apply_authoritative_state(pos: Vector2, facing: Vector2, new_health: int) -> void:
+	var result := PLAYER_COOP_BRIDGE.apply_authoritative_state(self, pos, facing, new_health, _max_health())
+	if not result.get("changed", false):
+		return
+	if result.get("became_dead", false):
+		PLAYER_DAMAGE.on_player_downed(self, hero_name)
+		_start_respawn()
+	elif result.get("revived", false):
+		set_physics_process(true)
+		_play("idle")
+		respawned.emit()
+
+
+func _apply_damage_local(amount: int, _attacker: String = "") -> void:
+	if PLAYER_DAMAGE.apply_local_damage(self, amount, _max_health()):
+		PLAYER_DAMAGE.on_player_downed(self, hero_name)
 		_start_respawn()
 
 
 func _start_respawn() -> void:
-	if GameState.permadeath_mode:
-		PermanentDeath.on_hero_ghosted(hero_name)
-		Stress.on_crew_member_ghosted(hero_name)
-		return
-
-	await get_tree().create_timer(RESPAWN_TIME).timeout
-	health = MAX_HEALTH
-	set_physics_process(true)
-	_play("idle")
-	respawned.emit()
+	await PLAYER_DAMAGE.schedule_respawn(self, hero_name, RESPAWN_TIME)
 
 
 func is_dead() -> bool:
