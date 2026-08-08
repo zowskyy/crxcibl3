@@ -1,6 +1,7 @@
 extends Node
 ## Autonomous M2M self-recognition watchdog — reconciles addresses and never gives up.
 ## Usage: start(), stop(), is_self_recognized(), get_health() — see --help in project docs.
+
 ## validate registry schema; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via cached mobile fallback.
 
@@ -10,6 +11,7 @@ extends Node
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
+
 
 signal watchdog_tick(health: Dictionary)
 signal recognition_confidence_changed(score: float)
@@ -37,7 +39,6 @@ var _last_watchdog_usec := 0
 var _prior_score := -1.0
 var _was_recognized := false
 
-
 func _ready() -> void:
 	_load_registry()
 	_http = HTTPRequest.new()
@@ -50,30 +51,24 @@ func _ready() -> void:
 	_ensure_connected(M2MMachineIdentity.self_address_added, _on_self_address_added)
 	start()
 
-
 func _ensure_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
 		sig.connect(callable)
-
 
 func start() -> void:
 	_running = true
 	_watchdog_timer.start()
 	_watchdog_pass()
 
-
 func stop() -> void:
 	_running = false
 	_watchdog_timer.stop()
 
-
 func is_self_recognized() -> bool:
 	return _self_recognized
 
-
 func get_confidence() -> float:
 	return _recognition_score
-
 
 func get_health() -> Dictionary:
 	var snapshot := M2MMachineIdentity.get_profile()
@@ -85,16 +80,13 @@ func get_health() -> Dictionary:
 		"last_watchdog_usec": _last_watchdog_usec,
 	}
 
-
 func filter_peer_sessions(sessions: Array) -> Array:
 	return sessions.filter(
 		func(s): return s is Dictionary and not M2MMachineIdentity.is_self_beacon(s)
 	)
 
-
 func get_cached_mobile_ip() -> String:
 	return str(_registry.get("last_known_mobile_ip", ""))
-
 
 func register_peer_snapshot(session: Dictionary) -> void:
 	var sid := str(session.get("session_id", ""))
@@ -112,7 +104,6 @@ func register_peer_snapshot(session: Dictionary) -> void:
 	_registry["peer_snapshots"] = peers
 	_save_registry()
 
-
 func _watchdog_pass() -> void:
 	_last_watchdog_usec = Time.get_ticks_usec()
 	_reconcile_self_addresses()
@@ -120,20 +111,16 @@ func _watchdog_pass() -> void:
 	_update_confidence()
 	watchdog_tick.emit(get_health())
 
-
 func _reconcile_self_addresses() -> void:
 	M2MMachineIdentity.register_address("lan", CoopLanUtil.primary_local_ip())
 	if CoopBluetooth != null and CoopBluetooth.is_available():
 		M2MMachineIdentity.register_address("bluetooth", CoopBluetooth.get_local_address())
 
-
 func _mobile_from_identity() -> String:
 	return str(_identity_addresses().get("mobile", ""))
 
-
 func _identity_addresses() -> Dictionary:
 	return M2MMachineIdentity.get_profile().get("addresses", {})
-
 
 func _refresh_mobile_ip() -> void:
 	M2MMachineIdentity.register_address("mobile", get_cached_mobile_ip())
@@ -145,7 +132,6 @@ func _refresh_mobile_ip() -> void:
 		_mobile_lookup_busy = false
 		_record_mobile_lookup_failure()
 
-
 func _skip_mobile_lookup() -> bool:
 	if _mobile_lookup_busy:
 		return true
@@ -155,7 +141,6 @@ func _skip_mobile_lookup() -> bool:
 		return true
 	_circuit_open = false
 	return false
-
 
 func _update_confidence() -> void:
 	var machine_id := M2MMachineIdentity.get_machine_id()
@@ -173,11 +158,9 @@ func _update_confidence() -> void:
 	_was_recognized = recognized
 	_self_recognized = recognized
 
-
 func _on_self_address_added(_kind: String, _address: String) -> void:
 	_update_confidence()
 	watchdog_tick.emit(get_health())
-
 
 func _on_mobile_lookup_done(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_mobile_lookup_busy = false
@@ -195,7 +178,6 @@ func _on_mobile_lookup_done(_result: int, response_code: int, _headers: PackedSt
 	_circuit_open = false
 	_update_confidence()
 
-
 func _record_mobile_lookup_failure() -> void:
 	_mobile_lookup_failures += 1
 	if _mobile_lookup_failures >= MAX_MOBILE_LOOKUP_FAILURES:
@@ -204,14 +186,12 @@ func _record_mobile_lookup_failure() -> void:
 		_circuit_retry_at_usec = Time.get_ticks_usec() + int(backoff_sec * 1_000_000.0)
 	M2MMachineIdentity.register_address("mobile", get_cached_mobile_ip())
 
-
 func _load_registry() -> void:
 	_registry = {"last_known_mobile_ip": "", "peer_snapshots": {}}
 	if not FileAccess.file_exists(REGISTRY_PATH):
 		return
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(REGISTRY_PATH))
 	_registry = parsed if parsed is Dictionary else _registry
-
 
 func _save_registry() -> void:
 	var f := FileAccess.open(REGISTRY_PATH, FileAccess.WRITE)

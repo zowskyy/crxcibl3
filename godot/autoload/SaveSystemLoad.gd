@@ -2,6 +2,7 @@ class_name SaveSystemLoad
 extends RefCounted
 ## SaveSystemLoad — parses persisted save lines into GameState and Inventory.
 ## Usage: SaveSystemLoad.load_from_path(SaveSystem.SAVE_PATH) — see --help.
+
 ## validate key prefixes; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via GameState.reset_for_new_game().
 
@@ -30,7 +31,6 @@ static func load_from_path(path: String) -> bool:
 	file.close()
 	print("[SaveSystemLoad] load complete")
 	return true
-
 
 static func _apply_save_line(key: String, value: String) -> void:
 	match key:
@@ -76,7 +76,6 @@ static func _apply_save_line(key: String, value: String) -> void:
 			GameState.quests_completed.append(value)
 		_:
 			_apply_prefixed_save_line(key, value)
-
 
 static func _apply_prefixed_save_line(key: String, value: String) -> void:
 	if key.begins_with("inv_slot_"):

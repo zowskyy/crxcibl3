@@ -1,6 +1,7 @@
 extends Node
 ## Real Android Bluetooth discovery and RFCOMM transport via JavaClassWrapper.
 ## Usage: start_scan(), start_advertising() — see docs/COOP_MULTIPLAYER.md --help.
+
 ## validate device payloads; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via stop_advertising().
 
@@ -10,6 +11,7 @@ extends Node
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
+
 
 signal session_discovered(session_info: Dictionary)
 
@@ -25,22 +27,18 @@ var _rfcomm_socket: Variant = null
 var _rfcomm_server: Variant = null
 var _rx_queue: Array = []
 
-
 func _ready() -> void:
 	if Engine.has_singleton("AndroidRuntime"):
 		_runtime = Engine.get_singleton("AndroidRuntime")
 		_init_adapter()
 
-
 func is_available() -> bool:
 	return _adapter != null and OS.get_name() == "Android"
-
 
 func get_local_address() -> String:
 	if not is_available():
 		return ""
 	return str(_adapter.getAddress())
-
 
 func start_advertising(beacon: Dictionary) -> void:
 	if not is_available():
@@ -61,11 +59,9 @@ func start_advertising(beacon: Dictionary) -> void:
 		_set_discoverable(300)
 	)
 
-
 func stop_advertising() -> void:
 	if is_available():
 		_run_on_ui_thread(func(): _adapter.setName("CRXCIBL3"))
-
 
 func start_scan(duration_sec: float = 4.0) -> void:
 	if not is_available() or _scanning:
@@ -85,13 +81,11 @@ func start_scan(duration_sec: float = 4.0) -> void:
 	)
 	_scanning = false
 
-
 func get_discovered_sessions() -> Array:
 	var out: Array = []
 	for sid in _discovered.keys():
 		out.append(_discovered[sid].duplicate(true))
 	return out
-
 
 func connect_rfcomm(address: String) -> bool:
 	if not is_available() or address.is_empty():
@@ -107,7 +101,6 @@ func connect_rfcomm(address: String) -> bool:
 	)
 	return ok
 
-
 func close_rfcomm() -> void:
 	_run_on_ui_thread(func():
 		if _rfcomm_socket != null:
@@ -117,7 +110,6 @@ func close_rfcomm() -> void:
 			_rfcomm_server.close()
 			_rfcomm_server = null
 	)
-
 
 func _init_adapter() -> void:
 	_run_on_ui_thread(func():
@@ -130,7 +122,6 @@ func _init_adapter() -> void:
 		_adapter = _BtAdapterClass.getDefaultAdapter()
 	)
 
-
 func _request_bluetooth_permissions() -> void:
 	if OS.get_name() != "Android":
 		return
@@ -138,7 +129,6 @@ func _request_bluetooth_permissions() -> void:
 		PermissionRationale.request_bluetooth_permissions()
 	else:
 		OS.request_permissions()
-
 
 func _set_discoverable(duration_sec: int) -> void:
 	if _runtime == null or _adapter == null or _BtAdapterClass == null:
@@ -149,7 +139,6 @@ func _set_discoverable(duration_sec: int) -> void:
 	intent.setAction(_BtAdapterClass.ACTION_REQUEST_DISCOVERABLE)
 	intent.putExtra(_BtAdapterClass.EXTRA_DISCOVERABLE_DURATION, duration_sec)
 	activity.startActivity(intent)
-
 
 func _harvest_devices() -> void:
 	if _adapter == null:
@@ -162,7 +151,6 @@ func _harvest_devices() -> void:
 		while it.hasNext():
 			_parse_device(it.next())
 	)
-
 
 func _parse_device(device: Variant) -> void:
 	var name := str(device.getName())
@@ -189,7 +177,6 @@ func _parse_device(device: Variant) -> void:
 	}
 	_discovered[session_id] = info
 	session_discovered.emit(info)
-
 
 func _run_on_ui_thread(callable: Callable) -> void:
 	if _runtime == null:

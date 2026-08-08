@@ -1,6 +1,7 @@
 extends Node
 ## ProcessDeathSnapshot — Android process-death scene snapshot to user:// storage.
 ## Usage: save_snapshot(), restore_if_needed() — see --help in project docs.
+
 ## validate scene paths; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via snapshot file deletion.
 
@@ -11,8 +12,8 @@ extends Node
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
-const SNAPSHOT_PATH := "user://crxcibl3_snapshot.json"
 
+const SNAPSHOT_PATH := "user://crxcibl3_snapshot.json"
 
 func save_snapshot() -> void:
 	SaveSystem.save_game()
@@ -27,7 +28,6 @@ func save_snapshot() -> void:
 	file.store_string(JSON.stringify({"scene": scene_path}))
 	file.close()
 	print("[ProcessDeathSnapshot] saved")
-
 
 func restore_if_needed() -> void:
 	if not FileAccess.file_exists(SNAPSHOT_PATH):
@@ -46,7 +46,6 @@ func restore_if_needed() -> void:
 	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
 		return
 	call_deferred("_restore_scene", scene_path)
-
 
 func _restore_scene(scene_path: String) -> void:
 	var tree := get_tree()

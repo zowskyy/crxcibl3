@@ -1,7 +1,7 @@
 extends Node
 ## AndroidPlatform — mobile bootstrap: lifecycle save/restore, audio focus, safe area,
 ## predictive back, edge-to-edge, and low-latency input settings.
-## Usage: autoload bootstrap — see project docs --help.
+
 ## validate safe-area margins; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via ProcessDeathSnapshot restore.
 
@@ -12,10 +12,10 @@ extends Node
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
+
 var _safe_layer: CanvasLayer = null
 var _safe_area_root: MarginContainer = null
 var _audio_was_playing: Dictionary = {}
-
 
 func _ready() -> void:
 	print("[AndroidPlatform] bootstrap ready")
@@ -31,7 +31,6 @@ func _ready() -> void:
 	ProcessDeathSnapshot.restore_if_needed()
 	call_deferred("_apply_safe_area")
 
-
 func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_APPLICATION_PAUSED:
@@ -44,7 +43,6 @@ func _notification(what: int) -> void:
 			_handle_predictive_back()
 			get_viewport().set_input_as_handled()
 
-
 func _on_app_paused() -> void:
 	_audio_was_playing.clear()
 	for i in range(AudioServer.bus_count):
@@ -53,7 +51,6 @@ func _on_app_paused() -> void:
 		AudioServer.set_bus_mute(i, true)
 	ProcessDeathSnapshot.save_snapshot()
 
-
 func _on_app_resumed() -> void:
 	for bus_name in _audio_was_playing.keys():
 		var idx := AudioServer.get_bus_index(bus_name)
@@ -61,7 +58,6 @@ func _on_app_resumed() -> void:
 			AudioServer.set_bus_mute(idx, not bool(_audio_was_playing[bus_name]))
 	_audio_was_playing.clear()
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-
 
 func _apply_safe_area() -> void:
 	if not is_inside_tree():
@@ -92,7 +88,6 @@ func _apply_safe_area() -> void:
 	_safe_area_root.add_theme_constant_override("margin_right", int(margin_right))
 	_safe_area_root.add_theme_constant_override("margin_bottom", int(margin_bottom))
 
-
 func _handle_predictive_back() -> void:
 	var scene := get_tree().current_scene
 	if scene != null and scene.has_method("handle_android_back"):
@@ -103,7 +98,6 @@ func _handle_predictive_back() -> void:
 		ev.action = "ui_cancel"
 		ev.pressed = true
 		Input.parse_input_event(ev)
-
 
 func play_audio_if_audible(player: AudioStreamPlayer) -> void:
 	if player == null:

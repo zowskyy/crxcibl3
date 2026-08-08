@@ -7,6 +7,7 @@ extends Node
 ## that's the app's private files directory, no manual path-hunting and no special
 ## permissions needed, since it's app-scoped storage.
 ## Usage: save_game(), load_game(), save_snapshot() — see --help in project docs.
+
 ## validate persisted fields; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via restore_snapshot_if_needed().
 
@@ -17,8 +18,8 @@ extends Node
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
-const SAVE_PATH := "user://crxcibl3_save.txt"
 
+const SAVE_PATH := "user://crxcibl3_save.txt"
 
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
@@ -56,7 +57,6 @@ func save_game() -> void:
 	file.close()
 	print("[SaveSystem] saved")
 
-
 func _inventory_save_lines() -> Array:
 	var lines: Array = []
 	for entry in GameState.blame_ledger:
@@ -72,7 +72,6 @@ func _inventory_save_lines() -> Array:
 			continue
 		lines.append("equip_%s=%s" % [category, item_id])
 	return lines
-
 
 func _collection_save_lines() -> Array:
 	var lines: Array = []
@@ -90,10 +89,8 @@ func _collection_save_lines() -> Array:
 		lines.append("boss:%s=%s,%s" % [boss, executed, finisher])
 	return lines
 
-
 func load_game() -> bool:
 	return SaveSystemLoad.load_from_path(SAVE_PATH)
-
 
 func delete_save() -> void:
 	if not has_save():

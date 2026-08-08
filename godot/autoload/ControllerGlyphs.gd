@@ -1,6 +1,7 @@
 extends Node
 ## ControllerGlyphs — lightweight joypad detection and glyph hint labels.
 ## Usage: read get_confirm_label() for UI hints — see --help in project docs.
+
 ## validate joypad name substrings; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade to generic glyphs on disconnect.
 
@@ -11,6 +12,7 @@ extends Node
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
+
 signal controller_changed(glyph_set: String)
 
 const GLYPH_GENERIC := "generic"
@@ -20,16 +22,13 @@ const GLYPH_NINTENDO := "nintendo"
 
 var current_glyph_set: String = GLYPH_GENERIC
 
-
 func _ready() -> void:
 	_refresh_glyph_set()
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
 		Input.joy_connection_changed.connect(_on_joy_connection_changed)
 
-
 func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
 	_refresh_glyph_set()
-
 
 func _refresh_glyph_set() -> void:
 	var pads := Input.get_connected_joypads()
@@ -46,13 +45,11 @@ func _refresh_glyph_set() -> void:
 	else:
 		_set_glyph_set(GLYPH_GENERIC)
 
-
 func _set_glyph_set(glyph_set: String) -> void:
 	if current_glyph_set == glyph_set:
 		return
 	current_glyph_set = glyph_set
 	controller_changed.emit(glyph_set)
-
 
 func get_confirm_label() -> String:
 	match current_glyph_set:
@@ -64,7 +61,6 @@ func get_confirm_label() -> String:
 			return "B"
 		_:
 			return "Enter"
-
 
 func get_cancel_label() -> String:
 	match current_glyph_set:

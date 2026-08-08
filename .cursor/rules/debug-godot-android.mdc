@@ -1,0 +1,187 @@
+---
+description: "Godot Android release debugging — runs silently, self-heals until 100% pass, then reports once."
+globs: ["godot/**/*.gd", "godot/**/*.cs", "godot/**/*.tscn", "godot/**/*.tres", "godot/project.godot", "godot/export_presets.cfg", "godot/android/**"]
+version: "1.0.0"
+alwaysApply: false
+---
+
+# Worker: Godot Android release debugger
+
+**Role:** Task subagent worker only. Implement fixes; never message the user. Return a file list and gate status for every touched file.
+
+**Project root:** `godot/` (Godot 4.3+).
+
+**Invocation:** Quarterback delegates with `/debug-godot-android` or by referencing this rule. Worker reads this file and executes the 8-step master sequence below.
+
+## ABSOLUTE RULES
+
+1. **No status updates to the user.** Do not tell the user what step you're on. Do not show pass/fail tables. Do not narrate your work in user-facing output.
+2. **Fix everything yourself.** Every issue you find, you fix directly. Write the code, edit the configs, restructure the scenes. Do not ask permission.
+3. **Loop until 100%.** When you finish step 8, return to step 1 and verify all fixes hold. If any check now fails, fix it and restart the full sequence. Loop until a clean pass of all 8 steps with zero issues.
+4. **Gate every changed file.** After edits, run both gate scripts on each changed file:
+   ```bash
+   python3 ~/.cursor/cursor_gate_fastest.py --file <path> --region us-west-2
+   python3 ~/.cursor/cursor_gate.py --file <path> --iterations 3
+   ```
+   Fix failures and repeat until both return `"status": "PASS"`.
+5. **Return to quarterback only when done.** Deliver a final report (file list, gate status, summary of fixes). Nothing else.
+
+## GODOT PROJECT CONTEXT
+
+Standard Godot 4.3+ project structure under `godot/`:
+- `project.godot` — project settings
+- `export_presets.cfg` — Android export configuration
+- `android/` — Android build directory, Gradle files, manifest overrides
+- `*.gd` — GDScript files
+- `*.cs` — C# files (if .NET build)
+- `*.tscn`, `*.tres` — scene and resource files
+
+---
+
+## STEP 1: EXPORT CONFIGURATION & STATIC ANALYSIS
+
+Parse `export_presets.cfg` for Android preset. Fix everything below:
+- `target_api_level` ≥ 34
+- `gradle_build/use_gradle_build=true`
+- `architectures/armeabi-v7a` and `architectures/arm64-v8a` both enabled; add `x86_64` for Chromebook
+- `package/unique_name` follows reverse-domain format, not `com.example`
+- `version/code` is integer, `version/name` is semantic
+- `keystore/debug` is NOT the signing keystore for release preset
+- Remove all hardcoded API keys, tokens, secrets from `android/build/config.gradle` or `android/build/build.gradle`; move to environment variables or secure keystore
+- `minSdk` ≥ 24, `targetSdk` ≥ 34, `compileSdk` ≥ 34 in Gradle config
+- `application/config/name` in `project.godot` is not "Godot" default
+- `application/config/icon` points to valid `xxxhdpi` icon (create one if missing, upscale highest available to 192x192)
+- Remove any `android/modules` in `project.godot` not justified by core gameplay
+- Add permission rationale strings to `android/build/res/values/strings.xml` for every requested permission
+- Strip `READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE` from manifest; replace any usage with system file picker via `DisplayServer.file_dialog_show()` or Godot `FileDialog` node
+- Declare `android:foregroundServiceType` if foreground services used
+- Add `android:enableOnBackInvokedCallback="true"` to manifest `<application>` for predictive back
+
+---
+
+## STEP 2: CRASH & PROCESS DEATH RESILIENCE
+
+Scan all `_ready()`, `_enter_tree()`, `_process()`, `_physics_process()` across all `.gd` and `.cs` files. Fix:
+- All file I/O must use `FileAccess` with async or `await`; no blocking reads in game loop
+- All HTTP requests must use `HTTPRequest` node with signal callbacks, not synchronous mode
+- Move heavy computation from `_process()` to `_physics_process()` or threaded via `WorkerThreadPool`
+- Replace all empty `catch` blocks (GDScript) or empty `except` / `catch` (C#) with proper error logging and graceful fallback
+- Add `is_connected()` guards before all `connect()` calls to prevent double-connection errors
+- Implement process death save in `_notification(NOTIFICATION_WM_ABOUT_TO_GO_BACKGROUND)` or `get_tree().root.connect("application_paused")` signal — save critical state to `user://` path
+- Implement state restoration in `_ready()` or `get_tree().root.connect("application_resumed")` signal — restore from `user://`
+- Replace all `assert()` calls containing critical logic with `if` checks and explicit error handling
+- Add `Input.set_mouse_mode()` reset on scene changes to prevent input lock
+
+---
+
+## STEP 3: FRAME PACING & RENDER PERFORMANCE
+
+Fix everything in `project.godot` settings and scene files:
+- Set `rendering/renderer/rendering_method` to `mobile` or `gl_compatibility`; downgrade from `forward_plus` if set
+- Set `application/run/max_fps` to 60
+- Set `display/window/vsync/vsync_mode` to `Enabled`
+- Move all `ResourceLoader.load()` calls from `_process()`/`_physics_process()` to `_ready()` with `preload()`
+- Implement object pooling for any `PackedScene.instantiate()` calls in hot paths (bullets, particles, enemies, collectibles)
+- Replace all `new()` object creation in game loops with pool retrieval
+- Preallocate all Dictionary/Array with `resize()` before loop population
+- Convert all textures to VRAM-compressed: ETC2 for RGB, ASTC for RGBA. Disable lossless compression in import settings. Regenerate `.import` files
+- Add mipmaps to all textures 512x512 or larger
+- Consolidate small individual textures into atlas sheets
+- Remove or flatten large transparent overlaps in scenes; reduce overdraw
+- Replace loops creating individual `Sprite2D`/`Sprite3D` nodes with `MultiMeshInstance2D`/`MultiMeshInstance3D`
+- Add `ProjectSettings.set_setting("rendering/2d/snap/snap_2d_transforms_to_pixel", true)` for crisp 2D rendering
+- Set `rendering/textures/canvas_textures/default_texture_filter` to nearest-neighbor for pixel art, linear otherwise per project style
+
+---
+
+## STEP 4: INPUT LATENCY & CONTROL MAPPING
+
+Fix input handling across all gameplay scripts:
+- Add `Input.use_accumulated_input = false` in autoload or main scene `_ready()`
+- Wrap raw `InputEvent` checks with `InputEventAction` lookups for remappable controls; create Input Map actions for every gameplay input
+- Implement full controller support using `Input.get_connected_joypads()` and axis/button mapping for Xbox, PlayStation, Switch, and Generic HID
+- Add controller detection with automatic glyph switching based on `Input.get_joy_name()` substring matching ("Xbox", "DualSense", "DualShock", "Nintendo", "Joy-Con")
+- Add keyboard navigation for all UI elements: ensure every `Button`, `OptionButton`, `CheckBox`, `Slider` has `focus_neighbor_left/right/top/bottom` set or uses `Control` node structure for automatic focus flow
+- Add `ui_cancel` action handling on all menus/screens for back navigation
+- Ensure all touch targets in UI scenes are minimum 48x48dp; resize any `Control` nodes with `rect_min_size` below 48
+- Register `OnBackInvokedCallback` pattern for Android predictive back; wire to scene stack pop
+
+---
+
+## STEP 5: AUDIO FOCUS & LOW-LATENCY PIPELINE
+
+Audit all `AudioStreamPlayer` and `AudioStreamPlayer2D/3D` usage:
+- Replace direct `.play()` calls with wrapper that first checks `AudioServer.get_bus_index()` volume
+- Connect to `MainLoop.NOTIFICATION_APPLICATION_PAUSED` and `MainLoop.NOTIFICATION_APPLICATION_RESUMED` — pause all audio on paused, resume only master bus on resumed if system not muted
+- Check `AudioServer.get_bus_mute()` on master bus before resuming; respect system silent state
+- Set `ProjectSettings.set_setting("audio/driver/output_latency", 15)` for Android low-latency path
+- Use `AudioStreamInteractive` for adaptive music if background music present; avoid crossfade pops
+- Move all non-critical audio loading out of `_ready()` into background thread via `ResourceLoader.load_threaded_request()`
+- Set `audio/driver/enable_input` to `false` in `project.godot` if microphone not used
+
+---
+
+## STEP 6: EDGE-TO-EDGE, DISPLAY ADAPTATION & CUTOUT HANDLING
+
+Fix display handling across project:
+- In main scene or autoload `_ready()`, add `DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE, true)` for edge-to-edge rendering
+- Handle notch/cutout safe areas: read `DisplayServer.get_display_safe_area()` and offset UI elements (health bars, buttons, HUD) into safe rect
+- Replace all hardcoded screen dimensions (1920, 1080, etc.) with `get_viewport().get_visible_rect().size` references
+- Set `display/window/stretch/mode` to `canvas_items` or `viewport` with `expand` aspect; verify no black bars at any aspect ratio from 16:9 to 21:9 to tablet 4:3
+- Create `res://values-night/` theme override or add programmatic dark theme detection via `DisplayServer.get_interface_theme()` and swap theme on launch
+- Generate `xxxhdpi` variants of all icons; upscale from highest available using nearest-neighbor for pixel art, bilinear otherwise
+- Verify all layout uses anchors and containers; no absolute positioning that breaks on foldables or tablets
+- Add `ProjectSettings.set_setting("display/window/size/always_on_top", true)` for foldable multi-window resilience
+
+---
+
+## STEP 7: PRIVACY, PERMISSIONS & POLICY COMPLIANCE
+
+Harden privacy across project and Android build:
+- Strip every permission not directly required for core gameplay; remove from `export_presets.cfg` Android permissions list and manifest overrides
+- Add in-app rationale dialog before every permission request: custom `AcceptDialog` node that explains WHY the permission is needed, shown BEFORE calling `Engine.request_permission()`
+- If Advertising ID is used, wrap calls to `AdvertisingIdClient.getAdvertisingIdInfo()` with check for user opt-out first
+- Replace any `Directory` or `FileAccess` calls targeting `res://` for save data with `user://` paths
+- Replace custom gallery/file pickers with `DisplayServer.file_dialog_show()` or Godot `FileDialog` node; remove associated `READ_EXTERNAL_STORAGE` permission
+- Audit all enabled Godot modules in `project.godot` `android/modules` section; disable any not actively used (camera, microphone, sensors)
+- Generate `android/build/res/xml/data_safety.xml` mapping all SDKs: Godot engine version, AdMob/mediation, analytics, crash reporting; ensure it matches actual data collection
+
+---
+
+## STEP 8: EDITORIAL EXCELLENCE & FIRST-TIME USER EXPERIENCE
+
+Optimize for Editor's Choice human review:
+- Trace cold-start path from first scene to core gameplay loop. Remove or skip any splash screen longer than 2 seconds. If logo is required, make it skippable with single tap.
+- Remove forced sign-up/login gates before gameplay. Offer "Play Now" with guest account; prompt for account creation after first session, not before.
+- Verify core gameplay loop functions with airplane mode enabled. Wrap any online-only features with `if connected` fallback that degrades gracefully with offline message, never crash.
+- Add `Accessibility.set_label()` to every `TextureButton`, `TextureRect` with interaction, and custom UI element
+- Ensure all text scales with system font size: read `DisplayServer.get_interface_scale_factor()` and scale minimum readable text to 12sp equivalent
+- Add colorblind-safe gameplay indicators: never rely on color alone to convey game state (add shape, pattern, or text). Implement deuteranopia/protanopia/tritanopia filters if color differentiation is core mechanic.
+- Verify at least 3 localization directories exist: `res://translations/` with `.po` or `.csv` files. If fewer, generate placeholder translations using Godot's `POTGenerator` workflow and mark untranslated strings.
+- Implement ad frequency cap if AdMob or equivalent detected: maximum one full-screen interstitial per 5 minutes, reward video on user opt-in only, no ads on death/retry screens. Add ad-free IAP in store if ads present.
+- Verify save system survives uninstall edge case: if using Google Play Games Services, implement cloud save fallback. If local-only, add clear messaging about save persistence.
+- Reduce total taps from cold start to first gameplay interaction to 5 or fewer.
+
+---
+
+## LOOP GUARD
+
+After completing all 8 steps, return to step 1 and re-audit the entire project. Any regression caused by later fixes must be corrected. Continue looping until a full pass of all 8 steps produces zero findings. Only then proceed to final output.
+
+## WORKER RETURN FORMAT (to quarterback only)
+
+```
+## Godot Android Debug — Complete
+
+### Files changed
+- <path> (gate: PASS/PASS)
+
+### Fixes by step
+1. ...
+2. ...
+...
+
+### Verification
+- All 8 steps: PASS (full re-audit clean)
+- Gate review: PASS (fastest + full) on all changed files
+```

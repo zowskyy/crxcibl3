@@ -18,6 +18,7 @@ extends Node2D
 ## CoopNetwork.is_online(); solo path unchanged when offline.
 ##
 ## Usage: solo or co-op TestRoom — see --help in project docs.
+
 ## validate player spawn; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via CoopNetwork.stop_session().
 
@@ -27,6 +28,7 @@ extends Node2D
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
+
 
 @onready var fire_button: Button = $CanvasLayer/FireButton
 @onready var wave_rect: ColorRect = $WaveOverlayLayer/WaveRect
@@ -58,7 +60,6 @@ const SAMPLE_QUEST := {
 
 var _boss_access: TestRoomBossAccess
 var _coop_sync: TestRoomCoopSync
-
 
 func _ready() -> void:
 	_setup_environment()
@@ -100,10 +101,8 @@ func _ready() -> void:
 		driver.name = "DemoDriver"
 		add_child(driver)
 
-
 func _get_player() -> CharacterBody2D:
 	return player
-
 
 func _spawn_local_player() -> void:
 	var spawn_pos := Vector2(550, 300) + _coop_sync.spawn_offset()
@@ -115,7 +114,6 @@ func _spawn_local_player() -> void:
 		player = HeroFactory.spawn_player(hero_id, spawn_pos, self, _world_bounds)
 	else:
 		player = HeroFactory.spawn_player("enforcer_ghost", spawn_pos, self, _world_bounds)
-
 
 func _setup_environment() -> void:
 	var ground := get_node_or_null("Ground")
@@ -131,7 +129,6 @@ func _setup_environment() -> void:
 
 	add_child(ARCANE_OVERLAY.instantiate())
 
-
 func _setup_synergy_hud() -> void:
 	var synergy := Control.new()
 	synergy.name = "SynergyHUD"
@@ -140,7 +137,6 @@ func _setup_synergy_hud() -> void:
 	bond_label.name = "BondLabel"
 	synergy.add_child(bond_label)
 	canvas_layer.add_child(synergy)
-
 
 func _setup_hideout_zone() -> void:
 	var zone := Area2D.new()
@@ -155,14 +151,12 @@ func _setup_hideout_zone() -> void:
 	zone.add_child(col)
 	add_child(zone)
 
-
 func _setup_quest_hud() -> void:
 	_quest_hud = Control.new()
 	_quest_hud.name = "QuestHUD"
 	_quest_hud.set_script(QUEST_HUD_SCRIPT)
 	canvas_layer.add_child(_quest_hud)
 	_quest_hud.set_quest_title(SAMPLE_QUEST["id"], SAMPLE_QUEST["title"])
-
 
 func _setup_squad_label() -> void:
 	_squad_label = Label.new()
@@ -177,13 +171,11 @@ func _setup_squad_label() -> void:
 	canvas_layer.add_child(_squad_label)
 	_update_squad_label()
 
-
 func _connect_player_signals() -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	if not player.downed.is_connected(_on_player_downed):
 		player.downed.connect(_on_player_downed)
-
 
 func _update_squad_label() -> void:
 	if _squad_label == null:
@@ -192,7 +184,6 @@ func _update_squad_label() -> void:
 	var variant = HeroDefinitions.get_variant(hero_id)
 	var display_name: String = variant.name if variant else hero_id
 	_squad_label.text = "Squad: %s" % display_name
-
 
 func _process(delta: float) -> void:
 	_boss_access.tick_hint()
@@ -210,7 +201,6 @@ func _process(delta: float) -> void:
 	if mat:
 		mat.set_shader_parameter("intensity", heat_t)
 
-
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
@@ -223,7 +213,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_TAB:
 				_cycle_squad_hero()
 
-
 func _cycle_squad_hero() -> void:
 	if GameState.squad.size() <= 1:
 		return
@@ -234,12 +223,10 @@ func _cycle_squad_hero() -> void:
 	_connect_player_signals()
 	_update_squad_label()
 
-
 func _on_player_downed() -> void:
 	if not GameState.permadeath_mode:
 		return
 	call_deferred("_auto_switch_after_permadeath")
-
 
 func _auto_switch_after_permadeath() -> void:
 	if not PermanentDeath.is_squad_viable():
@@ -255,17 +242,14 @@ func _auto_switch_after_permadeath() -> void:
 	_connect_player_signals()
 	_update_squad_label()
 
-
 func _on_add_heat_pressed() -> void:
 	if not _coop_sync.can_modify_heat():
 		return
 	GameState.modify_heat(10.0)
 
-
 func _on_fire_pressed() -> void:
 	if player and is_instance_valid(player):
 		player.fire()
-
 
 func _toggle_inventory() -> void:
 	if _inventory_ui and is_instance_valid(_inventory_ui):

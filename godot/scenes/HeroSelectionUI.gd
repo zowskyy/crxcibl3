@@ -5,6 +5,7 @@ extends Control
 ## "Start Mission" button loads TestRoom with selected squad.
 ## Co-op: only host starts; squad syncs via RPC before TestRoom.
 ## Usage: select squad, Start Mission — see --help in project docs.
+
 ## validate squad size; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade if CoopNetwork disconnects.
 
@@ -14,6 +15,7 @@ extends Control
 # log.info print feedback
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
+
 
 @onready var hero_grid: GridContainer = $VBoxContainer/ScrollContainer/GridContainer
 @onready var squad_label: Label = $VBoxContainer/SquadLabel
@@ -26,7 +28,6 @@ const MIN_SQUAD_SIZE := 1
 var _selected_variant_ids: Array = []  # Hero variant IDs currently selected
 var _coop_online: bool = false
 var _coop_is_host: bool = false
-
 
 func _ready() -> void:
 	_coop_online = CoopNetwork.is_online() and CoopNetwork.is_coop
@@ -42,21 +43,17 @@ func _ready() -> void:
 			_selected_variant_ids.size(), MAX_SQUAD_SIZE
 		]
 
-
 func _ensure_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
 		sig.connect(callable)
-
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 		get_viewport().set_input_as_handled()
 
-
 func handle_android_back() -> void:
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
-
 
 func _populate_hero_grid() -> void:
 	var variant_ids = HeroDefinitions.get_all_variant_ids()
@@ -86,7 +83,6 @@ func _populate_hero_grid() -> void:
 
 		hero_grid.add_child(button)
 
-
 func _on_hero_toggled(variant_id: String, is_selected: bool) -> void:
 	if _coop_online and not _coop_is_host:
 		return
@@ -104,13 +100,11 @@ func _on_hero_toggled(variant_id: String, is_selected: bool) -> void:
 
 	_update_squad_display()
 
-
 func _get_hero_button(variant_id: String) -> Button:
 	for child in hero_grid.get_children():
 		if child.is_in_group(variant_id):
 			return child
 	return null
-
 
 func _set_client_coop_mode() -> void:
 	start_button.disabled = true
@@ -119,7 +113,6 @@ func _set_client_coop_mode() -> void:
 	for child in hero_grid.get_children():
 		if child is BaseButton:
 			child.disabled = true
-
 
 func _update_squad_display() -> void:
 	var prefix := "Co-op — host picks squad" if _coop_online else "Squad"
@@ -131,7 +124,6 @@ func _update_squad_display() -> void:
 
 	squad_label.text = squad_text
 	start_button.disabled = _selected_variant_ids.size() < MIN_SQUAD_SIZE
-
 
 func _on_start_pressed() -> void:
 	if _selected_variant_ids.is_empty():

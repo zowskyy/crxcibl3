@@ -8,6 +8,7 @@ extends Control
 ##
 ## All save/load/reset logic lives in SaveSystem and GameState — this scene only routes.
 ## Usage: New Game, Continue, Co-op — see --help in project docs.
+
 ## validate save presence; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade via stop_session before Co-op lobby.
 
@@ -18,6 +19,7 @@ extends Control
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
+
 @onready var title_label:    Label     = $VBox/TitleLabel
 @onready var recap_panel:    Control   = $RecapPanel
 @onready var recap_label:    Label     = $RecapPanel/RecapLabel
@@ -27,7 +29,6 @@ extends Control
 @onready var close_recap_btn:Button    = $RecapPanel/CloseButton
 
 const TITLE_TEXT := "CRXCIBL3"
-
 
 func _ready() -> void:
 	recap_panel.visible = false
@@ -41,11 +42,9 @@ func _ready() -> void:
 	coop_btn.custom_minimum_size = Vector2(200, 48)
 	close_recap_btn.custom_minimum_size = Vector2(200, 48)
 
-
 func _ensure_connected(sig: Signal, callable: Callable) -> void:
 	if not sig.is_connected(callable):
 		sig.connect(callable)
-
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
@@ -54,11 +53,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_close_recap()
 		get_viewport().set_input_as_handled()
 
-
 func handle_android_back() -> void:
 	if recap_panel.visible:
 		_on_close_recap()
-
 
 func _on_continue() -> void:
 	if not SaveSystem.has_save():
@@ -71,26 +68,21 @@ func _on_continue() -> void:
 	else:
 		_go_to_selection()
 
-
 func _should_show_recap(recap_text: String) -> bool:
 	return not recap_text.is_empty()
-
 
 func _on_close_recap() -> void:
 	recap_panel.visible = false
 	_go_to_selection()
 
-
 func _on_new_game() -> void:
 	GameState.reset_for_new_game()
 	_go_to_selection()
-
 
 func _on_coop() -> void:
 	CoopNetwork.stop_session()
 	print("[MainMenu] opening co-op lobby")
 	get_tree().change_scene_to_file("res://scenes/CoopLobbyScene.tscn")
-
 
 func _go_to_selection() -> void:
 	if not is_inside_tree():
