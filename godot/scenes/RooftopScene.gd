@@ -10,7 +10,6 @@ extends Node2D
 @onready var flee_marker: Marker2D = $FleeMarker
 @onready var flashbang: ColorRect = $FlashbangLayer/Flashbang
 @onready var arrival_label: Label = $CanvasLayer/ArrivalLabel
-@onready var heat_meter = $CanvasLayer/HeatMeter
 @onready var player: CharacterBody2D = $Player
 @onready var fire_button: Button = $CanvasLayer/FireButton
 

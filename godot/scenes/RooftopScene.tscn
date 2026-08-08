@@ -1,12 +1,11 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scenes/RooftopScene.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
 [ext_resource type="Script" path="res://scenes/VirtualJoystick.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/BossBlackwood.gd" id="4"]
-[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="5"]
+[ext_resource type="Script" path="res://scenes/ui/SlugHud.gd" id="5"]
 [ext_resource type="Texture2D" path="res://assets/heroes/hero_enforcer_ghost.png" id="6"]
-[ext_resource type="Script" path="res://scenes/HealthBar.gd" id="7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(16, 16)
@@ -90,13 +89,12 @@ mouse_filter = 2
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HeatMeter" type="Control" parent="CanvasLayer"]
-anchor_left = 1.0
+[node name="SlugHud" type="Control" parent="CanvasLayer"]
+anchor_left = 0.0
+anchor_top = 0.0
 anchor_right = 1.0
-offset_left = -134.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = 22.0
+anchor_bottom = 0.0
+offset_bottom = 26.0
 script = ExtResource("5")
 
 [node name="ArrivalLabel" type="Label" parent="CanvasLayer"]
@@ -105,13 +103,6 @@ offset_top = 100.0
 offset_right = 480.0
 offset_bottom = 140.0
 text = "ROOFTOP — Blackwood is here. Move!"
-
-[node name="HealthBar" type="Control" parent="CanvasLayer"]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 134.0
-offset_bottom = 22.0
-script = ExtResource("7")
 
 [node name="VirtualJoystick" type="Control" parent="CanvasLayer"]
 anchor_left = 0.0
@@ -133,4 +124,4 @@ offset_left = -100.0
 offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -12.0
-text = "FIRE (Space)"
+text = "FIRE!"

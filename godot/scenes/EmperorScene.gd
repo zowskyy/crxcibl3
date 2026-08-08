@@ -8,7 +8,6 @@ extends Node2D
 @onready var player: CharacterBody2D = $Player
 @onready var arrival_label: Label = $CanvasLayer/ArrivalLabel
 @onready var fire_button: Button = $CanvasLayer/FireButton
-@onready var legacy_dialogue: ColorRect = $CanvasLayer/DialoguePanel
 
 const RECKONING_DATA := "res://data/emperor_scene.json"
 const ARCANE_OVERLAY := preload("res://scenes/ArcaneOverlay.tscn")
@@ -22,7 +21,6 @@ func _ready() -> void:
 	GameState.current_act = 3
 	boss.defeated.connect(_on_blackwood_defeated)
 	fire_button.pressed.connect(func(): player.fire())
-	legacy_dialogue.visible = false
 	add_child(ARCANE_OVERLAY.instantiate())
 	DialogueIntensity.on_boss_encountered("Emperor")
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scenes/TestRoom.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/Player.gd" id="2"]
@@ -7,13 +7,12 @@
 [ext_resource type="Texture2D" path="res://assets/buildings/arcade.png" id="5"]
 [ext_resource type="Texture2D" path="res://assets/buildings/apartment_tower.png" id="6"]
 [ext_resource type="Texture2D" path="res://assets/buildings/chainlink_fence.png" id="7"]
-[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="8"]
+[ext_resource type="Script" path="res://scenes/ui/SlugHud.gd" id="8"]
 [ext_resource type="Texture2D" path="res://assets/heroes/hero_enforcer_ghost.png" id="9"]
 [ext_resource type="Script" path="res://scenes/Enemy.gd" id="10"]
 [ext_resource type="Script" path="res://scenes/BodegaShop.gd" id="12"]
 [ext_resource type="Shader" path="res://assets/shaders/heat_wave.gdshader" id="13"]
 [ext_resource type="Script" path="res://scenes/SpawnGenerator.gd" id="14"]
-[ext_resource type="Script" path="res://scenes/HealthBar.gd" id="15"]
 [ext_resource type="Script" path="res://scenes/NPC.gd" id="16"]
 [ext_resource type="Script" path="res://scenes/CoverPoint.gd" id="17"]
 
@@ -136,21 +135,13 @@ script = ExtResource("12")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HeatMeter" type="Control" parent="CanvasLayer"]
-anchor_left = 1.0
+[node name="SlugHud" type="Control" parent="CanvasLayer"]
+anchor_left = 0.0
+anchor_top = 0.0
 anchor_right = 1.0
-offset_left = -134.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = 22.0
+anchor_bottom = 0.0
+offset_bottom = 26.0
 script = ExtResource("8")
-
-[node name="HealthBar" type="Control" parent="CanvasLayer"]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 134.0
-offset_bottom = 22.0
-script = ExtResource("15")
 
 [node name="BodegaMenu" type="Control" parent="CanvasLayer"]
 visible = false
@@ -162,11 +153,6 @@ offset_left = -120.0
 offset_top = -105.0
 offset_right = 120.0
 offset_bottom = 105.0
-
-[node name="Background" type="ColorRect" parent="CanvasLayer/BodegaMenu"]
-color = Color(0.05, 0.05, 0.05, 0.88)
-anchor_right = 1.0
-anchor_bottom = 1.0
 
 [node name="PromptLabel" type="Label" parent="CanvasLayer/BodegaMenu"]
 offset_left = 8.0
@@ -208,7 +194,7 @@ offset_left = -100.0
 offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -12.0
-text = "FIRE (Space)"
+text = "FIRE!"
 
 [node name="RooftopTrigger" type="Area2D" parent="."]
 position = Vector2(920, 270)

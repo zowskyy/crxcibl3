@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scenes/PlayerCar.gd" id="2"]
 [ext_resource type="Script" path="res://scenes/VirtualJoystick.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/RoadRenderer.gd" id="4"]
-[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="5"]
+[ext_resource type="Script" path="res://scenes/ui/SlugHud.gd" id="5"]
 [ext_resource type="Script" path="res://scenes/BlackwoodCarDraw.gd" id="6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
@@ -29,11 +29,12 @@ shape = SubResource("RectangleShape2D_player")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HeatMeter" type="Control" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 220.0
-offset_bottom = 48.0
+[node name="SlugHud" type="Control" parent="CanvasLayer"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_bottom = 26.0
 script = ExtResource("5")
 
 [node name="ChaseLabel" type="Label" parent="CanvasLayer"]
@@ -78,4 +79,4 @@ offset_left = -100.0
 offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -12.0
-text = "FIRE (Space)"
+text = "FIRE!"

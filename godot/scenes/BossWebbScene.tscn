@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/BossWebbScene.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/VirtualJoystick.gd" id="2"]
-[ext_resource type="Script" path="res://scenes/HeatMeter.gd" id="3"]
-[ext_resource type="Script" path="res://scenes/HealthBar.gd" id="4"]
+[ext_resource type="Script" path="res://scenes/ui/SlugHud.gd" id="3"]
 [ext_resource type="Texture2D" path="res://assets/environment/buildings/building_webb_data_center.jpg" id="5"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
@@ -56,21 +55,13 @@ position = Vector2(580, 40)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="HeatMeter" type="Control" parent="CanvasLayer"]
-anchor_left = 1.0
+[node name="SlugHud" type="Control" parent="CanvasLayer"]
+anchor_left = 0.0
+anchor_top = 0.0
 anchor_right = 1.0
-offset_left = -134.0
-offset_top = 4.0
-offset_right = -4.0
-offset_bottom = 22.0
+anchor_bottom = 0.0
+offset_bottom = 26.0
 script = ExtResource("3")
-
-[node name="HealthBar" type="Control" parent="CanvasLayer"]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 134.0
-offset_bottom = 22.0
-script = ExtResource("4")
 
 [node name="ArrivalLabel" type="Label" parent="CanvasLayer"]
 offset_left = 120.0
@@ -99,4 +90,4 @@ offset_left = -100.0
 offset_top = -68.0
 offset_right = -20.0
 offset_bottom = -12.0
-text = "FIRE (Space)"
+text = "FIRE!"
