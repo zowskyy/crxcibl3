@@ -128,6 +128,10 @@ adb install -r godot/build/crxcibl3-playtest.apk
 
 Or copy the APK to the phone and open it (enable “Install unknown apps” for your file manager). CI artifact: run **Godot build check → playtest-apk** via **Actions → workflow_dispatch**, then download `crxcibl3-playtest-apk`.
 
+### Co-op with friends
+
+Main Menu → **Co-op** → host or join on the same Wi-Fi. See **[docs/COOP_MULTIPLAYER.md](docs/COOP_MULTIPLAYER.md)** for the full playtest flow (M2M transport policy, discovery, squad sync, full boss arc).
+
 ---
 
 ## Export
@@ -143,7 +147,7 @@ Or copy the APK to the phone and open it (enable “Install unknown apps” for 
 
 | Doc | Purpose |
 |-----|---------|
-| [docs/PLAY_STORE.md](docs/PLAY_STORE.md) | Google Play submission checklist |
+| [docs/COOP_MULTIPLAYER.md](docs/COOP_MULTIPLAYER.md) | Friends co-op playtest guide |
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | Hostable privacy policy (Play Store required) |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 | [ATTRIBUTIONS.md](ATTRIBUTIONS.md) | Engine / tool credits |

@@ -7,6 +7,10 @@ and this project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Co-op multiplayer** — `CoopNetwork` autoload, M2M `TransportPolicy`, lobby UI, remote player sync, host-authoritative heat
+- **Playtest APK** — `scripts/build_test_apk.sh` → `crxcibl3-playtest.apk`; CI `playtest-apk` artifact
+
 ### Planned
 - Broader 3-act map / level set beyond the boardwalk TestRoom + Blackwood arc
 - Final production art pass
