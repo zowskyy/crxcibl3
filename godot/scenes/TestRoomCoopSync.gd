@@ -15,6 +15,8 @@ extends Node
 
 const REMOTE_PLAYER_SCRIPT := preload("res://scenes/RemotePlayer.gd")
 const COOP_HUD_SCRIPT := preload("res://scenes/CoopHUD.gd")
+const COOP_INPUT_GATHERER := preload("res://scenes/CoopInputGatherer.gd")
+const COOP_SIGNAL_UTIL := preload("res://scenes/CoopSignalUtil.gd")
 const SYNC_INTERVAL := 0.1
 
 var _room: Node2D
@@ -24,9 +26,11 @@ var _sync_timer := 0.0
 var _last_synced_heat := -1.0
 
 
-func setup(room: Node2D, canvas_layer: CanvasLayer) -> void:
+func setup(room: Node2D, canvas_layer: CanvasLayer, world_bounds: Rect2 = Rect2()) -> void:
 	_room = room
 	_canvas_layer = canvas_layer
+	if world_bounds.size.x > 0.0:
+		CoopNetwork.set_world_bounds(world_bounds)
 	if not CoopNetwork.is_online():
 		return
 	_connect_signals()
@@ -58,7 +62,9 @@ func tick(delta: float, player: CharacterBody2D) -> void:
 	_sync_timer -= delta
 	if _sync_timer <= 0.0:
 		_sync_timer = SYNC_INTERVAL
-		_broadcast_local_player(player)
+		_send_local_input(player)
+	if CoopNetwork.is_host():
+		CoopNetwork.tick_authority_simulation(delta, player)
 	_sync_host_heat()
 
 
@@ -69,7 +75,7 @@ func can_modify_heat() -> bool:
 
 
 func _connect_signals() -> void:
-	_connect_signal_pairs([
+	COOP_SIGNAL_UTIL.connect_pairs([
 		[CoopNetwork.peer_joined, _on_peer_joined],
 		[CoopNetwork.peer_left, _on_peer_left],
 		[CoopNetwork.player_state_sync, _on_player_state_sync],
@@ -78,24 +84,12 @@ func _connect_signals() -> void:
 
 
 func _disconnect_signals() -> void:
-	for pair in [
+	COOP_SIGNAL_UTIL.disconnect_pairs([
 		[CoopNetwork.peer_joined, _on_peer_joined],
 		[CoopNetwork.peer_left, _on_peer_left],
 		[CoopNetwork.player_state_sync, _on_player_state_sync],
 		[CoopNetwork.heat_sync, _on_heat_sync],
-	]:
-		var sig: Signal = pair[0]
-		var callable: Callable = pair[1]
-		if sig.is_connected(callable):
-			sig.disconnect(callable)
-
-
-func _connect_signal_pairs(pairs: Array) -> void:
-	for pair in pairs:
-		var sig: Signal = pair[0]
-		var callable: Callable = pair[1]
-		if not sig.is_connected(callable):
-			sig.connect(callable)
+	])
 
 
 func _add_coop_hud() -> void:
@@ -159,6 +153,9 @@ func _on_player_state_sync(
 	health: int,
 ) -> void:
 	if peer_id == CoopNetwork.get_local_peer_id():
+		var local_player := _room.get_tree().get_first_node_in_group("player")
+		if local_player != null and local_player.has_method("apply_authoritative_state"):
+			local_player.apply_authoritative_state(pos, facing, health)
 		return
 	var remote := _ensure_remote_player(peer_id)
 	remote.set_network_state(pos, facing, hero_id, health)
@@ -171,15 +168,10 @@ func _on_heat_sync(heat: float) -> void:
 	GameState.heat = clampf(heat, 0.0, GameState.HEAT_MAX)
 
 
-func _broadcast_local_player(player: CharacterBody2D) -> void:
-	if player == null or not is_instance_valid(player):
-		return
-	var facing: Vector2 = player._facing if "_facing" in player else Vector2.RIGHT
-	CoopNetwork.broadcast_player_state(
-		player.global_position,
-		facing,
-		player.hero_name,
-		player.health,
+func _send_local_input(player: CharacterBody2D) -> void:
+	var input := COOP_INPUT_GATHERER.gather(player)
+	CoopNetwork.send_player_input(
+		input["move"], input["facing"], input["fire_pressed"], input["hero_id"]
 	)
 
 

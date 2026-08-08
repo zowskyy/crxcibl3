@@ -115,11 +115,10 @@ M2M stack is **built** — this phase hardens it for 4-player permanent-death ga
 | Docs | `docs/COOP_MULTIPLAYER.md` |
 
 ### SLICE 1.1 — Host-Authoritative Gameplay State
-- **Status:** **PARTIAL**
-- **Exists:** Heat is host-authoritative (`CoopNetwork.broadcast_heat`, `@rpc("authority")`). Position/health via `sync_player_state` — **clients report outcomes**
-- **Gap:** Input-intent-only model; host rejects fabricated RPCs
-- **Files to change:** `godot/autoload/CoopNetwork.gd`, `godot/scenes/TestRoomCoopSync.gd`, `godot/scenes/Player.gd`
-- **Deliverable gate:** Test client sending fabricated position/health is rejected or overridden by host
+- **Status:** **PARTIAL** (position/health authority shipped; enemy-hit validation on clients still host-spawn-only)
+- **Exists:** `CoopNetwork.submit_player_input`, `request_self_damage`, `submit_claimed_player_state` (rejection), `tick_authority_simulation`, `sync_player_state` (`@rpc authority`); `CoopHostAuthority`, `CoopNetworkDelegates`, `Player.apply_authoritative_state`, `TestRoomCoopSync._send_local_input`; `tools/coop_authority_check.gd`
+- **Gap:** Host does not yet validate bullet hits against remote peer hitboxes; clients with no local enemies rely on `request_self_damage` for incoming damage
+- **Deliverable gate:** Fabricated position/health via `submit_claimed_player_state` rejected on host ✓; authoritative health applied on clients via host broadcast ✓; full combat hit validation — follow-up
 
 ### SLICE 1.2 — Reconnection Mid-Match
 - **Status:** **NOT_STARTED**

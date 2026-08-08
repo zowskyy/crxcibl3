@@ -22,6 +22,11 @@ signal m2m_mobile_ip_ready(ip: String)
 
 const GAME_PORT := 7777
 const BEACON_INTERVAL_SEC := 2.0
+const CoopHostAuthorityScript := preload("res://autoload/CoopHostAuthority.gd")
+const CoopNetworkTransportScript := preload("res://autoload/CoopNetworkTransport.gd")
+const CoopNetworkAuthorityRelayScript := preload("res://autoload/CoopNetworkAuthorityRelay.gd")
+const CoopNetworkDelegatesScript := preload("res://autoload/CoopNetworkDelegates.gd")
+const CoopNetworkJoinScript := preload("res://autoload/CoopNetworkJoin.gd")
 
 var is_coop: bool = false
 
@@ -35,6 +40,8 @@ var _connected: bool = false
 var _remote_player_states: Dictionary = {}
 var _own_session_id: String = ""
 var _join_start_usec: int = 0
+## Host-only: authoritative simulation delegated to CoopHostAuthority.
+var _authority = CoopHostAuthorityScript.new()
 
 
 func _ready() -> void:
@@ -42,7 +49,7 @@ func _ready() -> void:
 	_beacon_timer = Timer.new()
 	_beacon_timer.wait_time = BEACON_INTERVAL_SEC
 	add_child(_beacon_timer)
-	_connect_signal_pairs([
+	CoopNetworkJoinScript.connect_signal_pairs(self, [
 		[_beacon_timer.timeout, _send_beacon],
 		[multiplayer.peer_connected, _on_peer_connected],
 		[multiplayer.peer_disconnected, _on_peer_disconnected],
@@ -54,21 +61,13 @@ func _ready() -> void:
 		[M2MSession.proximity_match, _on_proximity_match],
 	])
 	if CoopBluetooth != null:
-		_connect_signal_pairs([[CoopBluetooth.session_discovered, _on_bluetooth_session]])
-
-
-func _connect_signal_pairs(pairs: Array) -> void:
-	for pair in pairs:
-		var sig: Signal = pair[0]
-		var callable: Callable = pair[1]
-		if not sig.is_connected(callable):
-			sig.connect(callable)
+		CoopNetworkJoinScript.connect_signal_pairs(
+			self, [[CoopBluetooth.session_discovered, _on_bluetooth_session]]
+		)
 
 
 func _process(_delta: float) -> void:
-	for session in _discovery.poll(is_host(), Callable(self, "_send_beacon")):
-		if str(session.get("session_id", "")) != _own_session_id:
-			_enrich_and_emit(session)
+	CoopNetworkJoinScript.process_discovery(self)
 
 
 func host_session(alias: String) -> Error:
@@ -96,48 +95,18 @@ func host_session(alias: String) -> Error:
 	_discovery.start()
 	_beacon_timer.start()
 	_connected = true
-	_publish_bluetooth_advert()
+	CoopNetworkDelegatesScript.publish_bluetooth_advert(self)
 	session_started.emit()
 	return OK
 
 
 func join_session(address: String, transport: String = "") -> Error:
-	if address.is_empty():
-		return ERR_INVALID_PARAMETER
-
-	stop_session()
-	is_coop = true
-	_host_alias = "Client"
-	_own_session_id = ""
-	_join_start_usec = Time.get_ticks_usec()
-
-	if transport.is_empty():
-		_active_transport = CoopLanUtil.transport_for_address(address)
-	else:
-		_active_transport = transport
-	_emit_transport_changed()
-
-	var err: Error = ERR_CANT_CONNECT
-	var target := CoopLanUtil.resolve_join_address(address, _active_transport)
-	err = _start_enet_client(target)
-	if err != OK and _active_transport == TransportPolicy.TRANSPORT_BLUETOOTH:
-		err = _start_enet_client(address)
-
-	if err != OK:
-		M2MTransportLearner.record_failure(_active_transport)
-		stop_session()
-		return err
-
-	M2MSession.start_m2m_watch()
-	_discovery.start()
-	return OK
+	return CoopNetworkJoinScript.join_session(self, address, transport)
 
 
 func join_session_info(session: Dictionary) -> Error:
 	var pick: Dictionary = M2MSession.pick_join_address(session)
-	var addr: String = str(pick.get("address", ""))
-	var transport: String = str(pick.get("transport", ""))
-	return join_session(addr, transport)
+	return join_session(str(pick.get("address", "")), str(pick.get("transport", "")))
 
 
 func scan_nearby() -> Array:
@@ -155,12 +124,10 @@ func stop_session() -> void:
 	_host_alias = ""
 	GameState.coop_session_id = ""
 	_remote_player_states.clear()
+	_authority.clear()
 	_discovery.stop()
 	M2MSession.stop_m2m_watch()
-	if CoopBluetooth != null:
-		CoopBluetooth.stop_advertising()
-		CoopBluetooth.close_rfcomm()
-
+	CoopNetworkJoinScript.stop_bluetooth()
 	if _enet_peer:
 		_enet_peer.close()
 		_enet_peer = null
@@ -184,12 +151,7 @@ func get_local_peer_id() -> int:
 
 
 func get_peer_ids() -> Array:
-	if not is_online():
-		return [get_local_peer_id()]
-	var ids: Array = [multiplayer.get_unique_id()]
-	for peer_id in multiplayer.get_peers():
-		ids.append(peer_id)
-	return ids
+	return CoopNetworkJoinScript.peer_ids(self)
 
 
 func get_friends_count() -> int:
@@ -227,9 +189,71 @@ func get_remote_player_state(peer_id: int) -> Dictionary:
 	return _remote_player_states.get(peer_id, {}).duplicate(true)
 
 
-@rpc("any_peer", "call_local", "reliable")
+func set_world_bounds(bounds: Rect2) -> void:
+	_authority.set_world_bounds(bounds)
+
+
+func send_player_input(move: Vector2, facing: Vector2, fire_pressed: bool, hero_id: String) -> void:
+	CoopNetworkDelegatesScript.send_player_input(self, move, facing, fire_pressed, hero_id)
+
+
+func tick_authority_simulation(delta: float, host_player: CharacterBody2D) -> void:
+	CoopNetworkDelegatesScript.tick_authority_simulation(self, delta, host_player)
+
+
+func notify_host_player_state(player: CharacterBody2D) -> void:
+	CoopNetworkDelegatesScript.notify_host_player_state(self, player)
+
+
+@rpc("any_peer", "reliable")
+func submit_player_input(
+	move_x: float,
+	move_y: float,
+	facing_angle: float,
+	fire_pressed: bool,
+	hero_id: String,
+) -> void:
+	if not is_host():
+		return
+	CoopNetworkAuthorityRelayScript.store_remote_input(
+		_authority,
+		multiplayer.get_remote_sender_id(),
+		move_x,
+		move_y,
+		facing_angle,
+		fire_pressed,
+		hero_id,
+	)
+
+
+@rpc("any_peer", "reliable")
+func request_self_damage(amount: int, attacker: String) -> void:
+	if not is_host():
+		return
+	var state: Dictionary = CoopNetworkAuthorityRelayScript.apply_remote_damage(
+		_authority, multiplayer.get_remote_sender_id(), amount
+	)
+	CoopNetworkDelegatesScript.publish_authority_state(self, multiplayer.get_remote_sender_id(), state)
+
+
+@rpc("any_peer", "reliable")
+func submit_claimed_player_state(
+	_claimed_peer_id: int,
+	_pos: Vector2,
+	_facing: float,
+	_hero_id: String,
+	_health: float,
+) -> void:
+	if not is_host():
+		return
+	CoopNetworkAuthorityRelayScript.reject_claimed_state(
+		multiplayer.get_remote_sender_id(), _claimed_peer_id, _health
+	)
+
+
+@rpc("authority", "call_remote", "reliable")
 func sync_player_state(peer_id: int, pos: Vector2, facing: float, hero_id: String, health: float) -> void:
-	var facing_vec := Vector2(cos(facing), sin(facing))
+	var facing_vec := CoopNetworkAuthorityRelayScript.facing_vector(facing)
 	var health_i := int(round(health))
 	_remote_player_states[peer_id] = {"pos": pos, "facing": facing, "hero_id": hero_id, "health": health_i}
 	player_state_sync.emit(peer_id, pos, facing_vec, hero_id, health_i)
@@ -248,82 +272,46 @@ func sync_squad_and_start(squad: Array) -> void:
 
 
 func broadcast_player_state(pos: Vector2, facing: Vector2, hero_id: String, health: int) -> void:
-	if not is_online():
-		return
-	var peer_id := multiplayer.get_unique_id()
-	var angle := facing.angle() if facing.length_squared() > 0.0001 else 0.0
-	sync_player_state.rpc(peer_id, pos, angle, hero_id, float(health))
+	CoopNetworkDelegatesScript.broadcast_player_state(self, pos, facing, hero_id, health)
 
 
 func broadcast_heat(heat: float) -> void:
-	if is_online() and is_host():
-		sync_heat.rpc(heat)
+	CoopNetworkDelegatesScript.broadcast_heat(self, heat)
 
 
 func _start_enet_server() -> Error:
-	_enet_peer = ENetMultiplayerPeer.new()
-	var err := _enet_peer.create_server(GAME_PORT, 8)
-	if err != OK:
-		return err
+	_enet_peer = CoopNetworkTransportScript.create_server()
+	if _enet_peer == null:
+		return ERR_CANT_CREATE
 	multiplayer.multiplayer_peer = _enet_peer
 	return OK
 
 
 func _start_enet_client(address: String) -> Error:
-	_enet_peer = ENetMultiplayerPeer.new()
-	var err := _enet_peer.create_client(address, GAME_PORT)
-	if err != OK:
-		return err
+	_enet_peer = CoopNetworkTransportScript.create_client(address)
+	if _enet_peer == null:
+		return ERR_CANT_CONNECT
 	multiplayer.multiplayer_peer = _enet_peer
 	return OK
 
 
 func _send_beacon() -> void:
-	if not is_host():
-		return
-	var beacon := M2MSession.build_host_beacon(
-		_session_id, _host_alias, get_peer_count() + 1, GAME_PORT
-	)
-	beacon["transport"] = _active_transport
-	beacon["address"] = str(beacon.get("lan_address", ""))
-	_discovery.broadcast("beacon", beacon)
-	_publish_bluetooth_advert()
-
-
-func _publish_bluetooth_advert() -> void:
-	if not is_host() or CoopBluetooth == null or not CoopBluetooth.is_available():
-		return
-	CoopBluetooth.start_advertising({
-		"session_id": _session_id,
-		"host_alias": _host_alias,
-		"player_count": get_peer_count() + 1,
-		"port": GAME_PORT,
-		"lan_address": M2MSession.lan_ip,
-		"mobile_address": M2MSession.effective_mobile_ip(),
-		"machine_id": M2MMachineIdentity.get_machine_id(),
-	})
+	CoopNetworkDelegatesScript.send_beacon(self)
 
 
 func _enrich_and_emit(session: Dictionary) -> void:
-	if M2MMachineIdentity.is_self_beacon(session):
+	var enriched := CoopNetworkTransportScript.enrich_session(session)
+	if enriched.is_empty():
 		return
-	session["lan_address"] = str(session.get("lan_address", session.get("address", "")))
-	session["mobile_address"] = str(session.get("mobile_address", ""))
-	session["bluetooth_address"] = str(session.get("bluetooth_address", ""))
-	M2MSession.register_external_session(session)
-	nearby_session_found.emit(session)
+	nearby_session_found.emit(enriched)
 
 
 func _on_mobile_ip_caught(ip: String) -> void:
-	m2m_mobile_ip_ready.emit(ip)
-	if is_host():
-		_send_beacon()
+	CoopNetworkDelegatesScript.on_mobile_ip_caught(self, ip)
 
 
 func _on_m2m_sessions_updated(sessions: Array) -> void:
-	for s in sessions:
-		if s is Dictionary:
-			nearby_session_found.emit(s)
+	CoopNetworkDelegatesScript.on_m2m_sessions_updated(self, sessions)
 
 
 func _on_proximity_match(session: Dictionary) -> void:
@@ -335,16 +323,11 @@ func _on_bluetooth_session(session: Dictionary) -> void:
 
 
 func _on_peer_connected(id: int) -> void:
-	peer_joined.emit(id)
-	if is_host():
-		_send_beacon()
+	CoopNetworkDelegatesScript.on_peer_connected(self, id)
 
 
 func _on_peer_disconnected(id: int) -> void:
-	_remote_player_states.erase(id)
-	peer_left.emit(id)
-	if is_host():
-		_send_beacon()
+	CoopNetworkDelegatesScript.on_peer_disconnected(self, id)
 
 
 func _on_connected_to_server() -> void:
