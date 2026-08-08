@@ -128,8 +128,12 @@ ensure_export_templates() {
 
   mkdir -p "${GODOT_HOME}/export_templates"
   rm -rf "$EXPORT_TEMPLATES_DIR"
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  unzip -qo "$tpz" -d "$tmpdir"
   mkdir -p "$EXPORT_TEMPLATES_DIR"
-  unzip -qo "$tpz" -d "$EXPORT_TEMPLATES_DIR"
+  mv "${tmpdir}/templates/"* "$EXPORT_TEMPLATES_DIR/"
+  rm -rf "$tmpdir"
   log "Installed export templates to ${EXPORT_TEMPLATES_DIR}"
 }
 
@@ -160,7 +164,9 @@ ensure_android_sdk() {
   fi
 
   export PATH="${CMDLINE_TOOLS_DIR}/bin:${PATH}"
-  yes | sdkmanager --sdk_root="$ANDROID_SDK" --licenses >/dev/null
+  set +o pipefail
+  yes | sdkmanager --sdk_root="$ANDROID_SDK" --licenses >/dev/null || true
+  set -o pipefail
   sdkmanager --sdk_root="$ANDROID_SDK" \
     "platform-tools" \
     "platforms;android-34" \

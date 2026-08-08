@@ -24,7 +24,7 @@ func start() -> void:
 	stop()
 	_udp = PacketPeerUDP.new()
 	_udp.set_broadcast_enabled(true)
-	var err := _udp.bind(DISCOVERY_PORT, IP.TYPE_ANY)
+	var err := _udp.bind(DISCOVERY_PORT, "0.0.0.0")
 	if err != OK:
 		print("[CoopDiscovery] bind failed: %s" % err)
 		push_warning("CoopDiscovery: bind failed (%s)" % err)
