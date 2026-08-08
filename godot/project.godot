@@ -57,6 +57,7 @@ SquadController="*res://autoload/SquadController.gd"
 Inventory="*res://autoload/Inventory.gd"
 QuestManager="*res://autoload/QuestManager.gd"
 AndroidPlatform="*res://autoload/AndroidPlatform.gd"
+ProcessDeathSnapshot="*res://autoload/ProcessDeathSnapshot.gd"
 ControllerGlyphs="*res://autoload/ControllerGlyphs.gd"
 
 [audio]

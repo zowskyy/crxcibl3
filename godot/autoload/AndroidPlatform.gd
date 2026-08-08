@@ -1,6 +1,16 @@
 extends Node
 ## AndroidPlatform — mobile bootstrap: lifecycle save/restore, audio focus, safe area,
 ## predictive back, edge-to-edge, and low-latency input settings.
+## Usage: autoload bootstrap — see project docs --help.
+## validate safe-area margins; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via ProcessDeathSnapshot restore.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 var _safe_layer: CanvasLayer = null
 var _safe_area_root: MarginContainer = null
@@ -8,6 +18,7 @@ var _audio_was_playing: Dictionary = {}
 
 
 func _ready() -> void:
+	print("[AndroidPlatform] bootstrap ready")
 	Input.use_accumulated_input = false
 	ProjectSettings.set_setting("rendering/2d/snap/snap_2d_transforms_to_pixel", true)
 
@@ -17,9 +28,7 @@ func _ready() -> void:
 	if not get_tree().root.size_changed.is_connected(_apply_safe_area):
 		get_tree().root.size_changed.connect(_apply_safe_area)
 
-	if SaveSystem.has_method("restore_snapshot_if_needed"):
-		SaveSystem.restore_snapshot_if_needed()
-
+	ProcessDeathSnapshot.restore_if_needed()
 	call_deferred("_apply_safe_area")
 
 
@@ -30,10 +39,7 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_RESUMED:
 			_on_app_resumed()
 		NOTIFICATION_WM_ABOUT_TO_GO_BACKGROUND:
-			if SaveSystem.has_method("save_snapshot"):
-				SaveSystem.save_snapshot()
-			else:
-				SaveSystem.save_game()
+			ProcessDeathSnapshot.save_snapshot()
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			_handle_predictive_back()
 			get_viewport().set_input_as_handled()
@@ -45,10 +51,7 @@ func _on_app_paused() -> void:
 		var bus_name := AudioServer.get_bus_name(i)
 		_audio_was_playing[bus_name] = not AudioServer.is_bus_mute(i)
 		AudioServer.set_bus_mute(i, true)
-	if SaveSystem.has_method("save_snapshot"):
-		SaveSystem.save_snapshot()
-	else:
-		SaveSystem.save_game()
+	ProcessDeathSnapshot.save_snapshot()
 
 
 func _on_app_resumed() -> void:

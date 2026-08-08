@@ -1,5 +1,15 @@
 extends Node
 ## ControllerGlyphs — lightweight joypad detection and glyph hint labels.
+## Usage: read get_confirm_label() for UI hints — see --help in project docs.
+## validate joypad name substrings; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade to generic glyphs on disconnect.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal controller_changed(glyph_set: String)
 

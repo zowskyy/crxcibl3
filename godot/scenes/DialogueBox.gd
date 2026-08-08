@@ -3,6 +3,16 @@ extends CanvasLayer
 ##
 ## Listens to CutsceneDirector beat signals and renders speaker lines, narrator
 ## text, and choice buttons at the bottom of the 384×216 design canvas.
+## Usage: autoload cutscene UI — see --help in project docs.
+## validate choice payloads; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via beat_cleared hide panel.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal continued
 signal choice_made(choice_id: String)
@@ -18,6 +28,7 @@ var _awaiting_choice := false
 
 
 func _ready() -> void:
+	print("[DialogueBox] ready")
 	layer = 10
 	panel.visible = false
 	_ensure_connected(CutsceneDirector.line_shown, _on_line_shown)

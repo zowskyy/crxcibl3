@@ -41,25 +41,20 @@ func _ready() -> void:
 	M2MResilienceCore.start()
 	_beacon_timer = Timer.new()
 	_beacon_timer.wait_time = BEACON_INTERVAL_SEC
-	_ensure_connected(_beacon_timer.timeout, _send_beacon)
+	_beacon_timer.timeout.connect(_send_beacon)
 	add_child(_beacon_timer)
 
-	_ensure_connected(multiplayer.peer_connected, _on_peer_connected)
-	_ensure_connected(multiplayer.peer_disconnected, _on_peer_disconnected)
-	_ensure_connected(multiplayer.connected_to_server, _on_connected_to_server)
-	_ensure_connected(multiplayer.connection_failed, _on_connection_failed)
-	_ensure_connected(multiplayer.server_disconnected, _on_server_disconnected)
+	multiplayer.peer_connected.connect(_on_peer_connected)
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	multiplayer.connected_to_server.connect(_on_connected_to_server)
+	multiplayer.connection_failed.connect(_on_connection_failed)
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
 
-	_ensure_connected(M2MSession.mobile_ip_caught, _on_mobile_ip_caught)
-	_ensure_connected(M2MSession.m2m_sessions_updated, _on_m2m_sessions_updated)
-	_ensure_connected(M2MSession.proximity_match, _on_proximity_match)
+	M2MSession.mobile_ip_caught.connect(_on_mobile_ip_caught)
+	M2MSession.m2m_sessions_updated.connect(_on_m2m_sessions_updated)
+	M2MSession.proximity_match.connect(_on_proximity_match)
 	if CoopBluetooth != null:
-		_ensure_connected(CoopBluetooth.session_discovered, _on_bluetooth_session)
-
-
-func _ensure_connected(sig: Signal, callable: Callable) -> void:
-	if not sig.is_connected(callable):
-		sig.connect(callable)
+		CoopBluetooth.session_discovered.connect(_on_bluetooth_session)
 
 
 func _process(_delta: float) -> void:

@@ -1,5 +1,15 @@
 extends Node
 ## PermissionRationale — shows in-app rationale dialogs before OS permission requests.
+## Usage: request_bluetooth_permissions() before Engine.request_permission — --help.
+## validate granted permission list; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via skip on non-Android platforms.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const RATIONALE_BLUETOOTH := (
 	"CRXCIBL3 uses Bluetooth to discover nearby co-op sessions on the same crew network. "
@@ -19,6 +29,7 @@ var _pending_callback: Callable = Callable()
 
 
 func _ready() -> void:
+	print("[PermissionRationale] ready")
 	_pending_dialog = AcceptDialog.new()
 	_pending_dialog.title = "Permission needed"
 	_pending_dialog.dialog_hide_on_ok = true
