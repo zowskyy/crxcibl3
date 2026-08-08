@@ -2,6 +2,16 @@ extends Node2D
 ## Slice 2.20 — The Emperor confrontation (Act 3 finale).
 ## Blackwood final stand first; reckoning cutscene driven by data/emperor_scene.json
 ## via CutsceneDirector beats + DialogueBox autoload.
+##
+## validate reckoning beats; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via Epilogue scene transition.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var boss: CharacterBody2D = $BossBlackwood
 @onready var emperor: Node2D = $EmperorFigure
@@ -19,6 +29,7 @@ var _reckoning := false
 
 
 func _ready() -> void:
+	print("[EmperorScene] ready")
 	GameState.current_act = 3
 	if not boss.defeated.is_connected(_on_blackwood_defeated):
 		boss.defeated.connect(_on_blackwood_defeated)

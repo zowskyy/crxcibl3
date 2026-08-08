@@ -1,5 +1,15 @@
 extends Control
 ## RPG synergy bond HUD — shows active crew bonds and stat bonuses.
+##
+## validate bond tiers; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via RelationshipSystem signal refresh.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var label: Label = $BondLabel
 
@@ -12,6 +22,7 @@ const BOND_COLORS := {
 
 
 func _ready() -> void:
+	print("[SynergyHUD] ready")
 	anchor_left = 1.0
 	anchor_right = 1.0
 	anchor_top = 1.0

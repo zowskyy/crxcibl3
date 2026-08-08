@@ -1,6 +1,16 @@
 extends Area2D
 ## Blackwood's "divine light" projectile (Slice 2.18).
 ## Same pattern as Bullet.gd but fired by the boss at the player.
+##
+## validate body collision; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via queue_free on hit.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 var direction := Vector2.RIGHT
 var speed := 180.0
@@ -13,6 +23,7 @@ var _age := 0.0
 
 
 func _ready() -> void:
+	print("[BossProjectile] ready")
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = RADIUS

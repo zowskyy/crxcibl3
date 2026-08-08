@@ -89,8 +89,6 @@ func _notification(what: int) -> void:
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			_handle_predictive_back()
 			get_viewport().set_input_as_handled()
-		NOTIFICATION_CRASH:
-			log_crash("engine_notification", "NOTIFICATION_CRASH")
 
 func _on_app_paused() -> void:
 	_audio_was_playing.clear()

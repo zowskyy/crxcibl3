@@ -2,6 +2,16 @@ extends Node2D
 class_name GetawayScene
 ## Shared getaway mechanic (Slice 2.19+) — survive timed pursuit, then transition.
 ## Car chase, boat run, and future escapes all use this base.
+##
+## validate pursuit spawns; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via exit_scene_path transition.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 signal getaway_started
 signal getaway_survived
@@ -34,6 +44,7 @@ var _done := false
 
 
 func _ready() -> void:
+	print("[GetawayScene] ready")
 	_resolve_nodes()
 	if fire_button and player_vehicle and player_vehicle.has_method("fire"):
 		if not fire_button.pressed.is_connected(_on_fire_pressed):

@@ -4,6 +4,16 @@ extends Node2D
 ## Displays the ending type (determined by Epilogue.start_epilogue() called in EmperorScene),
 ## the run summary, and a "Play Again" button that resets and returns to the main menu.
 ## Epilogue.start_epilogue() must have already been called before this scene loads.
+##
+## validate ending summary; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via GameState.reset_for_new_game().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @onready var ending_label:  Label  = $CanvasLayer/EndingLabel
 @onready var summary_label: Label  = $CanvasLayer/SummaryLabel

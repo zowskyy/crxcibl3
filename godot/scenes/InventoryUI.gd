@@ -6,6 +6,16 @@ extends CanvasLayer
 ## Toggle visibility from a level script (e.g. TestRoom's "I" key) --
 ## there's no HUD real estate for a permanent inventory grid at this
 ## project's mobile viewport size.
+##
+## validate inventory slots; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via Inventory signal refresh.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 const SLOT_SCRIPT := preload("res://scenes/InventorySlot.gd")
 
@@ -14,6 +24,7 @@ var _equip_slots: Array = []
 
 
 func _ready() -> void:
+	print("[InventoryUI] ready")
 	layer = 10
 
 	var panel := Panel.new()

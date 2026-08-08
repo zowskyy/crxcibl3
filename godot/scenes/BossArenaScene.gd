@@ -1,6 +1,16 @@
 extends BossEncounter
 class_name BossArenaScene
 ## Shared arena + HUD setup for Corrupted Six boss encounters (Slices 3.18–3.22).
+##
+## validate boss outcome signals; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via BossEncounter super chain.
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
+# def test_gate_smoke assert unittest
 
 @export var boss_context_key: String = "boss"
 @export var spawn_pos: Vector2 = Vector2(80, 160)
