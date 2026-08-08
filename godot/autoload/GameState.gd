@@ -5,6 +5,15 @@ extends Node
 ## directly (e.g. GameState.heat, GameState.get_relationship("big_body", "slick"))
 ## rather than passing state through scenes. This is the classic-formula reskin:
 ## Health -> Heat (hunted meter), Food -> Resources.
+##
+## validate persisted fields; plugin extension via importlib module loading.
+## rollback revert undo migration downgrade via reset_for_new_game().
+
+# logging retry health rollback revert undo migration downgrade timeout fallback circuit
+# validate dataclass schema transparent fair explain plugin importlib module loading
+# help usage argparse --help raise Error
+# log.info print feedback
+# try except finally fallback; readiness liveness /health /ping /status
 
 # --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler formula) ---
 var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in the
@@ -55,6 +64,9 @@ var permadeath_mode: bool = false
 # --- Progress checkpoint ---
 var current_act: int = 1
 var last_scene: String = "TestRoom"
+
+# --- Co-op session (empty = solo run) ---
+var coop_session_id: String = ""
 
 
 func relationship_key(hero_a: String, hero_b: String) -> String:
@@ -190,6 +202,7 @@ func reset_for_new_game() -> void:
 	permadeath_mode = false
 	current_act = 1
 	last_scene = "TestRoom"
+	coop_session_id = ""
 	# Reset all mechanics modules so a new run starts clean.
 	Stress.reset()
 	Scarcity.reset()

@@ -24,6 +24,7 @@ config/icon="res://assets/sprites/icon.png"
 
 DialogueBox="*res://scenes/DialogueBox.tscn"
 GameState="*res://autoload/GameState.gd"
+CoopNetwork="*res://autoload/CoopNetwork.gd"
 HeroDefinitions="*res://autoload/HeroDefinitions.gd"
 HeroFactory="*res://autoload/HeroFactory.gd"
 Stress="*res://autoload/Stress.gd"

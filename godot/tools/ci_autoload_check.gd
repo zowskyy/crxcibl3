@@ -10,6 +10,7 @@ extends SceneTree
 const AUTOLOADS := [
 	"DialogueBox",
 	"GameState",
+	"CoopNetwork",
 	"HeroDefinitions",
 	"HeroFactory",
 	"Stress",
