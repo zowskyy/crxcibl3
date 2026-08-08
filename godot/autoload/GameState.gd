@@ -5,12 +5,6 @@ extends Node
 ## directly (e.g. GameState.heat, GameState.get_relationship("big_body", "slick"))
 ## rather than passing state through scenes. This is the classic-formula reskin:
 ## Health -> Heat (hunted meter), Food -> Resources.
-##
-## logging retry health rollback revert undo migration downgrade timeout fallback circuit
-## validate dataclass schema transparent fair explain plugin importlib module loading
-## help usage argparse --help raise Error
-# log.info print feedback
-# try except finally fallback; : str type hint; if not empty guard
 
 # --- Heat (the "hunted" meter — replaces Health from the classic dungeon-crawler formula) ---
 var heat: float = 0.0          # 0-100. Visual/audio feedback thresholds live in the
@@ -30,6 +24,7 @@ var quests_completed: Array = []
 var bosses_fought: Array = []        # e.g. ["Cross", "Voss"]
 var boss_executed: Dictionary = {}   # boss name -> true/false (spared)
 var boss_finisher: Dictionary = {}   # boss name -> hero name who landed the finishing blow
+var boss_choices: Dictionary = {}    # boss id -> choice id (forgive, spare, execute, …)
 var emperor_forgiven = null          # null until decided, then true/false
 
 # --- Crew-wide stats ---
@@ -125,10 +120,34 @@ func top_contributor() -> String:
 
 
 func mark_boss_defeated(boss_name: String, executed: bool, finisher: String) -> void:
+	if not boss_name:
+		return
 	if not bosses_fought.has(boss_name):
 		bosses_fought.append(boss_name)
 	boss_executed[boss_name] = executed
 	boss_finisher[boss_name] = finisher
+
+
+## Record a narrative choice from a JSON beat encounter (Slices 3.18+).
+func record_boss_choice(boss_id: String, choice: String) -> void:
+	if boss_id.is_empty() or choice.is_empty():
+		return
+	boss_choices[boss_id] = choice
+	match boss_id:
+		"emperor":
+			var forgive := choice == "forgive"
+			emperor_forgiven = forgive
+			Emperor.on_emperor_choice(forgive)
+			DialogueIntensity.on_dialogue_choice_made(15)
+			if forgive:
+				Reputation.on_crew_saved()
+			else:
+				Reputation.on_boss_executed()
+		"blackwood":
+			var executed := choice == "execute"
+			modify_heat(15.0 if executed else -5.0)
+		_:
+			modify_heat(15.0 if choice == "execute" else -5.0)
 
 
 func get_active_hero() -> String:
@@ -154,6 +173,7 @@ func reset_for_new_game() -> void:
 	bosses_fought.clear()
 	boss_executed.clear()
 	boss_finisher.clear()
+	boss_choices.clear()
 	emperor_forgiven = null
 	morale = 0
 	reputation_ruthlessness = 0

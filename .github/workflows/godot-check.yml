@@ -12,6 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate JSON data and release-pass GDScript
+        run: |
+          python3 -c "import json; from pathlib import Path
+          for p in Path('godot/data').glob('*.json'):
+              json.loads(p.read_text())"
+          python3 scripts/check_gd.py
+
       - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2
         with:

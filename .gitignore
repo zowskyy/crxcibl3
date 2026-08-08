@@ -1,23 +1,51 @@
-# Godot editor cache/import artifacts (regenerated per machine)
+# Godot 4.x
 godot/.godot/
+godot/.import/
+*.translation
+*.import
+*.depren
+*.md5
+.mono/
+data_*/
+export.cfg
+export_credentials.cfg
 
-# Debug signing keystore -- not a real secret (well-known alias/password),
-# but binaries don't belong in the repo. Regenerated identically by both
-# local dev and CI via keytool; see export_presets.cfg.
+# Debug signing keystore — regenerated locally and in CI
 godot/debug.keystore
 
 # Local export output
 godot/build/
 
-# Stray APK export dir that landed at repo root from an earlier slice's build
+# Stray APK export dir from an earlier slice
 UsersmrscpAppDataLocalTempapk-slice220/
 
-# Generated production ZIP (regenerable from the source .md docs it bundles)
+# Generated production ZIP (regenerable)
 CRXCIBL3_ANIMATION_VOICEOVER_PRODUCTION_PACKAGE.zip
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+ENV/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
 .env
+.env.*
+
+# Agent gate cache
 .cursor/gate-logs/
 .cursor/gate-cache/
+
+# CI Godot engine checkout (collides with godot/ project folder name)
 godot-engine/
-*.uid
+
+# Godot 4 UID sidecars — committed in this repo as stable resource refs
+# *.uid

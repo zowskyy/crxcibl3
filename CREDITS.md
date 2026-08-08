@@ -1,5 +1,7 @@
 # Third-Party Asset Credits
 
+See also [ATTRIBUTIONS.md](ATTRIBUTIONS.md) for engine/tool credits.
+
 ## Hero animation base template
 - **Source:** "Isometric Character Template" by intellikat (https://intellikat.itch.io), with thanks to sgeos for support
 - **License:** CC0 1.0 Universal (public domain) — attribution not legally required but explicitly requested by the author

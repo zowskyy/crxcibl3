@@ -1,0 +1,88 @@
+{
+  "id": "emperor",
+  "title": "The Emperor — Reckoning",
+  "background": "res://assets/buildings/liquor_store.png",
+  "next_scene": "res://scenes/EpilogueScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.8 },
+    { "type": "narrator", "text": "The doors of the estate close behind you. Candlelight crawls across the floor.", "duration": 4.5 },
+    { "type": "line", "speaker": "EMPEROR", "target": "emperor", "gesture": "lookaside",
+      "text": "You came. I wasn't sure you would.",
+      "audio": "res://assets/audio/emperor/EMPEROR_ENTER_01.wav", "duration": 3.5 },
+    { "type": "wait", "duration": 0.5 },
+    { "type": "gesture", "target": "emperor", "name": "hands_open" }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "EMPEROR", "target": "emperor", "gesture": "leaning_forward",
+      "text": "I didn't betray you.",
+      "audio": "res://assets/audio/emperor/EMPEROR_001_DidntBetray.wav", "duration": 3.0 },
+    { "type": "line", "speaker": "EMPEROR", "target": "emperor", "gesture": "hands_open",
+      "text": "I made a deal with The Corrupted Six to save your lives.",
+      "audio": "res://assets/audio/emperor/EMPEROR_002_MadeADeal.wav", "duration": 4.5 },
+    { "type": "line", "speaker": "EMPEROR", "target": "emperor", "gesture": "slump_final",
+      "text": "I thought if I gave them the jobs, they'd let you walk. I was wrong.",
+      "audio": "res://assets/audio/emperor/EMPEROR_003_ThoughtIfI.wav", "duration": 5.5 },
+    { "type": "wait", "duration": 1.0 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "What do you do?",
+      "choices": [
+        { "id": "forgive", "label": "FORGIVE HIM" },
+        { "id": "turn_away", "label": "TURN AWAY" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "forgive": "@forgive_sequence",
+      "turn_away": "@turn_away_sequence"
+    } }
+  ],
+
+  "forgive_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["emperor", "forgive"] },
+    { "type": "line", "speaker": "CREW", "target": "player", "gesture": "step_forward",
+      "text": "We know. We've always known.",
+      "audio": "res://assets/audio/crew/CREW_001_WeKnow.wav", "duration": 3.5 },
+    { "type": "line", "speaker": "CREW", "target": "player", "gesture": "idle",
+      "text": "You made a mistake. So did we.",
+      "audio": "res://assets/audio/crew/CREW_002_YouMade.wav", "duration": 4.0 },
+    { "type": "line", "speaker": "CREW", "target": "player", "gesture": "hand_to_chest",
+      "text": "The Flats ain't about who's right — it's about who's still standing. And we're standing.",
+      "audio": "res://assets/audio/crew/CREW_003_FlatsAint.wav", "duration": 5.5 },
+    { "type": "fade_shader", "target": "EmperorFigure",
+      "from": 1.0, "to": 0.0, "duration": 2.0 },
+    { "type": "narrator",
+      "text": "The Emperor died that night, surrounded by the crew he'd failed and saved in equal measure.",
+      "audio": "res://assets/audio/narrator/NAR_001_ForgiveEpilogue.wav", "duration": 6.5 },
+    { "type": "call", "target": "/root/Morale", "method": "on_quest_completed", "args": [20] },
+    { "type": "call", "target": "/root/Emperor", "method": "on_emperor_death", "args": [] },
+    { "type": "call", "target": "/root/Epilogue", "method": "start_epilogue", "args": [] },
+    { "type": "call", "target": "/root/SaveSystem", "method": "save_game", "args": [] },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/EpilogueScene.tscn" }
+  ],
+
+  "turn_away_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["emperor", "turn_away"] },
+    { "type": "gesture", "target": "player", "name": "turn_away" },
+    { "type": "wait", "duration": 0.6 },
+    { "type": "narrator",
+      "text": "The crew said nothing. There was nothing left worth saying.",
+      "audio": "res://assets/audio/narrator/NAR_002_CrewSaidNothing.wav", "duration": 5.0 },
+    { "type": "fade_shader", "target": "EmperorFigure",
+      "from": 1.0, "to": 0.0, "duration": 2.0 },
+    { "type": "narrator",
+      "text": "The Emperor died that night — alone in a room full of the people he'd failed.",
+      "audio": "res://assets/audio/narrator/NAR_003_AloneInRoom.wav", "duration": 6.0 },
+    { "type": "call", "target": "/root/Morale", "method": "on_quest_completed", "args": [20] },
+    { "type": "call", "target": "/root/Emperor", "method": "on_emperor_death", "args": [] },
+    { "type": "call", "target": "/root/Epilogue", "method": "start_epilogue", "args": [] },
+    { "type": "call", "target": "/root/SaveSystem", "method": "save_game", "args": [] },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/EpilogueScene.tscn" }
+  ]
+}

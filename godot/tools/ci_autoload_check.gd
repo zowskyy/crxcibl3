@@ -12,6 +12,7 @@ extends SceneTree
 # log.info print feedback
 
 const AUTOLOADS := [
+	"DialogueBox",
 	"GameState",
 	"HeroDefinitions",
 	"HeroFactory",

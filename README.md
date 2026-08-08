@@ -1,75 +1,121 @@
-# CRXCIBL3 -- Web Build (Phaser 3)
+# CRXCIBL3
 
-## Running it -- one script, every time
+> **Beach Boulevard — Godot 4.7.1 crew shooter with a JSON-driven cutscene system for the Emperor reckoning, Blackwood arc, and future Corrupted Six bosses.**
+
+[![Godot 4.7.1](https://img.shields.io/badge/Godot-4.7.1-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-blue.svg)](CHANGELOG.md)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-lightgrey)](godot/export_presets.cfg)
+
+---
+
+## Quickstart
+
+```bash
+# 1. Clone / open this repo
+# 2. Install Godot 4.7.1 — https://godotengine.org/download
+# 3. Godot Project Manager → Import → godot/project.godot
+# 4. Press F5 — Main menu → New Game → hero selection → boardwalk TestRoom
+
+# Optional: regenerate brand icon
+python3 scripts/generate_icon.py
+
+# Optional: structural checks (no Godot editor required)
+python3 scripts/check_tscn.py
+python3 scripts/check_gd.py
 ```
-.\run-game.ps1
+
+**Play the story arc:** TestRoom → rooftop trigger (Building3) → Blackwood fight → car chase → Emperor estate reckoning → epilogue.
+
+---
+
+## What's built
+
+| Area | Status |
+|------|--------|
+| **Boardwalk combat** | Heat / stress / HP, enemies, bodega shop, hideout, crack-house generator, squad TAB switch |
+| **Blackwood arc** | Rooftop surprise → car chase → Emperor final stand → JSON reckoning → epilogue |
+| **Cutscene system** | `CutsceneDirector` beat sequencer + `DialogueBox` UI + JSON data in `godot/data/` |
+| **25 autoloads** | GameState, Stress, SaveSystem, Bosses, Emperor, Epilogue, … |
+| **12 heroes** | From `configs/game_config.json` via HeroDefinitions / HeroFactory |
+| **5 future bosses** | Cross, Voss, Moreau, Hayes, Webb — data-templated (`bosses.json` + beat template) |
+| **Export** | Android, Web, Windows Desktop, Linux/X11 presets; CI debug APK artifact |
+
+Phaser 3 web prototype under `js/` is **legacy reference only**.
+
+---
+
+## Cutscene beats (Slices 3.18+)
+
+Hand declarative beats to `CutsceneDirector.play()`:
+
+```gdscript
+CutsceneDirector.play("emperor", [
+    { "type": "line", "speaker": "EMPEROR", "text": "I didn't betray you.",
+      "gesture": "lookaside", "target": "emperor", "duration": 3.0 },
+    { "type": "choice", "choices": [
+        { "id": "forgive", "label": "FORGIVE HIM" },
+        { "id": "turn_away", "label": "TURN AWAY" } ] },
+    { "type": "branch", "map": {
+        "forgive": "@forgive_sequence",
+        "turn_away": "@turn_away_sequence" } },
+])
 ```
-That's the whole process: starts a local server and opens the game in your
-browser automatically. No need to remember commands, ports, or URLs.
 
-First time only, if PowerShell blocks it:
+Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.json`.
+
+---
+
+## Project layout
+
 ```
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.
+├── godot/                      # ← open this in Godot
+│   ├── autoload/               # 25+ singletons incl. CutsceneDirector, GameState
+│   ├── scenes/                 # MainMenu, TestRoom, Blackwood arc, DialogueBox, …
+│   ├── data/                   # JSON beat sequences + boss metadata
+│   ├── assets/                 # Sprites, shaders, audio/ (VO drop-in)
+│   ├── configs/game_config.json
+│   ├── export_presets.cfg      # Android / Web / Windows / Linux
+│   └── project.godot           # version 1.0.0, brand icon
+├── scripts/                    # generate_icon.py, check_tscn.py, check_gd.py, gates
+├── CHANGELOG.md
+├── ATTRIBUTIONS.md
+├── LICENSE                     # MIT code; story/characters reserved
+└── README.md
 ```
 
-To stop: close the black server window `run-game.ps1` opened, or run
-`.\stop-game.ps1` if it gets stuck/the window got closed by accident.
+---
 
-(Once art loads from `assets/` via `this.load.image(...)`, opening
-`index.html` directly may fail due to browser CORS rules — use
-`run-game.ps1` or `python3 -m http.server` instead.)
+## Adding a new boss (Slices 3.18–3.23)
 
-## Controls: **WASD** or **Arrow Keys** -- free 8-directional movement, not
-grid-locked. **SPACE** attacks when close to an enemy. Walk toward a building
-and watch your character tuck behind the roof row instead of drawing on top
-of it -- that's the "walk behind buildings" depth trick from the visual
-direction doc, done with a fixed render-depth on roof tiles rather than
-anything fancy.
+1. Copy `godot/data/_beat_encounter_template.json` → `godot/data/fixer_scene.json` (beat sequences).
+2. Add combat metadata to `godot/data/bosses.json` (HP, phases, gimmick).
+3. Create `BossX.gd` / scene modeled on `BossBlackwood.gd`.
+4. Register id in `Bosses.gd` `BOSS_LIST`.
+5. Wire a level trigger; CI headless-boots every `godot/scenes/*.tscn`.
 
-## What's actually built
-- Real Phaser 3 game (not a mockup) -- physics-based movement, collision
-  against buildings/fences/palm trees, camera follow with world bounds
-- The boardwalk layout from the earlier level mockup, ported over
-- **GameState.js** + **Stress.js** -- JS ports of `GameState.gd` / `Stress.gd`
-  autoload logic (heat, resources, relationships, stress thresholds)
-- Heat HUD bar wired to live `GameState.heat` with vignette feedback at 26%
-  and 51% thresholds; stress meter shows crew stress from combat
-- Hero sprite (`assets/heroes/hero_enforcer_ghost.png`) and enemy grunt sprite
-  (`assets/enemies/enemy_grunt_idle.png`); procedural palette-matched tiles for
-  ground/buildings until PNG tilesets land in `assets/`
-- Folder structure under `assets/` matching your art categories, ready
-  for your real files
+See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 
-## Adding your real art (once cleaned up via Pixel It / Piskel)
-The hero and enemy already load from `assets/`. Tiles still generate in-code
-(see `generateTileTextures()` in `js/BoardwalkScene.js`) for zero-setup runs.
-To swap in a real tile or building image:
+---
 
-1. Drop the PNG into the matching `assets/` subfolder, e.g.
-   `assets/tiles/tile_ground.png`
-2. In `BoardwalkScene.js`, add a load line inside `preload()`:
-   ```js
-   this.load.image('tile_ground', 'assets/tiles/tile_ground.png');
-   ```
-3. Remove the matching `rect('tile_ground', ...)` block from
-   `generateTileTextures()` so the loaded PNG is used instead.
+## Export
 
-**Important:** once you add even one `this.load.image(...)` call, opening
-`index.html` directly by double-clicking will likely fail (browsers block
-local file loading for security reasons -- this is the same CORS issue
-that would've come up in Godot too, just earlier here). At that point,
-run a tiny local server instead -- you already have Python installed:
-```
-cd crxcibl3-web
-python3 -m http.server
-```
-Then open `http://localhost:8000` in your browser instead of
-double-clicking the file. This is a permanent step from that point on,
-not a one-time thing -- but it's one command, and you can leave that
-terminal window open while you work.
+1. **Editor → Manage Export Templates…** — download Godot 4.7.1 templates.
+2. **Project → Export…** — pick Android / Web / Windows / Linux.
+3. Friends sideload: push to `main`, download `crxcibl3-debug-apk` from GitHub Actions.
 
-## Next steps, in order
-1. Drop real tile/building PNGs into `assets/` and load them in `preload()`
-2. Add a second scene (e.g. `TitleScene`) once the main menu art is ready
-3. Port remaining Godot autoloads (Morale, Reputation, QuestManager) as
-   those systems get built in the web client
+---
+
+## Documentation index
+
+| Doc | Purpose |
+|-----|---------|
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [ATTRIBUTIONS.md](ATTRIBUTIONS.md) | Engine / tool credits |
+| [CREDITS.md](CREDITS.md) | Art credits |
+| [PROJECT_STATE.md](PROJECT_STATE.md) | Slice-by-slice build log |
+| [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md) | Roadmap checklist |
+| [godot/assets/audio/MANIFEST.txt](godot/assets/audio/MANIFEST.txt) | VO WAV filenames |
+
+**Godot:** 4.7.1 · **Project version:** 1.0.0 · **Updated:** 2026-08-08

@@ -1,0 +1,58 @@
+{
+  "_readme": "CRXCIBL3 beat encounter template. Copy to <boss>_scene.json and fill in. Loader resolves @sequence_name references against top-level keys.",
+
+  "id": "BOSS_ID",
+  "title": "Boss Name — The Title",
+  "background": "res://assets/sprites/backgrounds/BOSS_background.png",
+  "next_scene": "res://scenes/EmperorScene.tscn",
+
+  "enter_sequence": [
+    { "type": "wait", "duration": 0.5 },
+    { "type": "narrator", "text": "Setting description goes here.", "duration": 4.5 },
+    { "type": "gesture", "target": "boss", "name": "ready" },
+    { "type": "line", "speaker": "BOSS",
+      "text": "Pre-fight taunt line.",
+      "audio": "res://assets/audio/BOSS/BOSS_PRE_01.wav", "duration": 3.5 }
+  ],
+
+  "defeat_sequence": [
+    { "type": "wait", "duration": 0.6 },
+    { "type": "line", "speaker": "BOSS", "target": "boss", "gesture": "death_slump",
+      "text": "First confession line.",
+      "audio": "res://assets/audio/BOSS/BOSS_DEFEAT_01.wav", "duration": 4.0 },
+    { "type": "line", "speaker": "BOSS", "target": "boss",
+      "text": "Second confession line.",
+      "audio": "res://assets/audio/BOSS/BOSS_DEFEAT_02.wav", "duration": 3.5 },
+    { "type": "fade_shader", "target": "BossAnchor/BossFigure",
+      "from": 1.0, "to": 0.0, "duration": 2.0 },
+    { "type": "wait", "duration": 0.6 }
+  ],
+
+  "choice_sequence": [
+    { "type": "choice",
+      "prompt": "What now?",
+      "choices": [
+        { "id": "spare", "label": "SPARE" },
+        { "id": "execute", "label": "EXECUTE" }
+      ]
+    },
+    { "type": "branch", "map": {
+      "spare": "@spare_sequence",
+      "execute": "@execute_sequence"
+    } }
+  ],
+
+  "spare_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["BOSS_ID", "spare"] },
+    { "type": "narrator", "text": "Outcome description for spare.", "duration": 4.0 },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/EmperorScene.tscn" }
+  ],
+
+  "execute_sequence": [
+    { "type": "call", "target": "/root/GameState", "method": "record_boss_choice", "args": ["BOSS_ID", "execute"] },
+    { "type": "narrator", "text": "Outcome description for execute.", "duration": 4.5 },
+    { "type": "wait", "duration": 1.0 },
+    { "type": "scene", "path": "res://scenes/EmperorScene.tscn" }
+  ]
+}

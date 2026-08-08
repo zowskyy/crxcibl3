@@ -4,6 +4,10 @@ extends Node
 ## Manages boss encounter state and progression. Wraps GameState's boss tracking.
 ## bosses_fought, boss_executed, boss_finisher already exist in GameState.
 ##
+## BOSS_LIST ids must match defeat registration keys:
+##   Blackwood_rooftop (RooftopScene flee) and Blackwood_final (Emperor estate).
+## Cross–Webb are Corrupted Six templates (slices 3.18–3.22).
+##
 ## Dependencies: GameState
 
 signal boss_defeated(boss_name: String, finisher: String, executed: bool)
@@ -11,17 +15,20 @@ signal boss_progression_changed(defeated_count: int, total_count: int)
 
 
 const BOSS_LIST := [
-	"Cross",        # 1. The Fixer
-	"Voss",         # 2. The Broker
-	"Moreau",       # 3. The Pusher
-	"Hayes",        # 4. The Warden
-	"Webb",         # 5. The Trader
-	"Blackwood",    # 6. The Priest (rooftop)
-	"Blackwood_final", # 6b. Final stand at Emperor estate
+	"Cross",              # 1. The Fixer (slice 3.18)
+	"Voss",               # 2. The Broker (slice 3.19)
+	"Moreau",             # 3. The Pusher (slice 3.20)
+	"Hayes",              # 4. The Warden (slice 3.21)
+	"Webb",               # 5. The Trader (slice 3.22)
+	"Blackwood_rooftop",  # 6. The Priest — rooftop encounter
+	"Blackwood_final",    # 6b. The Priest — final stand at Emperor estate
 ]
 
 
 func register_boss_defeat(boss_name: String, finisher: String, executed: bool = false) -> void:
+	if not boss_name:
+		push_error("Bosses.register_boss_defeat: empty boss_name")
+		return
 	GameState.mark_boss_defeated(boss_name, executed, finisher)
 	boss_defeated.emit(boss_name, finisher, executed)
 	boss_progression_changed.emit(
@@ -31,6 +38,8 @@ func register_boss_defeat(boss_name: String, finisher: String, executed: bool = 
 
 
 func is_boss_defeated(boss_name: String) -> bool:
+	if not boss_name:
+		return false
 	return GameState.bosses_fought.has(boss_name)
 
 
@@ -51,7 +60,7 @@ func get_progression() -> Dictionary:
 
 
 func is_final_boss_defeated() -> bool:
-	# Blackwood final stand is the last boss
+	# Blackwood final stand is the last boss encounter before the Emperor reckoning.
 	return is_boss_defeated("Blackwood_final")
 
 
