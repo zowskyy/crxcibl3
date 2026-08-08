@@ -110,11 +110,31 @@ See `godot/assets/audio/MANIFEST.txt` for VO filenames.
 
 ---
 
+## Playtest APK
+
+Build a sideload-ready debug APK locally (bootstraps Godot 4.7.1 templates, Android SDK, and debug keystore):
+
+```bash
+./scripts/build_test_apk.sh
+```
+
+Output: `godot/build/crxcibl3-playtest.apk` (SHA256 and size printed on success).
+
+**Install on a device:**
+
+```bash
+adb install -r godot/build/crxcibl3-playtest.apk
+```
+
+Or copy the APK to the phone and open it (enable “Install unknown apps” for your file manager). CI artifact: run **Godot build check → playtest-apk** via **Actions → workflow_dispatch**, then download `crxcibl3-playtest-apk`.
+
+---
+
 ## Export
 
 1. **Editor → Manage Export Templates…** — download Godot 4.7.1 templates.
 2. **Project → Export…** — pick Android / Web / Windows / Linux.
-3. **Friends sideload:** push to `main`, download `crxcibl3-debug-apk` from GitHub Actions.
+3. **Friends sideload:** `./scripts/build_test_apk.sh` locally, or download `crxcibl3-playtest-apk` from GitHub Actions (`playtest-apk` job).
 4. **Google Play Store:** see [docs/PLAY_STORE.md](docs/PLAY_STORE.md) — release keystore, signed AAB via `scripts/export_android_play_store.sh`, store listing, content rating, and data safety.
 
 ---

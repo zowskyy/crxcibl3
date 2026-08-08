@@ -160,7 +160,7 @@ Complete **Play Console → Policy → App content → Content rating**. Answer 
 | **Sexual content** | No explicit content. Satirical mature themes only. |
 | **Drugs / alcohol / tobacco** | Thematic references (crack-house spawn points, decayed urban setting). Disclose **referenced** or **simulated** as appropriate — not a glorification mechanic. |
 | **Gambling** | No real-money gambling. In-fiction "Rune" currency is not loot boxes or real-money mechanics. |
-| **User interaction / sharing** | No chat, no UGC, no online multiplayer. |
+| **User interaction / sharing** | No chat, no UGC. Optional **local co-op** over LAN/Wi‑Fi only (see Data safety). |
 | **Location / personal info** | None collected (see Data safety). |
 
 **Mature themes satire:** In the questionnaire free-text or "other" fields, note that the game is a satirical reskin of classic arcade dungeon crawlers using 90s crime-cinema tropes; violence and language serve narrative tone, not realism.
@@ -196,7 +196,7 @@ Screenshot tips:
 |-------------|--------|
 | **Data collected** | **No** personal or sensitive user data collected |
 | **Data shared** | **No** |
-| **Encryption in transit** | N/A (no network calls) |
+| **Encryption in transit** | N/A for cloud services (no backend). Optional local co-op uses device-to-device networking on the same LAN/Wi‑Fi only — no data uploaded to a server. |
 | **Encryption at rest** | Local save file in app sandbox only |
 | **Account creation** | No |
 | **Analytics** | No Firebase, no Google Analytics, no custom telemetry |
@@ -211,6 +211,8 @@ Screenshot tips:
 - Deleted when the user clears app data or uninstalls
 
 Link the public **privacy policy URL** hosting [PRIVACY_POLICY.md](PRIVACY_POLICY.md).
+
+**Optional local co-op networking:** Future playtest builds may request `INTERNET`, `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`, `BLUETOOTH`, and `BLUETOOTH_ADMIN` so nearby devices can discover each other for **local multiplayer only**. There is **no game server**, **no account system**, and **no personal data uploaded** — packets stay on the local network between players' devices. If co-op is disabled in a build, declare **No** for network-related data collection/sharing (same as offline).
 
 ---
 
