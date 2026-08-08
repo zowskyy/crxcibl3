@@ -32,7 +32,7 @@ func _ready() -> void:
 	boss.set_flashbang_node(flashbang)
 	boss.fled.connect(_on_boss_fled)
 	flashbang.visible = false
-	SlugHudTheme.draw_fire_button_style(fire_button)
+	GtaSaTheme.draw_fire_button_style(fire_button)
 	fire_button.pressed.connect(func(): player.fire())
 	DialogueIntensity.on_boss_encountered("Blackwood")
 	call_deferred("_play_intro_cutscene")

@@ -33,9 +33,9 @@ static func draw_boss(
 		return
 	var bar_w := 40.0
 	var fill := bar_w * hp_ratio(hp, max_hp)
-	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), SlugHudTheme.MS_PANEL)
-	canvas.draw_rect(Rect2(-bar_w / 2, -36, fill, 4), SlugHudTheme.TAG_GOLD)
-	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), SlugHudTheme.MS_BORDER_OUTER, false, 1.0)
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), GtaSaTheme.MS_PANEL)
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, fill, 4), GtaSaTheme.TAG_GOLD)
+	canvas.draw_rect(Rect2(-bar_w / 2, -36, bar_w, 4), GtaSaTheme.MS_BORDER_OUTER, false, 1.0)
 	if has_sheets:
 		if speaking:
 			_draw_lip(canvas, lip_phase)

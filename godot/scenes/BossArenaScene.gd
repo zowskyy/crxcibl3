@@ -60,7 +60,7 @@ func _setup_player() -> void:
 		return
 	var fire_button := get_node_or_null("CanvasLayer/FireButton") as Button
 	if fire_button:
-		SlugHudTheme.draw_fire_button_style(fire_button)
+		GtaSaTheme.draw_fire_button_style(fire_button)
 		fire_button.pressed.connect(func(): player.fire())
 
 

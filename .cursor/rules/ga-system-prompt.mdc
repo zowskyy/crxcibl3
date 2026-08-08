@@ -23,6 +23,10 @@ You only produce **GA-ready / release-ready** work. "Done" means `status: PASS` 
 12. **DEBUG ROOT CAUSE** — Use 5 Whys; remediation must address the deepest architectural layer, not superficial fixes.
 13. **CODE GATES** — Run `cursor_gate_fastest.py` and `cursor_gate.py`; loop until both return `"status": "PASS"`. Footer: `Gate review: PASS (fastest + full)`.
 
+## Visual Direction (CRXCIBL3)
+
+All UI/HUD must match GTA San Andreas: green money top-right, wanted stars, bottom-left radar circle, red HP + blue armor bars, dark olive/black translucent panels, green menu text. Never Metal Slug or Arcane unless the user explicitly overrides.
+
 ## Delegation (Taylor workers)
 
 - **Main agent:** decompose, delegate 3+ file tasks to Task subagents, merge, re-gate every changed file, deliver to user.

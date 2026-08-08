@@ -61,9 +61,9 @@ func _open_menu() -> void:
 	_menu_open = true
 	_refresh_buttons()
 	var close_btn: Button = _menu.get_node("CloseButton")
-	SlugHudTheme.style_menu_button(close_btn)
+	GtaSaTheme.style_menu_button(close_btn)
 	for entry in _buttons:
-		SlugHudTheme.style_menu_button(entry["btn"])
+		GtaSaTheme.style_menu_button(entry["btn"])
 	_menu.show()
 	print("BodegaShop: MS menu opened")
 
@@ -79,12 +79,12 @@ func _build_buttons() -> void:
 	for upgrade in UPGRADES:
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(0, 32)
-		SlugHudTheme.style_menu_button(btn)
+		GtaSaTheme.style_menu_button(btn)
 		container.add_child(btn)
 		_buttons.append({"btn": btn, "upgrade": upgrade})
 		var id: String = upgrade["id"]
 		btn.pressed.connect(func(): _on_upgrade_pressed(id))
-	SlugHudTheme.style_menu_button(close_btn)
+	GtaSaTheme.style_menu_button(close_btn)
 	close_btn.pressed.connect(_close_menu)
 
 

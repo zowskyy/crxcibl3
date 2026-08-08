@@ -21,10 +21,10 @@ extends Node2D
 
 
 func _ready() -> void:
-	background.color = SlugHudTheme.INK
-	ending_label.modulate = SlugHudTheme.TAG_GOLD
-	summary_label.modulate = SlugHudTheme.TEXT_DIM
-	SlugHudTheme.style_menu_button(play_again)
+	background.color = GtaSaTheme.INK
+	ending_label.modulate = GtaSaTheme.TAG_GOLD
+	summary_label.modulate = GtaSaTheme.TEXT_DIM
+	GtaSaTheme.style_menu_button(play_again)
 	ending_label.text = Epilogue.get_ending_text()
 	summary_label.text = _format_summary(Epilogue.get_summary())
 	play_again.pressed.connect(_on_play_again)

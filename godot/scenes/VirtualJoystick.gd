@@ -43,10 +43,10 @@ func _ready() -> void:
 
 func _draw() -> void:
 	var center := size / 2.0
-	draw_circle(center, radius, SlugHudTheme.ASPHALT)
-	draw_arc(center, radius, 0.0, TAU, 32, SlugHudTheme.MS_BORDER_OUTER, 2.0)
-	draw_circle(_knob_position, knob_radius, SlugHudTheme.TAG_GOLD)
-	draw_circle(_knob_position, knob_radius * 0.45, SlugHudTheme.SPRAY_ORANGE)
+	draw_circle(center, radius, GtaSaTheme.ASPHALT)
+	draw_arc(center, radius, 0.0, TAU, 32, GtaSaTheme.MS_BORDER_OUTER, 2.0)
+	draw_circle(_knob_position, knob_radius, GtaSaTheme.TAG_GOLD)
+	draw_circle(_knob_position, knob_radius * 0.45, GtaSaTheme.SPRAY_ORANGE)
 
 
 func _gui_input(event: InputEvent) -> void:

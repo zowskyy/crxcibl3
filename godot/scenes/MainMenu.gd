@@ -30,10 +30,11 @@ const TITLE_TEXT := "CRXCIBL3"
 
 
 func _ready() -> void:
-	SlugHudTheme.apply_menu_chrome(self, title_label, $VBox/SubLabel)
-	SlugHudTheme.style_menu_button(continue_btn)
-	SlugHudTheme.style_menu_button(new_game_btn)
-	SlugHudTheme.style_menu_button(coop_btn)
+	title_label.text = TITLE_TEXT
+	GtaSaTheme.apply_menu_chrome(self, title_label, $VBox/SubLabel)
+	GtaSaTheme.style_menu_button(continue_btn)
+	GtaSaTheme.style_menu_button(new_game_btn)
+	GtaSaTheme.style_menu_button(coop_btn)
 	_style_recap_panel()
 	recap_panel.visible = false
 	continue_btn.visible = SaveSystem.has_save()
@@ -44,8 +45,8 @@ func _ready() -> void:
 
 
 func _style_recap_panel() -> void:
-	recap_label.modulate = SlugHudTheme.TAG_GOLD
-	SlugHudTheme.style_menu_button(close_recap_btn)
+	recap_label.modulate = GtaSaTheme.WANTED_GOLD
+	GtaSaTheme.style_menu_button(close_recap_btn)
 
 
 func _on_continue() -> void:

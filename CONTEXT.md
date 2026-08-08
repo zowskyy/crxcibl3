@@ -7,7 +7,7 @@
 
 ## Current State
 
-- **UI:** SlugHud / SlugHudTheme — MS × OC underground, no player HP bar
+- **UI:** GtaSaHud / GtaSaTheme — GTA San Andreas HUD on every screen (green money, wanted stars, radar, HP/armor bars, olive panels)
 - **M2M:** Checkpoint → `~/.crawler/state.json`; co-op stable
 - **Release:** [v1.3.3-playtest](https://github.com/zowskyy/crxcibl3/releases/tag/v1.3.3-playtest)
 

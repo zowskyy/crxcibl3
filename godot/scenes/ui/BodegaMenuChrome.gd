@@ -17,9 +17,9 @@ func _ready() -> void:
 	if not prompt:
 		print("BodegaMenuChrome: MS panel chrome ready")
 		return
-	prompt.modulate = SlugHudTheme.TAG_GOLD
+	prompt.modulate = GtaSaTheme.TAG_GOLD
 	print("BodegaMenuChrome: MS panel chrome ready")
 
 
 func _draw() -> void:
-	SlugHudTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size))
+	GtaSaTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size))

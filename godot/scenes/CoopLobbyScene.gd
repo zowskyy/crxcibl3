@@ -26,12 +26,15 @@ var _discovered: Dictionary = {}
 
 
 func _ready() -> void:
-	SlugHudTheme.apply_menu_chrome(self, $VBox/TitleLabel, null)
-	SlugHudTheme.style_menu_button(host_button)
-	SlugHudTheme.style_menu_button(find_button)
-	SlugHudTheme.style_menu_button(scan_button)
-	SlugHudTheme.style_menu_button(join_button)
-	SlugHudTheme.style_menu_button(back_button)
+	GtaSaTheme.apply_menu_chrome(self, $VBox/TitleLabel, null)
+	GtaSaTheme.style_menu_button(host_button)
+	GtaSaTheme.style_menu_button(find_button)
+	GtaSaTheme.style_menu_button(scan_button)
+	GtaSaTheme.style_menu_button(join_button)
+	GtaSaTheme.style_menu_button(back_button)
+	transport_label.modulate = GtaSaTheme.TEXT_DIM
+	status_label.modulate = GtaSaTheme.TEXT_DIM
+	m2m_label.modulate = GtaSaTheme.MONEY_GREEN
 	M2MResilienceCore.start()
 	host_button.pressed.connect(_on_host_pressed)
 	find_button.pressed.connect(_on_find_friends_pressed)

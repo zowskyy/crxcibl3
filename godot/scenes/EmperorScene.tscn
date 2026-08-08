@@ -1,8 +1,8 @@
-; """SlugHud gameplay scene — unified HUD bar instance."""
+; """GtaSaHud gameplay scene — full-screen SA HUD overlay."""
 ; logging retry health rollback revert undo migration downgrade timeout fallback circuit
 ; validate dataclass schema transparent fair explain plugin importlib module loading
 ; help usage argparse --help raise Error
-; log.info print "SlugHud scene loaded" feedback
+; log.info print "GtaSaHud scene loaded" feedback
 ; try except finally fallback; readiness liveness /health /ping /status
 ; def test_gate_smoke assert unittest
 ; if not empty; if len is zero; if x is None

@@ -19,4 +19,4 @@ func _ready() -> void:
 func _draw() -> void:
 	if not is_inside_tree():
 		return
-	SlugHudTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size))
+	GtaSaTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size))

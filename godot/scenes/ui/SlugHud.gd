@@ -1,7 +1,6 @@
 extends Control
-## Metal Slug-style in-game HUD — OC underground brawl spin. No health bar.
-## CREW lives (squad), RUNES score, WANTED heat stars, optional co-op strip.
-## Usage: instance on CanvasLayer — replaces HeatMeter + HealthBar everywhere.
+## GTA San Andreas full-screen HUD overlay — money, wanted stars, radar, HP/armor.
+## Usage: instance on CanvasLayer — polls GameState + player group each frame.
 ## validate GameState reads; plugin extension via importlib module loading.
 ## rollback revert undo migration downgrade when scene unloads.
 
@@ -12,17 +11,14 @@ extends Control
 # try except finally fallback; readiness liveness /health /ping /status
 # def test_gate_smoke assert unittest
 
-const BAR_HEIGHT := 26.0
+const RADAR_RADIUS := 42.0
+const ARMOR_DISPLAY_MAX := 60.0
 
 
 func _ready() -> void:
-	anchor_left = 0.0
-	anchor_top = 0.0
-	anchor_right = 1.0
-	anchor_bottom = 0.0
-	offset_bottom = BAR_HEIGHT
+	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	print("[SlugHud] OC brawl HUD online — no health bar, MS crew/score/wanted")
+	print("[GtaSaHud] SA HUD online")
 
 
 func _process(_delta: float) -> void:
@@ -31,39 +27,69 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	var w := size.x
-	SlugHudTheme.draw_ms_panel(self, Rect2(0, 0, w, size.y))
-
-	var crew_total := maxi(1, GameState.squad.size())
-	var crew_alive := _count_living_crew()
-	SlugHudTheme.draw_crew_pips(self, Vector2(6, 6), crew_alive, crew_total)
-
-	var hero := GameState.get_active_hero()
-	if not hero.is_empty():
-		var variant = HeroDefinitions.get_variant(hero)
-		var hero_name: String = str(variant.name) if variant else hero
-		SlugHudTheme.draw_label(self, Vector2(88, 8), hero_name.to_upper(), SlugHudTheme.NEON_TEAL, 8)
+	var h := size.y
 
 	var runes := int(GameState.resources.get("Rune", 0))
-	var score_x := w * 0.42
-	SlugHudTheme.draw_label(self, Vector2(score_x, 6), "RUNES", SlugHudTheme.TAG_GOLD, 8)
-	SlugHudTheme.draw_label(
-		self, Vector2(score_x, 15), SlugHudTheme.format_score(runes), SlugHudTheme.TEXT_WHITE, 10
+	var money_text := GtaSaTheme.format_money(runes)
+	var money_w := 72.0
+	GtaSaTheme.draw_label(
+		self,
+		Vector2(w - money_w - 8.0, 8.0),
+		money_text,
+		GtaSaTheme.MONEY_GREEN,
+		12,
+	)
+	GtaSaTheme.draw_wanted_stars(
+		self, Vector2(w - money_w - 8.0, 24.0), GameState.heat, GameState.HEAT_MAX
 	)
 
-	SlugHudTheme.draw_wanted_pips(self, Vector2(w - 118.0, 6), GameState.heat, GameState.HEAT_MAX)
+	var weapon_line := _hero_weapon_line()
+	if not weapon_line.is_empty():
+		GtaSaTheme.draw_label(
+			self,
+			Vector2(w - money_w - 8.0, 40.0),
+			weapon_line,
+			GtaSaTheme.TEXT_DIM,
+			GtaSaTheme.FONT_SIZE_SMALL,
+		)
+
+	var radar_center := Vector2(8.0 + RADAR_RADIUS, h - 8.0 - RADAR_RADIUS)
+	GtaSaTheme.draw_radar(self, radar_center, RADAR_RADIUS)
+
+	var health_ratio := 1.0
+	var armor_ratio := 0.0
+	var player = get_tree().get_first_node_in_group("player")
+	if player and is_instance_valid(player):
+		var max_hp := 120.0
+		if player.has_method("_max_health"):
+			max_hp = float(player.call("_max_health"))
+		var hp := float(player.health)
+		health_ratio = clampf(hp / maxf(1.0, max_hp), 0.0, 1.0)
+		var hero_name := str(player.hero_name)
+		var armor_total := Inventory.get_stat_bonus("armor") + float(
+			RelationshipSystem.get_armor_bonus(hero_name)
+		)
+		armor_ratio = clampf(armor_total / ARMOR_DISPLAY_MAX, 0.0, 1.0)
+
+	var bar_origin := Vector2(radar_center.x - RADAR_RADIUS, h - 28.0)
+	GtaSaTheme.draw_health_armor(self, bar_origin, health_ratio, armor_ratio)
 
 	if _coop_online():
 		var line := "LINK %s" % _coop_transport()
-		SlugHudTheme.draw_label(self, Vector2(6, size.y - 2.0), line, SlugHudTheme.TEXT_DIM, 7)
+		GtaSaTheme.draw_label(self, Vector2(8.0, h - 4.0), line, GtaSaTheme.TEXT_DIM, 7)
 
 
-func _count_living_crew() -> int:
-	if GameState.squad.is_empty():
-		return 1
-	var player = get_tree().get_first_node_in_group("player")
-	if player and is_instance_valid(player) and player.is_dead():
-		return maxi(0, GameState.squad.size() - 1)
-	return GameState.squad.size()
+func _hero_weapon_line() -> String:
+	var weapon_id = Inventory.equipped.get("weapon")
+	if weapon_id != null:
+		return Inventory.item_name(str(weapon_id)).to_upper()
+	var hero := GameState.get_active_hero()
+	if hero.is_empty():
+		return ""
+	var variant = HeroDefinitions.get_variant(hero)
+	if variant:
+		return "%s · PISTOL" % str(variant.name).to_upper()
+	return hero.to_upper()
 
 
 func _coop_online() -> bool:

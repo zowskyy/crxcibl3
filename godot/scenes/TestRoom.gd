@@ -2,7 +2,7 @@ extends Node2D
 ## Slice 2.5 -- minimal test room. Confirms GameState reads/writes
 ## correctly at runtime before any real level content gets built. Press
 ## the "Add Heat" button (or the H key) to bump GameState.heat -- the
-## SlugHud (MS × OC brawl) polls GameState — no manual refresh needed here.
+## SlugHud (GTA SA overlay) polls GameState — no manual refresh needed here.
 ##
 ## Slice 2.14: also wires the Fire button/Space key to Player.fire() --
 ## Metal Slug-style gun combat per the Architect's direction. RuneLabel
@@ -60,7 +60,7 @@ var _coop_sync: TestRoomCoopSync
 
 func _ready() -> void:
 	_setup_environment()
-	SlugHudTheme.draw_fire_button_style(fire_button)
+	GtaSaTheme.draw_fire_button_style(fire_button)
 	fire_button.pressed.connect(_on_fire_pressed)
 
 	ActProgression.apply_qa_cmdline_flags()

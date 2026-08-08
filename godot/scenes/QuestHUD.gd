@@ -45,7 +45,7 @@ func _build_label() -> void:
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_color_override("font_color", SlugHudTheme.TEXT_WHITE)
+	_label.add_theme_color_override("font_color", GtaSaTheme.TEXT_WHITE)
 	_label.add_theme_font_size_override("font_size", 9)
 	add_child(_label)
 
@@ -73,5 +73,5 @@ func refresh() -> void:
 func _draw() -> void:
 	if _label.text.is_empty():
 		return
-	SlugHudTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size), SlugHudTheme.ASPHALT)
-	SlugHudTheme.draw_label(self, Vector2(6, 2), "MISSION", SlugHudTheme.SPRAY_ORANGE, 7)
+	GtaSaTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size), GtaSaTheme.ASPHALT)
+	GtaSaTheme.draw_label(self, Vector2(6, 2), "MISSION", GtaSaTheme.SPRAY_ORANGE, 7)

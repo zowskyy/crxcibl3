@@ -50,7 +50,7 @@ func _ready() -> void:
 		player_vehicle.owner_hero_id = GameState.get_active_hero()
 	_apply_carryover_upgrades()
 	if fire_button:
-		SlugHudTheme.draw_fire_button_style(fire_button)
+		GtaSaTheme.draw_fire_button_style(fire_button)
 	getaway_started.emit()
 
 
@@ -162,8 +162,8 @@ func _update_hud() -> void:
 func _format_armor_pips(hp: int, max_hp: int) -> String:
 	var ratio := clampf(float(hp) / float(maxi(1, max_hp)), 0.0, 1.0)
 	var filled := int(round(ratio * 5.0))
-	var filled_hex := SlugHudTheme.SPRAY_ORANGE.to_html(false)
-	var empty_hex := SlugHudTheme.TEXT_DIM.to_html(false)
+	var filled_hex := GtaSaTheme.SPRAY_ORANGE.to_html(false)
+	var empty_hex := GtaSaTheme.TEXT_DIM.to_html(false)
 	var pips: PackedStringArray = []
 	for i in range(5):
 		if i < filled:

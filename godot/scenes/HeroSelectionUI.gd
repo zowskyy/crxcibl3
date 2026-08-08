@@ -28,11 +28,11 @@ var _selected_variant_ids: Array = []
 
 
 func _ready() -> void:
-	title_label.text = "PICK YOUR CREW"
-	SlugHudTheme.apply_menu_chrome(self, title_label, null)
-	SlugHudTheme.style_menu_button(start_button)
-	squad_label.modulate = SlugHudTheme.TEXT_WHITE
-	hint_label.modulate = SlugHudTheme.TEXT_DIM
+	title_label.text = "SELECT CREW"
+	GtaSaTheme.apply_menu_chrome(self, title_label, null)
+	GtaSaTheme.style_menu_button(start_button)
+	squad_label.modulate = GtaSaTheme.TEXT_WHITE
+	hint_label.modulate = GtaSaTheme.TEXT_DIM
 	start_button.disabled = true
 	_populate_hero_grid()
 	start_button.pressed.connect(_on_start_pressed)
@@ -70,7 +70,7 @@ func _populate_hero_grid() -> void:
 		button.custom_minimum_size = Vector2(64, 64)
 		button.add_to_group(variant_id)
 		button.toggled.connect(func(pressed: bool): _on_hero_toggled(variant_id, pressed))
-		SlugHudTheme.style_menu_button(button)
+		GtaSaTheme.style_menu_button(button)
 
 		var portrait_path := "res://assets/heroes/portraits/%s.png" % variant_id
 		if ResourceLoader.exists(portrait_path):
@@ -149,5 +149,7 @@ func _on_start_pressed() -> void:
 
 	GameState.squad = _selected_variant_ids.duplicate()
 	GameState.current_hero_index = 0
-	print("[HeroSelectionUI] solo mission start — loading TestRoom")
-	get_tree().change_scene_to_file("res://scenes/TestRoom.tscn")
+	start_button.disabled = true
+	start_button.text = "LOADING..."
+	print("[HeroSelectionUI] solo mission start — MissionLaunch")
+	MissionLaunch.start_solo(_selected_variant_ids.duplicate())

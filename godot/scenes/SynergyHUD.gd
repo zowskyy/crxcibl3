@@ -14,10 +14,10 @@ extends Control
 @onready var label: Label = $BondLabel
 
 const BOND_COLORS := {
-	"Soulbound": SlugHudTheme.TAG_GOLD,
+	"Soulbound": GtaSaTheme.TAG_GOLD,
 	"Bonded": Color(0.75, 0.55, 0.95),
-	"Ally": SlugHudTheme.NEON_TEAL,
-	"Strained": SlugHudTheme.BLOOD_RED,
+	"Ally": GtaSaTheme.NEON_TEAL,
+	"Strained": GtaSaTheme.HEALTH_RED,
 }
 
 var _last_hero := ""
@@ -62,7 +62,7 @@ func _refresh() -> void:
 		for bond in bonds:
 			parts.append(str(bond.get("tier", "?")).substr(0, 1))
 		label.text = "TAG %s" % "".join(parts)
-	label.modulate = SlugHudTheme.TAG_GOLD
+	label.modulate = GtaSaTheme.TAG_GOLD
 	queue_redraw()
 
 
@@ -75,4 +75,4 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	if label.text.is_empty():
 		return
-	SlugHudTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size), SlugHudTheme.MS_PANEL)
+	GtaSaTheme.draw_ms_panel(self, Rect2(Vector2.ZERO, size), GtaSaTheme.MS_PANEL)
