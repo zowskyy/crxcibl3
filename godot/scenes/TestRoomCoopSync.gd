@@ -78,8 +78,10 @@ func _connect_signals() -> void:
 	COOP_SIGNAL_UTIL.connect_pairs([
 		[CoopNetwork.peer_joined, _on_peer_joined],
 		[CoopNetwork.peer_left, _on_peer_left],
+		[CoopNetwork.peer_reconnected, _on_peer_reconnected],
 		[CoopNetwork.player_state_sync, _on_player_state_sync],
 		[CoopNetwork.heat_sync, _on_heat_sync],
+		[CoopNetwork.coop_session_synced, _on_coop_session_synced],
 	])
 
 
@@ -87,8 +89,10 @@ func _disconnect_signals() -> void:
 	COOP_SIGNAL_UTIL.disconnect_pairs([
 		[CoopNetwork.peer_joined, _on_peer_joined],
 		[CoopNetwork.peer_left, _on_peer_left],
+		[CoopNetwork.peer_reconnected, _on_peer_reconnected],
 		[CoopNetwork.player_state_sync, _on_player_state_sync],
 		[CoopNetwork.heat_sync, _on_heat_sync],
+		[CoopNetwork.coop_session_synced, _on_coop_session_synced],
 	])
 
 
@@ -166,6 +170,18 @@ func _on_heat_sync(heat: float) -> void:
 	if CoopNetwork.is_host():
 		return
 	GameState.heat = clampf(heat, 0.0, GameState.HEAT_MAX)
+
+
+func _on_coop_session_synced(_payload: Dictionary) -> void:
+	_last_synced_heat = GameState.heat
+
+
+func _on_peer_reconnected(peer_id: int, machine_id: String) -> void:
+	print(
+		"TestRoomCoopSync: peer %d reconnected (machine=%s)"
+		% [peer_id, machine_id.substr(0, mini(8, machine_id.length()))]
+	)
+	_ensure_remote_player(peer_id)
 
 
 func _send_local_input(player: CharacterBody2D) -> void:

@@ -18,6 +18,8 @@ signal nearby_session_found(session_info: Dictionary)
 signal transport_changed(kind: String)
 signal player_state_sync(peer_id: int, pos: Vector2, facing: Vector2, hero_id: String, health: int)
 signal heat_sync(heat: float)
+signal peer_reconnected(peer_id: int, machine_id: String)
+signal coop_session_synced(payload: Dictionary)
 signal m2m_mobile_ip_ready(ip: String)
 
 const GAME_PORT := 7777
@@ -27,6 +29,7 @@ const CoopNetworkTransportScript := preload("res://autoload/CoopNetworkTransport
 const CoopNetworkAuthorityRelayScript := preload("res://autoload/CoopNetworkAuthorityRelay.gd")
 const CoopNetworkDelegatesScript := preload("res://autoload/CoopNetworkDelegates.gd")
 const CoopNetworkJoinScript := preload("res://autoload/CoopNetworkJoin.gd")
+const CoopNetworkReconnectScript := preload("res://autoload/CoopNetworkReconnect.gd")
 
 var is_coop: bool = false
 
@@ -38,6 +41,8 @@ var _beacon_timer: Timer = null
 var _discovery := CoopDiscovery.new()
 var _connected: bool = false
 var _remote_player_states: Dictionary = {}
+var _peer_machine_ids: Dictionary = {}
+var _host_session_sync: Dictionary = {}
 var _own_session_id: String = ""
 var _join_start_usec: int = 0
 ## Host-only: authoritative simulation delegated to CoopHostAuthority.
@@ -95,6 +100,7 @@ func host_session(alias: String) -> Error:
 	_discovery.start()
 	_beacon_timer.start()
 	_connected = true
+	CoopNetworkReconnectScript.load_host_session_sync(self)
 	CoopNetworkDelegatesScript.publish_bluetooth_advert(self)
 	session_started.emit()
 	return OK
@@ -124,6 +130,8 @@ func stop_session() -> void:
 	_host_alias = ""
 	GameState.coop_session_id = ""
 	_remote_player_states.clear()
+	_peer_machine_ids.clear()
+	_host_session_sync.clear()
 	_authority.clear()
 	_discovery.stop()
 	M2MSession.stop_m2m_watch()
@@ -206,6 +214,37 @@ func notify_host_player_state(player: CharacterBody2D) -> void:
 
 
 @rpc("any_peer", "reliable")
+func announce_machine_id(machine_id: String) -> void:
+	if not is_host():
+		return
+	CoopNetworkReconnectScript.on_machine_announced(self, multiplayer.get_remote_sender_id(), machine_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func restore_reconnected_peer(pos: Vector2, facing: float, hero_id: String, health: float) -> void:
+	var peer_id := multiplayer.get_unique_id()
+	var facing_vec := CoopNetworkAuthorityRelayScript.facing_vector(facing)
+	var health_i := int(round(health))
+	_remote_player_states[peer_id] = {"pos": pos, "facing": facing, "hero_id": hero_id, "health": health_i}
+	player_state_sync.emit(peer_id, pos, facing_vec, hero_id, health_i)
+	print("[CoopNetwork] reconnected peer %d restored" % peer_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func sync_coop_session_state(payload: Dictionary) -> void:
+	CoopNetworkReconnectScript.apply_session_sync(payload)
+	coop_session_synced.emit(payload)
+
+
+func persist_host_session_state() -> void:
+	CoopNetworkReconnectScript.persist_host_session_state(self)
+
+
+func request_machine_announce() -> void:
+	CoopNetworkReconnectScript.request_machine_announce(self)
+
+
+@rpc("any_peer", "reliable")
 func submit_player_input(
 	move_x: float,
 	move_y: float,
@@ -234,6 +273,13 @@ func request_self_damage(amount: int, attacker: String) -> void:
 		_authority, multiplayer.get_remote_sender_id(), amount
 	)
 	CoopNetworkDelegatesScript.publish_authority_state(self, multiplayer.get_remote_sender_id(), state)
+
+
+@rpc("any_peer", "reliable")
+func submit_bullet_hit(_target_peer_id: int, _amount: int, _attacker: String) -> void:
+	if not is_host():
+		return
+	CoopNetworkAuthorityRelayScript.reject_bullet_hit_report(multiplayer.get_remote_sender_id())
 
 
 @rpc("any_peer", "reliable")
@@ -334,6 +380,7 @@ func _on_connected_to_server() -> void:
 	_connected = true
 	var ms := float(Time.get_ticks_usec() - _join_start_usec) / 1000.0
 	M2MTransportLearner.record_success(_active_transport, ms)
+	request_machine_announce()
 	session_started.emit()
 
 

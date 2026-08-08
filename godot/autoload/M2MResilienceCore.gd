@@ -88,6 +88,26 @@ func filter_peer_sessions(sessions: Array) -> Array:
 func get_cached_mobile_ip() -> String:
 	return str(_registry.get("last_known_mobile_ip", ""))
 
+func hold_disconnected_peer(machine_id: String, snapshot: Dictionary) -> void:
+	M2MResiliencePeerHold.hold_disconnected_peer(machine_id, snapshot)
+
+
+func take_held_peer(machine_id: String) -> Dictionary:
+	return M2MResiliencePeerHold.take_held_peer(machine_id)
+
+
+func peek_held_peer(machine_id: String) -> Dictionary:
+	return M2MResiliencePeerHold.peek_held_peer(machine_id)
+
+
+func save_host_session_sync(payload: Dictionary) -> void:
+	M2MResiliencePeerHold.save_host_session_sync(payload)
+
+
+func get_host_session_sync() -> Dictionary:
+	return M2MResiliencePeerHold.get_host_session_sync()
+
+
 func register_peer_snapshot(session: Dictionary) -> void:
 	var sid := str(session.get("session_id", ""))
 	if sid.is_empty():
@@ -108,6 +128,7 @@ func _watchdog_pass() -> void:
 	_last_watchdog_usec = Time.get_ticks_usec()
 	_reconcile_self_addresses()
 	_refresh_mobile_ip()
+	M2MResiliencePeerHold.purge_expired()
 	_update_confidence()
 	watchdog_tick.emit(get_health())
 
