@@ -46,6 +46,17 @@ jobs:
           fi
           exit $status
 
+      - name: Run UI/input smoke tests (hero selection, Android back button)
+        run: |
+          set -o pipefail
+          status=0
+          godot --headless --path godot -s res://tools/smoke_test_hero_selection.gd 2>&1 | tee smoke_hero.log || status=1
+          godot --headless --path godot -s res://tools/smoke_test_android_back.gd 2>&1 | tee smoke_back.log || status=1
+          if grep -qE "SCRIPT ERROR|FAILED" smoke_hero.log smoke_back.log; then
+            status=1
+          fi
+          exit $status
+
       - name: Boot the main scene headless (catches scene/script errors on load)
         run: |
           set -o pipefail

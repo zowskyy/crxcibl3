@@ -85,7 +85,10 @@ func _populate_hero_grid() -> void:
 
 		hero_grid.add_child(button)
 
-func _on_hero_button_toggled(variant_id: String, is_selected: bool) -> void:
+func _on_hero_button_toggled(is_selected: bool, variant_id: String) -> void:
+	# Button.toggled fires as (button_pressed: bool); .bind(variant_id) appends
+	# variant_id after it, so the callable receives (bool, String) in that
+	# order — the parameter order here must match, not the logical order.
 	_on_hero_toggled(variant_id, is_selected)
 
 
