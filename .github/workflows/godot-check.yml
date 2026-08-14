@@ -117,8 +117,10 @@ jobs:
       - name: Export debug APK
         run: |
           mkdir -p godot/build
-          godot --headless --path godot --install-android-build-template
-          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
+          # --install-android-build-template alone never quits (no --quit/--export
+          # flag makes it boot into the idle main loop and hang forever headless),
+          # so it must run in the same invocation as the export that follows it.
+          godot --headless --path godot --install-android-build-template --export-debug "Android Debug" build/crxcibl3-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -270,8 +272,10 @@ jobs:
       - name: Export playtest debug APK
         run: |
           mkdir -p godot/build
-          godot --headless --path godot --install-android-build-template
-          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
+          # --install-android-build-template alone never quits (no --quit/--export
+          # flag makes it boot into the idle main loop and hang forever headless),
+          # so it must run in the same invocation as the export that follows it.
+          godot --headless --path godot --install-android-build-template --export-debug "Android Debug" build/crxcibl3-debug.apk
           cp -f godot/build/crxcibl3-debug.apk godot/build/crxcibl3-playtest.apk
           sha256sum godot/build/crxcibl3-playtest.apk
           wc -c < godot/build/crxcibl3-playtest.apk
