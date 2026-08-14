@@ -88,6 +88,8 @@ fi
 
 mkdir -p "${GODOT_DIR}/build"
 
+godot --headless --path "$GODOT_DIR" --install-android-build-template
+
 echo "Exporting ${PRESET_NAME} -> ${OUTPUT}"
 godot --headless --path "$GODOT_DIR" --export-release "$PRESET_NAME" "build/crxcibl3-release.aab"
 

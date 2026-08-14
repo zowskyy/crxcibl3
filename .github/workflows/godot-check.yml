@@ -117,6 +117,7 @@ jobs:
       - name: Export debug APK
         run: |
           mkdir -p godot/build
+          godot --headless --path godot --install-android-build-template
           godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
 
       - name: Upload APK artifact
@@ -269,6 +270,7 @@ jobs:
       - name: Export playtest debug APK
         run: |
           mkdir -p godot/build
+          godot --headless --path godot --install-android-build-template
           godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
           cp -f godot/build/crxcibl3-debug.apk godot/build/crxcibl3-playtest.apk
           sha256sum godot/build/crxcibl3-playtest.apk
