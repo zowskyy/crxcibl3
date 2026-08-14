@@ -126,6 +126,28 @@ jobs:
           path: godot/build/crxcibl3-debug.apk
           if-no-files-found: error
 
+  # The `secrets` context is not allowed in a job-level `if:` (GitHub Actions
+  # rejects the whole workflow file at parse time if it is), so signing-secret
+  # presence is checked in a step's `env:` here and passed to android-play-store
+  # via a job output instead.
+  signing_secrets_check:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      has_signing_secrets: ${{ steps.check.outputs.has_signing_secrets }}
+    steps:
+      - id: check
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" && -n "$ANDROID_KEYSTORE_PASSWORD" && -n "$ANDROID_KEY_ALIAS" ]]; then
+            echo "has_signing_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_signing_secrets=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # Optional Play Store release AAB — trigger manually via workflow_dispatch.
   # Requires GitHub Actions secrets (Repository → Settings → Secrets and variables → Actions):
   #   ANDROID_KEYSTORE_BASE64  — base64-encoded release .keystore / .jks file
@@ -134,10 +156,8 @@ jobs:
   android-play-store:
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      secrets.ANDROID_KEYSTORE_BASE64 != '' &&
-      secrets.ANDROID_KEYSTORE_PASSWORD != '' &&
-      secrets.ANDROID_KEY_ALIAS != ''
-    needs: check
+      needs.signing_secrets_check.outputs.has_signing_secrets == 'true'
+    needs: [check, signing_secrets_check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
