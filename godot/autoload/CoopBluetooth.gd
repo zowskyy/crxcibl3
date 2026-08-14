@@ -33,7 +33,10 @@ func _ready() -> void:
 		_init_adapter()
 
 func is_available() -> bool:
-	return _adapter != null and OS.get_name() == "Android"
+	# MVP: LAN-only release. Bluetooth transport has a real RFCOMM client connect()
+	# but no server/listener and no socket read/write I/O, so it cannot actually
+	# move game data. Disabled here (single choke point) until that's built.
+	return false
 
 func get_local_address() -> String:
 	if not is_available():

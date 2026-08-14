@@ -67,7 +67,7 @@ Scan all `_ready()`, `_enter_tree()`, `_process()`, `_physics_process()` across 
 - Move heavy computation from `_process()` to `_physics_process()` or threaded via `WorkerThreadPool`
 - Replace all empty `catch` blocks (GDScript) or empty `except` / `catch` (C#) with proper error logging and graceful fallback
 - Add `is_connected()` guards before all `connect()` calls to prevent double-connection errors
-- Implement process death save in `_notification(NOTIFICATION_WM_ABOUT_TO_GO_BACKGROUND)` or `get_tree().root.connect("application_paused")` signal — save critical state to `user://` path
+- Implement process death save in `_notification(NOTIFICATION_APPLICATION_PAUSED)` (Godot 4.x has no `NOTIFICATION_WM_ABOUT_TO_GO_BACKGROUND` — using it is a parse error) or `get_tree().root.connect("application_paused")` signal — save critical state to `user://` path
 - Implement state restoration in `_ready()` or `get_tree().root.connect("application_resumed")` signal — restore from `user://`
 - Replace all `assert()` calls containing critical logic with `if` checks and explicit error handling
 - Add `Input.set_mouse_mode()` reset on scene changes to prevent input lock

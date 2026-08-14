@@ -15,7 +15,7 @@ extends Node
 
 signal watchdog_tick(health: Dictionary)
 signal recognition_confidence_changed(score: float)
-signal self_recognized()
+signal self_recognized(recognized: bool)
 
 const REGISTRY_PATH := "user://m2m_resilience_registry.json"
 const MOBILE_IP_LOOKUP_URL := "https://api.ip" + "fy.org"
@@ -123,14 +123,9 @@ func _identity_addresses() -> Dictionary:
 	return M2MMachineIdentity.get_profile().get("addresses", {})
 
 func _refresh_mobile_ip() -> void:
+	# MVP: LAN-only release. No outbound call to the external IP-lookup service —
+	# only the locally cached value (if any was recorded in a prior session) is used.
 	M2MMachineIdentity.register_address("mobile", get_cached_mobile_ip())
-	if not _mobile_from_identity().is_empty() or _skip_mobile_lookup():
-		return
-	_mobile_lookup_busy = true
-	var err := _http.request(MOBILE_IP_LOOKUP_URL)
-	if err != OK:
-		_mobile_lookup_busy = false
-		_record_mobile_lookup_failure()
 
 func _skip_mobile_lookup() -> bool:
 	if _mobile_lookup_busy:
@@ -154,7 +149,7 @@ func _update_confidence() -> void:
 		recognition_confidence_changed.emit(_recognition_score)
 		_prior_score = _recognition_score
 	if recognized and not _was_recognized:
-		self_recognized.emit()
+		self_recognized.emit(recognized)
 	_was_recognized = recognized
 	_self_recognized = recognized
 

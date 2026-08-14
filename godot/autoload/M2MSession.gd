@@ -51,11 +51,17 @@ func _ensure_connected(sig: Signal, callable: Callable) -> void:
 		sig.connect(callable)
 
 func catch_mobile_ip() -> void:
+	# MVP: LAN-only release. No outbound call to IPIFY_URL — only an already-known
+	# or previously cached mobile IP (if any) is used; otherwise this is a no-op.
 	if not mobile_ip.is_empty():
 		_register_local_addresses()
 		mobile_ip_caught.emit(mobile_ip)
 		return
-	_http.request(IPIFY_URL)
+	var cached := M2MResilienceCore.get_cached_mobile_ip()
+	if not cached.is_empty():
+		mobile_ip = cached
+		_register_local_addresses()
+		mobile_ip_caught.emit(mobile_ip)
 
 func start_m2m_watch() -> void:
 	if _watching:

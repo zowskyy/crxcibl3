@@ -7,7 +7,7 @@
 	<sdk name="Godot Engine" version="4.7" purpose="Game runtime and rendering" collects_personal_data="false" />
 	<data type="game_progress" collected="true" shared="false" encrypted="true" purpose="App functionality" deletion="User can delete save from device settings" />
 	<data type="device_id" collected="false" shared="false" />
-	<data type="location" collected="false" shared="false" note="ACCESS_FINE_LOCATION used only for Bluetooth scan API; GPS never read or stored" />
+	<data type="location" collected="false" shared="false" note="Location permission is not requested by this app; GPS never read or stored" />
 	<data type="contacts" collected="false" shared="false" />
 	<data type="photos" collected="false" shared="false" />
 	<data type="audio" collected="false" shared="false" />

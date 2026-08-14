@@ -82,10 +82,9 @@ func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_APPLICATION_PAUSED:
 			_on_app_paused()
+			ProcessDeathSnapshot.save_snapshot()
 		NOTIFICATION_APPLICATION_RESUMED:
 			_on_app_resumed()
-		NOTIFICATION_WM_ABOUT_TO_GO_BACKGROUND:
-			ProcessDeathSnapshot.save_snapshot()
 		NOTIFICATION_WM_GO_BACK_REQUEST:
 			_handle_predictive_back()
 			get_viewport().set_input_as_handled()

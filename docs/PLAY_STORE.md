@@ -92,14 +92,14 @@ Edit `godot/export_presets.cfg` (Android preset):
 
 ```ini
 version/code=2        # integer — MUST increase every Play Console upload
-version/name="1.2.1"  # user-visible version string
+version/name="1.3.0"  # user-visible version string
 ```
 
 Also keep `config/version` in `godot/project.godot` aligned with `version/name` for in-game display.
 
 | Upload | `version/code` | `version/name` |
 |--------|----------------|----------------|
-| First Play release | `1` | `1.2.1` |
+| First Play release | `1` | `1.3.0` |
 | Each subsequent upload | previous + 1 | semver bump as appropriate |
 
 **Policy:** Never reuse a `version/code`. Google Play rejects equal or lower codes for the same package name.
