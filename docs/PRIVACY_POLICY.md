@@ -10,7 +10,7 @@ This privacy policy describes how CRXCIBL3 ("the app," "we," "our") handles info
 
 ## Summary
 
-CRXCIBL3 does **not** collect, transmit, sell, or share your personal data. The app works fully offline and stores game progress only on your device.
+CRXCIBL3 does **not** collect, transmit, sell, or share your personal data. Single-player gameplay works fully offline and stores game progress only on your device. The app also offers an optional local-network co-op mode: when you explicitly open the co-op menu, the app broadcasts and listens for game-session announcements on your local Wi-Fi network only — it never contacts the internet or any server operated by us or a third party.
 
 ---
 
@@ -50,7 +50,9 @@ You may delete your save at any time by clearing app data in Android settings or
 
 ## Network access
 
-CRXCIBL3 is designed to run **offline**. The app does not require an internet connection to play and does not send data over the network as part of normal gameplay.
+Single-player gameplay is fully **offline** — no internet connection is required and no data is sent over any network.
+
+Opening the co-op menu enables **local network only** discovery: the app broadcasts and listens for UDP packets on your local Wi-Fi network (same network as your device) so it can find and connect to other players' devices for co-op sessions. This traffic never leaves your local network, is not sent to the internet, and is not sent to us or any third party. Bluetooth co-op and mobile-data co-op are not available in this release.
 
 ---
 
@@ -96,4 +98,4 @@ Questions about this privacy policy or CRXCIBL3:
 
 ---
 
-*CRXCIBL3 — Beach Boulevard. Offline crew shooter. No ads. No analytics. Local save only.*
+*CRXCIBL3 — Beach Boulevard. Offline crew shooter with optional local Wi-Fi co-op. No ads. No analytics. Local save only.*

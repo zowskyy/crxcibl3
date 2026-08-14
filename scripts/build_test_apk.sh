@@ -21,9 +21,20 @@ GODOT_BIN_DIR="${GODOT_HOME}/bin"
 GODOT_BIN="${GODOT_BIN_DIR}/Godot_v${GODOT_RELEASE_TAG}_linux.x86_64"
 EXPORT_TEMPLATES_DIR="${GODOT_HOME}/export_templates/${GODOT_VERSION_SLUG}"
 ANDROID_SDK="${HOME}/android-sdk"
+CMDLINE_TOOLS_BUILD="15859902"
 CMDLINE_TOOLS_ZIP="${GODOT_HOME}/cache/commandlinetools-linux-latest.zip"
 CMDLINE_TOOLS_ROOT="${ANDROID_SDK}/cmdline-tools"
 CMDLINE_TOOLS_DIR="${CMDLINE_TOOLS_ROOT}/latest"
+
+# Known-good checksums for downloaded third-party binaries, verified before
+# extraction. Godot checksums from the official SHA512-SUMS.txt published
+# alongside the godot-builds release; cmdline-tools checksum from Google's
+# published SHA-256 at https://developer.android.com/studio (basic
+# command-line tools table) — update both the build number above and this
+# hash together when bumping CMDLINE_TOOLS_BUILD.
+GODOT_LINUX_ZIP_SHA512="4ccdab7a48eeccbe8819a2fc1f6262f8d72065d98601bcb3743fcbd7ebd39f373758a788ee3293a05ec5b2c48538266c437404312e372225cd2df273945a2de9"
+GODOT_EXPORT_TEMPLATES_SHA512="afcc83d8d3d298038f19c58744a0d660fa75dd4baa33cb55d1011bb2565a2a8c2381728924564cb909e37c205a23f21b521b23bd057993afd43ae4da0b2f9d47"
+CMDLINE_TOOLS_SHA256="4e4c464f145a7512b57d088ac6c278c03c9eea610886b35a5e0804e74eedf583"
 
 PRESET_NAME="Android Debug"
 DEBUG_APK="${GODOT_DIR}/build/crxcibl3-debug.apk"
@@ -42,7 +53,7 @@ Bootstraps on first run:
   - Android SDK under ${ANDROID_SDK} (licenses accepted)
   - godot/debug.keystore (android debug signing)
 
-Requires: curl, unzip, java/keytool, sha256sum.
+Requires: curl, unzip, java/keytool, sha256sum, sha512sum.
 
 Install on device:
   adb install -r godot/build/crxcibl3-playtest.apk
@@ -82,6 +93,22 @@ download_file() {
   return 1  # return error
 }
 
+verify_checksum() {
+  local file="$1"
+  local expected="$2"
+  local algo="sha256sum"
+  if [[ ${#expected} -eq 128 ]]; then
+    algo="sha512sum"
+  fi
+  local actual
+  actual="$("$algo" "$file" | awk '{print $1}')"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "Checksum mismatch for $(basename "$file"): expected $expected, got $actual" >&2
+    rm -f "$file"
+    return 1
+  fi
+}
+
 ensure_java() {
   need_cmd java || exit 1
   need_cmd keytool || exit 1
@@ -103,6 +130,7 @@ ensure_godot_binary() {
     download_file \
       "${GODOT_BUILDS_BASE}/Godot_v${GODOT_RELEASE_TAG}_linux.x86_64.zip" \
       "$zip"
+    verify_checksum "$zip" "$GODOT_LINUX_ZIP_SHA512" || exit 1
     mkdir -p "$GODOT_BIN_DIR"
     unzip -qo "$zip" -d "$GODOT_BIN_DIR"
     chmod +x "$GODOT_BIN"
@@ -125,6 +153,7 @@ ensure_export_templates() {
   download_file \
     "${GODOT_BUILDS_BASE}/Godot_v${GODOT_RELEASE_TAG}_export_templates.tpz" \
     "$tpz"
+  verify_checksum "$tpz" "$GODOT_EXPORT_TEMPLATES_SHA512" || exit 1
 
   mkdir -p "${GODOT_HOME}/export_templates"
   rm -rf "$EXPORT_TEMPLATES_DIR"
@@ -156,8 +185,9 @@ ensure_android_sdk() {
   mkdir -p "$CMDLINE_TOOLS_ROOT"
   if [[ ! -x "${CMDLINE_TOOLS_DIR}/bin/sdkmanager" ]]; then
     download_file \
-      "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" \
+      "https://dl.google.com/android/repository/commandlinetools-linux-${CMDLINE_TOOLS_BUILD}_latest.zip" \
       "$CMDLINE_TOOLS_ZIP"
+    verify_checksum "$CMDLINE_TOOLS_ZIP" "$CMDLINE_TOOLS_SHA256" || exit 1
     rm -rf "${CMDLINE_TOOLS_ROOT}/latest"
     unzip -qo "$CMDLINE_TOOLS_ZIP" -d "$CMDLINE_TOOLS_ROOT"
     mv "${CMDLINE_TOOLS_ROOT}/cmdline-tools" "$CMDLINE_TOOLS_DIR"

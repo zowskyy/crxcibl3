@@ -4,7 +4,7 @@
 
 [![Godot 4.7.1](https://img.shields.io/badge/Godot-4.7.1-478CBF?logo=godotengine&logoColor=white)](https://godotengine.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-blue.svg)](CHANGELOG.md)
+[![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-blue.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-Android%20%7C%20Web%20%7C%20Windows%20%7C%20Linux-lightgrey)](godot/export_presets.cfg)
 
 ---
@@ -88,7 +88,7 @@ Live sequences: `godot/data/emperor_scene.json`, `godot/data/blackwood_scene.jso
 │   ├── configs/game_config.json
 │   ├── export_presets.cfg      # Android / Web / Windows / Linux
 │   ├── tools/                  # play_demo.gd, play_boss_demo.gd, CI helpers
-│   └── project.godot           # version 1.2.0, brand icon
+│   └── project.godot           # version 1.3.0, brand icon
 ├── scripts/                    # generate_icon.py, check_tscn.py, check_gd.py, gates
 ├── CHANGELOG.md
 ├── ATTRIBUTIONS.md
@@ -156,4 +156,4 @@ Main Menu → **Co-op** → host or join on the same Wi-Fi. See **[docs/COOP_MUL
 | [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md) | Roadmap checklist |
 | [godot/assets/audio/MANIFEST.txt](godot/assets/audio/MANIFEST.txt) | VO WAV filenames |
 
-**Godot:** 4.7.1 · **Project version:** 1.2.1 · **Updated:** 2026-08-08
+**Godot:** 4.7.1 · **Project version:** 1.3.0 · **Updated:** 2026-08-08

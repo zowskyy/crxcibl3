@@ -44,7 +44,7 @@ func _ready() -> void:
 	_ensure_connected(M2MResilienceCore.recognition_confidence_changed, _on_recognition_confidence_changed)
 	back_button.custom_minimum_size = Vector2(200, 48)
 	host_button.custom_minimum_size = Vector2(200, 48)
-	status_label.text = "M2M catches your mobile IP and finds friends on Wi-Fi, Bluetooth, or cellular."
+	status_label.text = "Find friends on the same Wi-Fi network (LAN co-op)."
 	_refresh_ip_banner()
 	_refresh_machine_identity()
 
@@ -61,7 +61,7 @@ func handle_android_back() -> void:
 	_on_back_pressed()
 
 func _on_host_pressed() -> void:
-	status_label.text = "Hosting — catching mobile IP for M2M mesh..."
+	status_label.text = "Hosting on local Wi-Fi network..."
 	var err := CoopNetwork.host_session("Player")
 	if err != OK:
 		status_label.text = "Host failed (%s)." % err
@@ -69,7 +69,7 @@ func _on_host_pressed() -> void:
 	status_label.text = "Session live. Share M2M codes or wait for friends to Find You."
 
 func _on_find_friends_pressed() -> void:
-	status_label.text = "M2M scan — Wi-Fi, Bluetooth, mobile IP mesh..."
+	status_label.text = "Scanning local Wi-Fi network..."
 	M2MSession.catch_mobile_ip()
 	M2MSession.start_m2m_watch()
 	var sessions := await CoopNetwork.scan_nearby()
