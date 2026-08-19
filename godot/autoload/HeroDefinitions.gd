@@ -12,6 +12,7 @@ class HeroVariant:
 	var archetype: String
 	var real_name: String
 	var role: String
+	var description: String
 	var health: int
 	var damage: int
 	var speed: float
@@ -61,6 +62,7 @@ func _load_from_config() -> void:
 		variant.archetype = hero_data.get("archetype", "enforcer")
 		variant.real_name = hero_data.get("real_name", "")
 		variant.role = hero_data.get("role", "")
+		variant.description = hero_data.get("description", "")
 
 		# Load archetype stats
 		if _archetypes.has(variant.archetype):
