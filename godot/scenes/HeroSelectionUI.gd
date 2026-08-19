@@ -66,6 +66,8 @@ func _populate_hero_grid() -> void:
 		button.text = variant.name
 		button.custom_minimum_size = Vector2(64, 64)
 		button.add_to_group(variant_id)
+		if not variant.description.is_empty():
+			button.tooltip_text = "%s\n%s" % [variant.real_name, variant.description]
 		var cb := _on_hero_button_toggled.bind(variant_id)
 		if not button.toggled.is_connected(cb):
 			button.toggled.connect(cb)
