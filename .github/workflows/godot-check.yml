@@ -46,6 +46,17 @@ jobs:
           fi
           exit $status
 
+      - name: Run UI/input smoke tests (hero selection, Android back button)
+        run: |
+          set -o pipefail
+          status=0
+          godot --headless --path godot -s res://tools/smoke_test_hero_selection.gd 2>&1 | tee smoke_hero.log || status=1
+          godot --headless --path godot -s res://tools/smoke_test_android_back.gd 2>&1 | tee smoke_back.log || status=1
+          if grep -qE "SCRIPT ERROR|FAILED" smoke_hero.log smoke_back.log; then
+            status=1
+          fi
+          exit $status
+
       - name: Boot the main scene headless (catches scene/script errors on load)
         run: |
           set -o pipefail
@@ -117,7 +128,10 @@ jobs:
       - name: Export debug APK
         run: |
           mkdir -p godot/build
-          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
+          # --install-android-build-template alone never quits (no --quit/--export
+          # flag makes it boot into the idle main loop and hang forever headless),
+          # so it must run in the same invocation as the export that follows it.
+          godot --headless --path godot --install-android-build-template --export-debug "Android Debug" build/crxcibl3-debug.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -125,6 +139,28 @@ jobs:
           name: crxcibl3-debug-apk
           path: godot/build/crxcibl3-debug.apk
           if-no-files-found: error
+
+  # The `secrets` context is not allowed in a job-level `if:` (GitHub Actions
+  # rejects the whole workflow file at parse time if it is), so signing-secret
+  # presence is checked in a step's `env:` here and passed to android-play-store
+  # via a job output instead.
+  signing_secrets_check:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      has_signing_secrets: ${{ steps.check.outputs.has_signing_secrets }}
+    steps:
+      - id: check
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" && -n "$ANDROID_KEYSTORE_PASSWORD" && -n "$ANDROID_KEY_ALIAS" ]]; then
+            echo "has_signing_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_signing_secrets=false" >> "$GITHUB_OUTPUT"
+          fi
 
   # Optional Play Store release AAB — trigger manually via workflow_dispatch.
   # Requires GitHub Actions secrets (Repository → Settings → Secrets and variables → Actions):
@@ -134,10 +170,8 @@ jobs:
   android-play-store:
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      secrets.ANDROID_KEYSTORE_BASE64 != '' &&
-      secrets.ANDROID_KEYSTORE_PASSWORD != '' &&
-      secrets.ANDROID_KEY_ALIAS != ''
-    needs: check
+      needs.signing_secrets_check.outputs.has_signing_secrets == 'true'
+    needs: [check, signing_secrets_check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -249,7 +283,10 @@ jobs:
       - name: Export playtest debug APK
         run: |
           mkdir -p godot/build
-          godot --headless --path godot --export-debug "Android Debug" build/crxcibl3-debug.apk
+          # --install-android-build-template alone never quits (no --quit/--export
+          # flag makes it boot into the idle main loop and hang forever headless),
+          # so it must run in the same invocation as the export that follows it.
+          godot --headless --path godot --install-android-build-template --export-debug "Android Debug" build/crxcibl3-debug.apk
           cp -f godot/build/crxcibl3-debug.apk godot/build/crxcibl3-playtest.apk
           sha256sum godot/build/crxcibl3-playtest.apk
           wc -c < godot/build/crxcibl3-playtest.apk

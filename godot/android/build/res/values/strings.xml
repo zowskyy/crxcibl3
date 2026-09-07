@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="godot_project_name_string">CRXCIBL3</string>
 	<string name="permission_rationale_bluetooth">CRXCIBL3 uses Bluetooth to discover nearby co-op sessions. No contacts or audio are accessed.</string>
 	<string name="permission_rationale_bluetooth_scan">Bluetooth scan finds crew members playing nearby for local co-op matchmaking.</string>
 	<string name="permission_rationale_bluetooth_connect">Bluetooth connect links your device to a host for offline co-op play.</string>

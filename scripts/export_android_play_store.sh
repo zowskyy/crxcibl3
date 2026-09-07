@@ -89,7 +89,10 @@ fi
 mkdir -p "${GODOT_DIR}/build"
 
 echo "Exporting ${PRESET_NAME} -> ${OUTPUT}"
-godot --headless --path "$GODOT_DIR" --export-release "$PRESET_NAME" "build/crxcibl3-release.aab"
+# --install-android-build-template alone never quits (no --quit/--export flag
+# makes it boot into the idle main loop and hang forever headless), so it must
+# run in the same invocation as the export that follows it.
+godot --headless --path "$GODOT_DIR" --install-android-build-template --export-release "$PRESET_NAME" "build/crxcibl3-release.aab"
 
 if [[ ! -f "$OUTPUT" ]]; then
   echo "Export failed — expected output missing: $OUTPUT" >&2
